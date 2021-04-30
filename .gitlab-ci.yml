@@ -1,5 +1,10 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
 build_image:
   script:
     - docker build server/ -t server
     - docker build client/ -t client
-    #- docker-compose run tests (when we add tests)
+    #- run tests (when we add tests)
