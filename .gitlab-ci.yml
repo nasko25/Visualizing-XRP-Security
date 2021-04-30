@@ -1,7 +1,10 @@
-image: docker:latest
+image: docker:19.03.12
 
 services:
-  - docker:dind
+  - docker:19.03.12-dind
+
+variables:
+  - DOCKER_HOST: tcp://docker:2376
 
 build_image:
   script:
