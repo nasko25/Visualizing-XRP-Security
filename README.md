@@ -14,13 +14,13 @@ npm start
 
 ## To build and run the server docker image:
 ```
-docker build . -t <image_name>
+docker build server/ -t <image_name>
 docker run -p 8080:8080 -d <image_name>
 ```
 
 ## To build and run the client docker image:
 ```
-docker build . -t <client_image_name>
+docker build client/ -t <client_image_name>
 docker run -p 3000:3000 -d <client_image_name>
 ```
 

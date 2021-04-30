@@ -1,4 +1,5 @@
 build_image:
   script:
-    - docker-compose build
+    - docker build server/ -t server
+    - docker build client/ -t client
     #- docker-compose run tests (when we add tests)
