@@ -1,0 +1,4 @@
+build_image:
+  script:
+    - docker-compose build
+    #- docker-compose run tests (when we add tests)
