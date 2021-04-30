@@ -1,7 +1,7 @@
 image: docker:19.03.12
 
 cache:
-  key: 1234
+  key: "1234"
   paths:
     - .npm/
 
