@@ -3,7 +3,10 @@ image: docker:19.03.12
 cache:
   key: "1234"
   paths:
-    - .npm/
+    - server/.npm
+    - client/.npm
+    - server/node_modules
+    - client/node_modules
 
 services:
   - docker:19.03.12-dind
