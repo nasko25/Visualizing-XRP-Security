@@ -2,10 +2,12 @@ import express from 'express';
 
 const app = express();
 
+const PORT = 8080;
+
 app.get('/', (req, res) => {
     res.send('Well done!');
 })
 
-app.listen(3000, () => {
-    console.log('The application is listening on port 3000!');
+app.listen(PORT, () => {
+    console.log(`The application is listening on port ${PORT}!`);
 })
