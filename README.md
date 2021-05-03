@@ -4,7 +4,8 @@
 ## Running without docker:
 To start the server:
 ```
-node app
+cd server
+npm start
 ```
 To start the client:
 ```
@@ -28,6 +29,10 @@ docker run -p 3000:3000 -d <client_image_name>
 ```
 docker-compose build
 docker-compose up -d
+```
+or
+```
+docker-compose up --build
 ```
 after that you can:
 ```
