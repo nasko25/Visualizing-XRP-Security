@@ -16,4 +16,4 @@ COPY . .
 # Default React and HTTP test ports
 EXPOSE 8080
 
-CMD node app.js
+CMD npm start
