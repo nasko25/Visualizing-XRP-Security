@@ -1,15 +1,15 @@
 version: "3.9"
 services:
   server:
-    build: server/
+    build: server
     ports:
       - "8080:8080"
     volumes:
-      - "server:/app"
+      - "server:/server"
     image: "server"
 
   client:
-    build: client/
+    build: client
     ports:
       - "3000:3000"
     volumes:
