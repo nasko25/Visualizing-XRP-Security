@@ -1,5 +1,6 @@
 import express from 'express';
 import Crawler from './crawl'
+import { promises as fs } from 'fs';
 
 const app = express();
 
@@ -10,9 +11,13 @@ app.get('/', (req, res) => {
 });
 
 async function startCrawler() {
-    // TODO get the ripple server links from a file
-    //let crawler = new Crawler(["wss://s1.ripple.com"]);
-    let crawler = new Crawler([]);
+    // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
+    let rippleServersArr = (await fs.readFile('config/ripple_servers.list','utf8')).split(/[\s|\n]+/);
+
+    // remove the empty last line
+    rippleServersArr.splice(-1, 1);
+    console.log(rippleServersArr);
+    let crawler = new Crawler(rippleServersArr);
 }
 startCrawler().catch((e) => {
     console.log(`Crawler exited with the exception: ${e}.`);
