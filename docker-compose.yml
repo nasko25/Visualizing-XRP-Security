@@ -20,7 +20,6 @@ services:
        MYSQL_PASSWORD: 'pass'
     ports:
       - "3318:3306"
-    # Change this to your local path
     volumes:
       - "db:/db"
   server:
