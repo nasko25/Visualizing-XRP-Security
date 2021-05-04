@@ -1,21 +1,38 @@
-version: "3.9"
+version: "3.6"
 services:
-  server:
-    build: server
-    ports:
-      - "8080:8080"
-    volumes:
-      - "server:/server"
-    image: "server"
-
   client:
+    container_name: 'client'
     build: client
     ports:
       - "3000:3000"
     volumes:
       - "client:/client"
     image: "client"
-
+  db:
+    image: mysql:8.0.24
+    container_name: 'db'
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+       MYSQL_ROOT_PASSWORD: 'pass'
+       MYSQL_DATABASE: 'db'
+       MYSQL_USER: 'user'
+       MYSQL_PASSWORD: 'pass'
+    ports:
+      - "3318:3306"
+    # Change this to your local path
+    volumes:
+      - "db:/db"
+  server:
+    container_name: 'server'
+    build: server
+    ports:
+      - "8080:8080"
+    volumes:
+      - "server:/server"
+    image: "server"
+    
 volumes:
   server:
   client:
+  db:
