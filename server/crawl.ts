@@ -2,7 +2,7 @@
 import { RippleAPI } from 'ripple-lib';
 
 class Crawler {
-    rippleApi: RippleAPI;
+    rippleApi?: RippleAPI;
 
     // takes a list of rippled servers to start the crawling process from
     // the list can be configured by modifying the config/ripple_servers.list file
@@ -11,10 +11,21 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
-        // TODO try this with each server in the rippleServers array and use the first that works
-        this.rippleApi = new RippleAPI({
-            server: rippleServers[0]
-        });
+        // try to use every server in the list of ripple servers, and use the first one that does not throw an error
+        for (let server of rippleServers) {
+            try {
+                this.rippleApi = new RippleAPI({
+                    server: server
+                });
+                break;
+            } catch (err) {
+                console.log("Server \"" + server + "\" has wrong format. " + err);
+                continue;
+            }
+        }
+        if (this.rippleApi === undefined) {
+            throw "RippleServersUrlWrongFormat";
+        }
     }
 }
 
