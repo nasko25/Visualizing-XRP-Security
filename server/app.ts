@@ -1,31 +1,25 @@
 import express from 'express';
+import {Node} from './db_connection/models/node'
+import { insertNode, getAllNodes } from "./db_connection/db_helper";
 var mysql = require('mysql');
-
-var connection = mysql.createConnection({
-    host: 'db',
-    port: '3306',
-    user: 'root',
-    password: 'pass'
-})
 
 const app = express();
 
 const PORT = 8080;
 
 app.get('/', (req, res) => {
-    res.send('Well done!' + mysql);
+    res.send('Well done!');
 })
 
-app.get('/connect-db', (req, res) => {
-    connection.connect();
+app.get('/insert-node', (req, res) => {
+    var n: Node = {IP: '127.0.0.1', rippled_verison: '1.7.0'};
+    insertNode(n);
+    res.send("node inserted");
+})
 
-    connection.query('SELECT 1 + 1 AS solution', function (error: Error, results: any, fields: any) {
-        if (error) { res.send('not nice'); throw error} ;
-        console.log('The solution is: ', results[0].solution);
-    });
-
-    connection.end();
-    res.end();
+app.get('/get-all-nodes', (req, res) => {
+    getAllNodes();
+    res.send("nodes retrieved");
 })
 
 app.listen(PORT, () => {
