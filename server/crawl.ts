@@ -4,7 +4,17 @@ import axios from 'axios';
 import https from 'https';
 
 // may need to be substituted with a better way of dealing with insecure request
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
+// (because the certificate is signed for the URL of the server, but the stock nodes gives us only the IPs of their peers)
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+interface Node {
+    ip: string;
+    port: Number;
+    version: string;
+    pubkey: string;
+    uptime: Number;
+}
 
 class Crawler {
     // rippleApi?: RippleAPI;
@@ -21,81 +31,49 @@ class Crawler {
         }
         // try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
-            try {
-                // this.rippleApi = new RippleAPI({
-                //     server: server
-                // });
-                this.rippleStartingServerIP = server;
-                this.rippleStartingServer = "https://" + server + `:${this.DEFAULT_PEER_PORT}/crawl`;
-                break;
-            } catch (err) {
-                console.log("Server \"" + server + "\" has wrong format. " + err);
-                continue;
-            }
+            // TODO ensure that the server has a right format; choose the first server that is of
+            // expected format (ip, ip:port, url, url:port are expected formats)
+            this.rippleStartingServerIP = server;
+            this.rippleStartingServer = "https://" + server + `:${this.DEFAULT_PEER_PORT}/crawl`;
+            break;
         }
-        // if (this.rippleApi === undefined) {
-        //     throw "RippleServersUrlWrongFormat";
-        // }
-
-        // this.rippleApi.on('error', (errorCode, errorMessage) => {
-        //     console.log(errorCode + ': ' + errorMessage);
-        // });
-
-        // this.rippleApi.on('connected', () => {
-        //     console.log('connected');
-        // });
-
-        // this.rippleApi.on('disconnected', (code) => {
-        //     console.log('disconnected, code:', code);
-        // });
     }
 
     crawl() {
+        // start from first node, which is chosen from the config/ripple_servers.list
+        // perform a BFS by getting peers from each node
 
-        let ip = "54.152.10.245";
-        let default_port = 51235;
+        // perform a get request to https://<server_ip>:<server:port>/crawl for each node to get its peers
+        // for each peer in the list of peers -> perform the same crawl operation
+        // keep an array of visited nodes
 
-        // if (this.rippleApi === undefined) {
-        //     throw "Ripple api is undefined";
-        // }
-
-            // start from first node
-            // BFS by getting peers from each node
-
-            // /crawl first node -> returns peers
-            // for each peer in peers -> crawl peer
-            // keep an array of visited
-        
+        // since we are making an https GET request to each of the nodes with their IP, instead of a URL, we need to ignore the SSL certificate:
         const agent = new https.Agent({
             rejectUnauthorized: false,
         });
-        
-        axios.get(this.rippleStartingServer, {httpsAgent : agent})
-            .then( async function (response)  {
-                console.log(response.data.overlay.active[0]);
-                // fill a list with the peer's ips
-                // let IPs = response.data.overlay.active.map(x.ip);
+        const rippleStartingServerIP = this.rippleStartingServerIP;
+        const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
-                let visited: string[] = [ip];
-                let node: Node = {ip: ip, 
-                                port: 51235, 
-                                version: "rippled-" + response.data.server.build_version, 
-                                pubkey: response.data.server.public_key, 
-                                uptime: response.data.server.uptime};
+        // TODO deal with ips with the format: "::ffff:51.15.115.97"
+        // get the peers of the inital stock node
+        axios.get(this.rippleStartingServer, {httpsAgent : agent})
+            .then( async function ( response )  {
+                console.log(response.data.overlay.active[0]);
+
+                // keep track of already visited nodes (with a list of their IPs)
+                let visited: string[] = [rippleStartingServerIP];
+                let node: Node = {
+                                    ip: rippleStartingServerIP,
+                                    port: DEFAULT_PEER_PORT, 
+                                    version: "rippled-" + response.data.server.build_version, 
+                                    pubkey: response.data.server.pubkey_node,
+                                    uptime: response.data.server.uptime
+                                 };
+                // save all visited notes (later we will save that list to the database)
                 let Nodes: Node[] = [];
+                // keep track of what nodes need to be visited
                 let ToBeVisited = [node];
 
-                // for (let n of response.data.overlay.active) {
-                //     // saves nodes with "undefined" ip for later use if such
-                //     Nodes.push(<Node>{ip: n.ip, port: n.port, version: n.version, pubkey: n.public_key, uptime: n.uptime});
-                //     if (n.ip !== undefined) {
-                //         ToBeVisited.push(<Node>{ip: n.ip, port: n.port, version: n.version, pubkey: n.public_key, uptime: n.uptime});
-                //         visited.push(n.ip);
-                //     }
-                // }
-                
-                console.log(Nodes);
-                
                 while (ToBeVisited.length != 0) {
                     console.log("\n");
                     console.log(Nodes);
@@ -104,26 +82,24 @@ class Crawler {
                     let n = ToBeVisited.shift();
                     if (n !== undefined) {
                         Nodes.push(n);
-                        console.log("IP : " + n.ip + "PORT: " + n.port);
+                        console.log("IP : " + n.ip + "\nPORT: " + n.port);
 
-                        // request the peers of the node
-                        await axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent})
+                        // request the peers of the node and add them to the ToBeVisited list
+                        await axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: 1000})
                             .then(response => {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? default_port : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
                                         console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
-                                console.log(ToBeVisited);   
+                                console.log(ToBeVisited);
                             })
                             .catch(error => {
-                                console.log("opaaaa");
                                 console.log(error);
                             });
-                            console.log("nqma oppaaa");
                     }
                 }
 
@@ -131,27 +107,9 @@ class Crawler {
             .catch(error => {
                 console.log(error);
             });
-        
-        
-
-        // this.rippleApi.connect().then(() => {
-        //   }).then(() => {
-        //     if (this.rippleApi === undefined) {
-        //         throw "Ripple api is undefined";
-        //     }
-
-        //     return this.rippleApi.disconnect();
-        //   }).catch(console.error);
     }
-    
+
 }
 
-interface Node {
-    ip: string;
-    port: Number;
-    version: string;
-    pubkey: string;
-    uptime: Number;
-}
 
 export default Crawler;
