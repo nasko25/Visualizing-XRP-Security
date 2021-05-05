@@ -21,7 +21,7 @@ services:
     ports:
       - "3318:3306"
     volumes:
-      - "db:/db"
+      - ./db/mysql/init/init.sql:/docker-entrypoint-initdb.d/init.sql
   server:
     container_name: 'server'
     build: server
@@ -35,3 +35,4 @@ volumes:
   server:
   client:
   db:
+
