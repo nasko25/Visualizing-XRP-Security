@@ -52,6 +52,9 @@ class Crawler {
 
     crawl() {
 
+        let ip = "54.152.10.245";
+        let default_port = 51235;
+
         // if (this.rippleApi === undefined) {
         //     throw "Ripple api is undefined";
         // }
@@ -68,13 +71,13 @@ class Crawler {
         });
         
         axios.get(this.rippleStartingServer, {httpsAgent : agent})
-            .then(response => {
+            .then( async function (response)  {
                 console.log(response.data.overlay.active[0]);
                 // fill a list with the peer's ips
                 // let IPs = response.data.overlay.active.map(x.ip);
 
-                let visited: string[] = [this.rippleStartingServerIP];
-                let node: Node = {ip: this.rippleStartingServerIP, 
+                let visited: string[] = [ip];
+                let node: Node = {ip: ip, 
                                 port: 51235, 
                                 version: "rippled-" + response.data.server.build_version, 
                                 pubkey: response.data.server.public_key, 
@@ -104,12 +107,12 @@ class Crawler {
                         console.log("IP : " + n.ip + "PORT: " + n.port);
 
                         // request the peers of the node
-                        axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent})
+                        await axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent})
                             .then(response => {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? this.DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? default_port : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
                                         console.log("Peer ip is undefined: " + peer);
                                     }
