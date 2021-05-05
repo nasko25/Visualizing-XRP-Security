@@ -18,6 +18,8 @@ async function startCrawler() {
     rippleServersArr.splice(-1, 1);
     console.log(rippleServersArr);
     let crawler = new Crawler(rippleServersArr);
+    crawler.crawl()
+    // for the moment simply display what has been collected in console
 }
 startCrawler().catch((e) => {
     console.log(`Crawler exited with the exception: ${e}.`);
