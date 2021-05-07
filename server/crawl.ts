@@ -97,11 +97,21 @@ class Crawler {
                             .then(response => {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
-                                        visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        // TODO very ugly solution to handle ::ffff:1.2.3.4 format IPs
+                                        // find a better way of doing it
+                                        if (peer.ip.substr(0, 7) == "::ffff:") {
+                                            let modip = peer.ip.substr(7);
+                                            visited.push(peer.ip);
+                                            ToBeVisited.push(<Node>{ip: modip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        }
+                                        else {
+                                            visited.push(peer.ip);
+                                            ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        }
                                     } else {
                                         // push the node that does not have an ip to the list of nodes, as it will not be visited later
-                                        //Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        //if (Nodes.filter(n => n.pubkey == peer.pubkey).length === 0)
+                                            Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
@@ -118,7 +128,8 @@ class Crawler {
                 }
                 console.log(Nodes);
                 console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length)
-                console.log("How many nodes with a unique public key we have saved: " + Nodes.filter((item, i, arr) => arr.map(function(e) { return e.pubkey; }).indexOf(item.pubkey) === i).length)
+                console.log("How many nodes we have saved: " + Nodes.length)
+                console.log("How many nodes with a unique public key we have saved: " + Nodes.filter((item, i, arr) => arr.map(function(e) { return e.pubkey; }).indexOf(item.pubkey) === i).length);
 
             })
             .catch(error => {
