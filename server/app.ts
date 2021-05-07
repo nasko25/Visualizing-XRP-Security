@@ -1,6 +1,6 @@
 import express from 'express';
 import {Node} from './db_connection/models/node'
-import { insertNode, getAllNodes } from "./db_connection/db_helper";
+import { insertNode, getAllNodes, insertConnection, getAllConnections } from "./db_connection/db_helper";
 var mysql = require('mysql');
 
 const app = express();
@@ -12,14 +12,28 @@ app.get('/', (req, res) => {
 })
 
 app.get('/insert-node', (req, res) => {
-    var n: Node = {IP: '127.0.0.1', rippled_verison: '1.7.0'};
+    var n: Node = {IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'bruh'};
     insertNode(n);
     res.send("node inserted");
 })
 
+app.get('/insert-connection', (req, res) => {
+    var start_node: Node = {node_id: 1, IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'bruh'};
+    var end_node: Node = {node_id: 2, IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'bruh'};
+    insertConnection(start_node, end_node);
+    res.send("connection inserted");
+})
+
 app.get('/get-all-nodes', (req, res) => {
-    getAllNodes();
-    res.send("nodes retrieved");
+    var nodes = getAllNodes(function (result): void {
+        res.send(JSON.stringify(result));
+    });
+})
+
+app.get('/get-all-connections', (req, res) => {
+    var nodes = getAllConnections(function (result): void {
+        res.send(JSON.stringify(result));
+    });
 })
 
 app.listen(PORT, () => {
