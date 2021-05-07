@@ -83,9 +83,9 @@ class Crawler {
                     //console.log("\n");
 
                     // FOR DEBUGGING ONLY: STOP THE LOOP WHEN YOU HAVE 200 NODES IN THE LIST
-                    if (Nodes.length === 200) {
-                        break;
-                    }
+                    //if (Nodes.length === 200) {
+                    //    break;
+                    //}
 
                     let n = ToBeVisited.shift();
                     if (n !== undefined) {
@@ -101,7 +101,7 @@ class Crawler {
                                         ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
                                         // push the node that does not have an ip to the list of nodes, as it will not be visited later
-                                        Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        //Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
@@ -117,6 +117,7 @@ class Crawler {
                     }
                 }
                 console.log(Nodes);
+                console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length)
 
             })
             .catch(error => {
