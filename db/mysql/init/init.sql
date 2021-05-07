@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS `connection` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `securty_assessment`
+-- -----------------------------------------------------
+USE db;
+CREATE TABLE IF NOT EXISTS `securty_assessment` (
+  `node_key` VARCHAR(60) NOT NULL,
+  `metric_version` FLOAT NOT NULL,
+  `timestamp` timestamp NOT NULL,
+  `score` FLOAT NOT NULL 
+);
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
