@@ -15,12 +15,15 @@ interface Node {
     pubkey: string;
     uptime: Number;
 }
-
+// wait for at most 3 seconds when making an HTTP request to obtain a node's peers
+// if the node does not respond after 3 seconds, it is assumed that we cannot retrieve its peer from the peer crawler API
+const TIMEOUT_GET_REQUEST = 3000
 class Crawler {
     // rippleApi?: RippleAPI;
     rippleStartingServer = "";
     rippleStartingServerIP = "";
-    DEFAULT_PEER_PORT = 51235;
+    // this is the default XRP Peers port that will be used to make an HTTP request to /crawl if the node does not specify a custom port to be used for the peer crawler API
+    readonly DEFAULT_PEER_PORT = 51235;
 
     // takes a list of rippled servers to start the crawling process from
     // the list can be configured by modifying the config/ripple_servers.list file
@@ -55,7 +58,7 @@ class Crawler {
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
         // TODO deal with ips with the format: "::ffff:51.15.115.97"
-        // get the peers of the inital stock node
+        // get the peers of the initial stock node
         axios.get(this.rippleStartingServer, {httpsAgent : agent})
             .then( async function ( response )  {
                 console.log(response.data.overlay.active[0]);
@@ -74,10 +77,15 @@ class Crawler {
                 // keep track of what nodes need to be visited
                 let ToBeVisited = [node];
 
-                while (ToBeVisited.length != 0) {
-                    console.log("\n");
-                    console.log(Nodes);
-                    console.log("\n");
+                while (ToBeVisited.length !== 0) {
+                    //console.log("\n");
+                    //console.log(ToBeVisited.length);
+                    //console.log("\n");
+
+                    // FOR DEBUGGING ONLY: STOP THE LOOP WHEN YOU HAVE 200 NODES IN THE LIST
+                    if (Nodes.length === 200) {
+                        break;
+                    }
 
                     let n = ToBeVisited.shift();
                     if (n !== undefined) {
@@ -85,23 +93,29 @@ class Crawler {
                         console.log("IP : " + n.ip + "\nPORT: " + n.port);
 
                         // request the peers of the node and add them to the ToBeVisited list
-                        await axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: 1000})
+                        let getPeersPromise = axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
                             .then(response => {
+                                console.log("get " + n.ip + "'s peers.");
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
                                         ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
-                                        console.log("Peer ip is undefined: " + peer);
+                                        //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
-                                console.log(ToBeVisited);
+                                //console.log(ToBeVisited);
                             })
                             .catch(error => {
                                 console.log(error);
                             });
+                        // if there are no nodes that can be visited, wait for the "get peers" request to retrieve some new peers that can be crawled
+                        if (ToBeVisited.length === 0)
+                            await getPeersPromise;
+
                     }
                 }
+                console.log(Nodes);
 
             })
             .catch(error => {
