@@ -118,6 +118,7 @@ class Crawler {
                 }
                 console.log(Nodes);
                 console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length)
+                console.log("How many nodes with a unique public key we have saved: " + Nodes.filter((item, i, arr) => arr.map(function(e) { return e.pubkey; }).indexOf(item.pubkey) === i).length)
 
             })
             .catch(error => {
