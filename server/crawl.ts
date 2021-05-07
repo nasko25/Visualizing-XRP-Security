@@ -95,19 +95,20 @@ class Crawler {
                         // request the peers of the node and add them to the ToBeVisited list
                         let getPeersPromise = axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
                             .then(response => {
-                                console.log("get " + n.ip + "'s peers.");
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
                                         ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
+                                        // push the node that does not have an ip to the list of nodes, as it will not be visited later
+                                        Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
                                 //console.log(ToBeVisited);
                             })
                             .catch(error => {
-                                console.log(error);
+                                //console.log(error);
                             });
                         // if there are no nodes that can be visited, wait for the "get peers" request to retrieve some new peers that can be crawled
                         if (ToBeVisited.length === 0)
