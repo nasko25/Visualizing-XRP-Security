@@ -79,8 +79,9 @@ class Crawler {
                                     uptime: response.data.server.uptime
                                  };
 
-                // Array to store nodes (later we will save that list to the database)
-                let Nodes: Node[] = [];
+                // The use of map instead of an array saves us the work we have to do later when filtering duplicate public keys
+                // Later nodes will be stored in the database
+                let Nodes = new Map<String, Node>();
                 // Keep track of what nodes need to be visited
                 let ToBeVisited = [node];
 
@@ -94,8 +95,8 @@ class Crawler {
                     let n = ToBeVisited.shift();
 
                     if (n !== undefined) {
-                        Nodes.push(n);
-                        console.log("IP : " + n.ip + "\nPORT: " + n.port);
+                        Nodes.set(n.pubkey, n);
+                        //console.log("IP : " + n.ip + "\nPORT: " + n.port);
 
                         // Request the peers of the node and add them to the ToBeVisited list
                         let getPeersPromise = axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
@@ -114,15 +115,15 @@ class Crawler {
                                             ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                         }
                                     } else {
-                                        // Push the node that does not have an ip to the list of nodes, as it will not be visited later
-                                        // If (Nodes.filter(n => n.pubkey == peer.pubkey).length === 0)
-                                            Nodes.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        // Push the node that does not have an ip to the map of nodes, as it will not be visited later
+                                        Nodes.set(peer.public_key, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
                             })
                             .catch(error => {
-                                console.log(error);
+                                // Uncomment to console log the peers that refuse connection
+                                //console.log(error);
                             });
                         // If there are no nodes that can be visited, wait for the "get peers" request to retrieve some new peers that can be crawled
                         // Deals with the http requests being async
@@ -132,10 +133,8 @@ class Crawler {
                     }
                 }
                 console.log(Nodes);
-                console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length)
-                console.log("How many nodes we have saved: " + Nodes.length)
-                console.log("How many nodes with a unique public key we have saved: " + Nodes.filter((item, i, arr) => arr.map(function(e) { return e.pubkey; }).indexOf(item.pubkey) === i).length);
-
+                console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length);
+                console.log("How many nodes we have saved: " + Nodes.size);
             })
             .catch(error => {
                 console.log(error);
