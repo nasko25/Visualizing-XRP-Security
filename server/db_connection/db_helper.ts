@@ -11,8 +11,12 @@ var connection = mysql.createConnection({
 })
 
 export function insertNode(node: Node): void {
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key) VALUES (\'' + node.IP + '\', \'' + node.rippled_verison + '\', \'' + node.public_key + '\');';
-    console.log(insert_query);
+    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
+        node.IP + '\', \'' +
+        node.rippled_verison + '\', \'' +
+        node.public_key + '\', \'' +
+        node.uptime + '\');';
+    
     connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
         if (err) {
             console.log(err);
