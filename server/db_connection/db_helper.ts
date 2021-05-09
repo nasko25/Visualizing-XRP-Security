@@ -14,7 +14,7 @@ var connection = mysql.createConnection({
 export function insertNode(node: Node): void {
     var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
         node.IP + '\', \'' +
-        node.rippled_verison + '\', \'' +
+        node.rippled_version + '\', \'' +
         node.public_key + '\', \'' +
         node.uptime + '\');';
 

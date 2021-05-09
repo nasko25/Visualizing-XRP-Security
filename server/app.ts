@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/insert-node', (req, res) => {
-    var n: Node = {IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'pk', uptime: 10};
+    var n: Node = {IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
     insertNode(n);
     res.send("node inserted");
 })
@@ -26,8 +26,8 @@ app.get('/insert-sas', (req, res) => {
 })
 
 app.get('/insert-connection', (req, res) => {
-    var start_node: Node = {node_id: 1, IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'pk', uptime: 10};
-    var end_node: Node = {node_id: 2, IP: '127.0.0.1', rippled_verison: '1.7.0', public_key: 'pk', uptime: 10};
+    var start_node: Node = {node_id: 1, IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
+    var end_node: Node = {node_id: 2, IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
     insertConnection(start_node, end_node);
     res.send("connection inserted");
 })

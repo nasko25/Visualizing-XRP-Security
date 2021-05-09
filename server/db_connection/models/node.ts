@@ -3,7 +3,7 @@
 export interface Node {
     node_id?: number,
     IP: string,
-    rippled_verison: string,
+    rippled_version: string,
     public_key: string,
     uptime: number
 }
