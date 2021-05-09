@@ -1,7 +1,20 @@
 import React from "react";
-import { latLng } from "leaflet";
-import { MapContainer, TileLayer, Popup, Circle } from "react-leaflet";
+import {latLng} from "leaflet";
+import {Circle, MapContainer, Popup, TileLayer, useMapEvents} from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
+import "../MarkerCluster.Default.css"
+
+
+function MyComponent(props) {
+    const map = useMapEvents({
+        zoomend: () => {
+            console.log("Mitko");
+            var popup = null;
+            props.that.setState({popup});
+        }
+    });
+    return null;
+}
 
 class TopMap extends React.Component {
     state = {
@@ -65,40 +78,37 @@ class TopMap extends React.Component {
             ],
         },
         popup: null
-
     };
+
 
     onClusterClick = (a) => {
 
-        console.log(a instanceof Object ? "Click event handler received Object." : "ERROR: Click event handler input is null");
+            var children = a.layer.getAllChildMarkers();
+            var lis = [];
 
-        var children = a.layer.getAllChildMarkers();
-        var lis = [];
+            for (var child in children) {
+                lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+            }
+            var contentForCluster = <ul>{lis}</ul>
 
-        for (var child in children) {
-            console.log(children);
-            lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
-        }
-        var contentForCluster = <ul>{lis}</ul>
-
-        // Create the new popup
-        var popup = this.createNewPopup(a, contentForCluster);
-        var map = this.createNewMap(popup);
+            // Create the new popup
+        var popup = null
+        this.setState({ popup });
+        popup = this.createNewPopup(a, contentForCluster);
 
         // Update the state with the new map
         this.setState({ popup });
-
 
     }
 
     // Create a popup with position and content
     createNewPopup = (a, content) => {
-        return <Popup position={a.latlng} >{content}</Popup>
+        return <Popup position={a.latlng}>{content}</Popup>
     }
 
     // Create a new map with the provided popup 
     createNewMap = (popup) => {
-        return <MapContainer onClick={() => {console.log("Mitko");}} style={{ width: "600px", height: "400px" }} center={this.state.latlng} zoom={3}>
+        return <MapContainer style={{width: "600px", height: "400px"}} center={this.state.latlng} zoom={3}>
             {/* Layers */}
             <TileLayer
                 attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
@@ -109,6 +119,7 @@ class TopMap extends React.Component {
             {/* Cluster Markers */}
             {this.createMarkerGroup()}
             {popup}
+            <MyComponent that={this}/>
         </MapContainer>
     }
 
@@ -120,20 +131,20 @@ class TopMap extends React.Component {
             var a = this.state.addressPoints.points[i];
             var title = a.title;
             var colour = "green";
-            if (a.trustScore == 0) colour = "red";
-            var size = 600;
+            if (a.trustScore === 0) colour = "red";
+            var size = 1000;
 
             let marker = (
                 <Circle key={"circle_" + i}
 
-                    center={a.latLng}
-                    color={colour}
-                    fillColor={colour}
-                    fillOpacity={0.5}
-                    radius={size}
-                    title={title}
+                        center={a.latLng}
+                        color={colour}
+                        fillColor={colour}
+                        fillOpacity={0.5}
+                        radius={size}
+                        title={title}
                 >
-                    <Popup >
+                    <Popup>
                         {title}
                     </Popup>
                 </Circle>
@@ -144,7 +155,7 @@ class TopMap extends React.Component {
 
         }
 
-        return <MarkerClusterGroup zoomToBoundsOnClick="false" maxClusterRadius={20} onClick={this.onClusterClick}>
+        return <MarkerClusterGroup zoomToBoundsOnClick={false} maxClusterRadius={20} onClick={this.onClusterClick}>
             {markers}
         </MarkerClusterGroup>
     };
@@ -154,6 +165,8 @@ class TopMap extends React.Component {
             this.createNewMap(this.state.popup)
         );
     }
+
+
 }
 
 export default TopMap;
