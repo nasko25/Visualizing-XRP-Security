@@ -43,10 +43,10 @@ ENGINE = InnoDB;
 -- Table `securty_assessment`
 -- -----------------------------------------------------
 USE db;
-CREATE TABLE IF NOT EXISTS `securty_assessment` (
-  `node_key` VARCHAR(60) NOT NULL,
+CREATE TABLE IF NOT EXISTS `security_assessment` (
+  `public_key` VARCHAR(60) NOT NULL,
   `metric_version` FLOAT NOT NULL,
-  `timestamp` timestamp NOT NULL,
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `score` FLOAT NOT NULL 
 );
 

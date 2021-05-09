@@ -1,4 +1,4 @@
-// A Node on the network
+// An interface for a  Node on the network
 
 export interface Node {
     node_id?: number,
