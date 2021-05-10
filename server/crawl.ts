@@ -116,7 +116,12 @@ class Crawler {
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
                                         let normalizedPublicKey = normalizePublicKey(peer.public_key);
-                                        Nodes.set(normalizedPublicKey, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime});
+                                        // Ensures that a valid ip is not changed to a undefined ip
+                                        if (Nodes.has(normalizedPublicKey)) {
+                                            continue;
+                                        } else {
+                                            Nodes.set(normalizedPublicKey, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime});
+                                        }
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
