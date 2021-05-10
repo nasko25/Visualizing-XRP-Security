@@ -3,6 +3,7 @@
 import axios from 'axios';
 import https from 'https';
 import { encodeNodePublic } from 'ripple-address-codec';
+import { insertNodes } from './db_connection/db_helper'
 
 // May need to be substituted with a better way of dealing with insecure request
 // In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
@@ -137,9 +138,12 @@ class Crawler {
 
                     }
                 }
-                console.log(Nodes);
+                // console.log(Nodes);
                 console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length);
                 console.log("How many nodes we have saved: " + Nodes.size);
+
+                // save all nodes in the database
+                insertNodes(Array.from(Nodes.values());
             })
             .catch(error => {
                 console.log(error);
@@ -150,3 +154,4 @@ class Crawler {
 
 
 export default Crawler;
+export { Node };

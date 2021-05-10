@@ -1,4 +1,5 @@
 import { Node } from './models/node'
+import { Node as CrawlerNode } from "../crawl"
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 var mysql = require('mysql');
@@ -19,6 +20,18 @@ export function insertNode(node: Node): void {
         node.uptime + '\');';
 
     connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
+export function insertNodes(nodes: CrawlerNode[]): void {
+    var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ?";
+    var vals = nodes.map(node => [ node.ip, node.version, node.pubkey, node.uptime ]);
+
+    connection.query(query, [ vals ], (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
