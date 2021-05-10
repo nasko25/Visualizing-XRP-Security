@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `node` (
   `node_id` INT NOT NULL AUTO_INCREMENT,
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
-  `public_key` VARCHAR(45) NULL,
+  `public_key` VARCHAR(80) NULL,
   `uptime` INT NULL,
   PRIMARY KEY (`node_id`),
   UNIQUE INDEX `node_id_UNIQUE` (`node_id` ASC) VISIBLE)
