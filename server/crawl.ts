@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import https from 'https';
+import { encodeNodePublic } from 'ripple-address-codec';
 
 // May need to be substituted with a better way of dealing with insecure request
 // In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
@@ -20,6 +21,13 @@ interface Node {
 // Wait for at most 3 seconds when making an HTTP request to obtain a node's peers
 // If the node does not respond after 3 seconds, it is assumed that we cannot retrieve its peer from the peer crawler API
 const TIMEOUT_GET_REQUEST = 3000
+
+const normalizePublicKey = function(publicKey: string) {
+    if (publicKey.length > 50 && publicKey[0] === 'n')
+        return publicKey;
+
+    return encodeNodePublic(Buffer.from(publicKey, 'base64'));
+}
 
 class Crawler {
 
@@ -74,8 +82,8 @@ class Crawler {
                 let node: Node = {
                                     ip: rippleStartingServerIP,
                                     port: DEFAULT_PEER_PORT, 
-                                    version: "rippled-" + response.data.server.build_version, 
-                                    pubkey: response.data.server.pubkey_node,
+                                    version: "rippled-" + response.data.server.build_version,
+                                    pubkey: normalizePublicKey(response.data.server.pubkey_node),
                                     uptime: response.data.server.uptime
                                  };
 
@@ -104,10 +112,11 @@ class Crawler {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
-                                        Nodes.set(peer.public_key, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
+                                        let normalizedPublicKey = normalizePublicKey(peer.public_key);
+                                        Nodes.set(normalizedPublicKey, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime});
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
                                 }
