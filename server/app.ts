@@ -1,4 +1,6 @@
 import express from 'express';
+import Crawler from './crawl'
+import { promises as fs } from 'fs';
 import { Node } from './db_connection/models/node'
 import { Connection } from './db_connection/models/connection'
 import { SecurityAssessment } from './db_connection/models/security_assessment'
@@ -11,7 +13,22 @@ const PORT = 8080;
 
 app.get('/', (req, res) => {
     res.send('Well done!');
-})
+});
+
+async function startCrawler() {
+    // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
+    let rippleServersArr = (await fs.readFile('config/ripple_servers.list','utf8')).split(/[\s|\n]+/);
+
+    // remove the empty last line
+    rippleServersArr.splice(-1, 1);
+    console.log(rippleServersArr);
+    let crawler = new Crawler(rippleServersArr);
+    crawler.crawl()
+    // for the moment simply display what has been collected in console
+}
+startCrawler().catch((e) => {
+    console.log(`Crawler exited with the exception: ${e}.`);
+});
 
 app.get('/insert-node', (req, res) => {
     var n: Node = {IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
@@ -52,4 +69,4 @@ app.get('/get-all-sas', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`The application is listening on port ${PORT}!`);
-})
+});
