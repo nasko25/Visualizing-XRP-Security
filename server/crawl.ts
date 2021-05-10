@@ -143,7 +143,7 @@ class Crawler {
                 console.log("How many nodes we have saved: " + Nodes.size);
 
                 // save all nodes in the database
-                insertNodes(Array.from(Nodes.values());
+                insertNodes(Array.from(Nodes.values()));
             })
             .catch(error => {
                 console.log(error);

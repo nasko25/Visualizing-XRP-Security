@@ -9,13 +9,12 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- Table `node`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `node` (
-  `node_id` INT NOT NULL AUTO_INCREMENT,
+  `public_key` VARCHAR(80) NOT NULL,
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
-  `public_key` VARCHAR(80) NULL,
   `uptime` INT NULL,
-  PRIMARY KEY (`node_id`),
-  UNIQUE INDEX `node_id_UNIQUE` (`node_id` ASC) VISIBLE)
+  PRIMARY KEY (`public_key`),
+  UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -25,16 +24,16 @@ ENGINE = InnoDB;
 USE db;
 CREATE TABLE IF NOT EXISTS `connection` (
   `connection_id` INT NOT NULL AUTO_INCREMENT,
-  `start_node` INT NULL,
-  `end_node` INT NULL,
+  `start_node` VARCHAR(80) NOT NULL,
+  `end_node` VARCHAR(80) NOT NULL,
   PRIMARY KEY (`connection_id`),
   UNIQUE INDEX `connection_id_UNIQUE` (`connection_id` ASC) VISIBLE,
   FOREIGN KEY (`start_node`)
-    REFERENCES `node` (`node_id`)
+    REFERENCES `node` (`public_key`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   FOREIGN KEY (`end_node`)
-    REFERENCES `node` (`node_id`)
+    REFERENCES `node` (`public_key`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -44,7 +43,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 USE db;
 CREATE TABLE IF NOT EXISTS `security_assessment` (
-  `public_key` VARCHAR(60) NOT NULL,
+  `public_key` VARCHAR(80) NOT NULL,
   `metric_version` FLOAT NOT NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `score` FLOAT NOT NULL 

@@ -41,9 +41,9 @@ export function insertNodes(nodes: CrawlerNode[]): void {
 
 export function insertConnection(start_node: Node, end_node: Node): void {
     var insert_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
-        start_node.node_id + '\', \'' +
-        end_node.node_id + '\');';
-    
+        start_node.public_key + '\', \'' +
+        end_node.public_key + '\');';
+
     connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
         if (err) {
             console.log(err);
