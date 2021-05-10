@@ -28,7 +28,10 @@ export function insertNode(node: Node): void {
 }
 
 export function insertNodes(nodes: CrawlerNode[]): void {
-    var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ?";
+    // TODO when updating nodes now, older nodes are never removed
+    // maybe add a timestamp to indicate when the node was last updated
+    // (and delete nodes after some time if the information about them was never updated) ?
+    var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
     var vals = nodes.map(node => [ node.ip, node.version, node.pubkey, node.uptime ]);
 
     connection.query(query, [ vals ], (err: Error, result: object, fields: JSON) => {
