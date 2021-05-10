@@ -22,7 +22,7 @@ interface Node {
 const TIMEOUT_GET_REQUEST = 3000
 
 class Crawler {
-    
+
     rippleStartingServer = "";
     rippleStartingServerIP = "";
     // This is the default XRP Peers port that will be used to make an HTTP request to /crawl if the node does not specify a custom port to be used for the peer crawler API
@@ -43,7 +43,7 @@ class Crawler {
             // Set initial server's ip to that of the chosen one from the list
             this.rippleStartingServerIP = server;
             // Set starting server's url to that of the chosen one from the list
-            this.rippleStartingServer = "https://" + server + `:${this.DEFAULT_PEER_PORT}/crawl`;
+            this.rippleStartingServer = "https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`;
             break;
         }
     }
@@ -99,21 +99,12 @@ class Crawler {
                         //console.log("IP : " + n.ip + "\nPORT: " + n.port);
 
                         // Request the peers of the node and add them to the ToBeVisited list
-                        let getPeersPromise = axios.get("https://" + n.ip + ":" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
+                        let getPeersPromise = axios.get("https://[" + n.ip + "]:" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
                             .then(response => {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
-                                        // TODO very ugly solution to handle ::ffff:1.2.3.4 format IPs
-                                        // Find a better way of doing it
-                                        if (peer.ip.substr(0, 7) == "::ffff:") {
-                                            let modip = peer.ip.substr(7);
-                                            visited.push(peer.ip);
-                                            ToBeVisited.push(<Node>{ip: modip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
-                                        }
-                                        else {
-                                            visited.push(peer.ip);
-                                            ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
-                                        }
+                                        visited.push(peer.ip);
+                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
                                         Nodes.set(peer.public_key, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: peer.public_key, uptime: peer.uptime});
@@ -123,7 +114,7 @@ class Crawler {
                             })
                             .catch(error => {
                                 // Uncomment to console log the peers that refuse connection
-                                //console.log(error);
+                                // console.log(error);
                             });
                         // If there are no nodes that can be visited, wait for the "get peers" request to retrieve some new peers that can be crawled
                         // Deals with the http requests being async
