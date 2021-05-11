@@ -1,3 +1,4 @@
+
 import * as schedule from 'node-schedule';
 import * as exec from 'child_process';
 import * as xml2js from 'xml2js';
@@ -59,7 +60,7 @@ class PortScan{
     for(var ip in listOfNodes){
       let mapUnique = new Map();
       if(listOfNodes[ip].openPorts == null) continue;
-      var out = [];
+      let out: ProtocolPortid[] = [];
       console.log("First Scan")
       let portListString: string | null = this.stringListMaker(listOfNodes[ip].openPorts)
       if(portListString!=null){
@@ -67,7 +68,7 @@ class PortScan{
         if(out1 != null && out1){
           for(var i in out1.openPorts){
             mapUnique.set(out1.openPorts[i].portid, out1.openPorts[i].portid);
-            out.push(out1.openPorts[i].portid);
+            out.push(out1.openPorts[i]);
           }
         }
       }
@@ -79,12 +80,12 @@ class PortScan{
           if(mapUnique.has(out2.openPorts[i].portid)){
             console.log("Duplicate "+ out2.openPorts[i])
           }else{
-            out.push(out2.openPorts[i].portid);
+            out.push(out2.openPorts[i]);
           }
         }
       }
-      if(out2!=null){
-        listOfNodes[ip].openPorts = out2.openPorts;
+      if(out!=null){
+        listOfNodes[ip].openPorts = out;
       }
       // listOfIPs[ip].openPorts = out;
       
