@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSecurityAssessments = exports.getAllConnections = exports.getAllNodes = exports.insertSecurityAssessment = exports.insertConnection = exports.insertNode = void 0;
+exports.getAllSecurityAssessments = exports.getAllConnections = exports.getAllNodes = exports.insertSecurityAssessment = exports.insertConnection = exports.insertNodes = exports.insertNode = void 0;
 var mysql = require('mysql');
 var connection = mysql.createConnection({
     host: 'db',
@@ -11,9 +11,9 @@ var connection = mysql.createConnection({
 });
 function insertNode(node) {
     var insert_query = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
-        node.IP + '\', \'' +
-        node.rippled_version + '\', \'' +
-        node.public_key + '\', \'' +
+        node.ip + '\', \'' +
+        node.version + '\', \'' +
+        node.pubkey + '\', \'' +
         node.uptime + '\');';
     connection.query(insert_query, function (err, results, fields) {
         if (err) {
@@ -23,10 +23,22 @@ function insertNode(node) {
     });
 }
 exports.insertNode = insertNode;
+function insertNodes(nodes) {
+    // TODO nodes are never removed from the database
+    var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
+    var vals = nodes.map(function (node) { return [node.ip, node.version, node.pubkey, node.uptime]; });
+    connection.query(query, [vals], function (err, result, fields) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+exports.insertNodes = insertNodes;
 function insertConnection(start_node, end_node) {
     var insert_query = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
-        start_node.node_id + '\', \'' +
-        end_node.node_id + '\');';
+        start_node.pubkey + '\', \'' +
+        end_node.pubkey + '\');';
     connection.query(insert_query, function (err, results, fields) {
         if (err) {
             console.log(err);

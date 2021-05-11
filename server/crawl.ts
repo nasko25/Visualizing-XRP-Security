@@ -3,7 +3,7 @@
 import axios from 'axios';
 import https from 'https';
 import { encodeNodePublic } from 'ripple-address-codec';
-import { insertNodes } from './db_connection/db_helper'
+import { insertNode, insertNodes, insertConnection } from './db_connection/db_helper'
 
 // May need to be substituted with a better way of dealing with insecure request
 // In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
@@ -113,17 +113,26 @@ class Crawler {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
+                                        let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        ToBeVisited.push(node);
+                                        insertNode(node);
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
                                         let normalizedPublicKey = normalizePublicKey(peer.public_key);
-                                        // Ensures that a valid ip is not changed to a undefined ip
+                                        // Ensures that a valid ip is not changed to an undefined ip
                                         if (Nodes.has(normalizedPublicKey)) {
                                             continue;
                                         } else {
-                                            Nodes.set(normalizedPublicKey, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime});
+                                            let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime};
+                                            Nodes.set(normalizedPublicKey, node);
+                                            insertNode(node);
                                         }
                                         //console.log("Peer ip is undefined: " + peer);
+                                    }
+
+                                    if (n !== undefined) {
+                                        // insert a connection between n and peer in the database
+                                        insertConnection(n, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
                                     }
                                 }
                             })
@@ -143,7 +152,7 @@ class Crawler {
                 console.log("How many nodes we have saved: " + Nodes.size);
 
                 // save all nodes in the database
-                insertNodes(Array.from(Nodes.values()));
+                //insertNodes(Array.from(Nodes.values()));
             })
             .catch(error => {
                 console.log(error);
