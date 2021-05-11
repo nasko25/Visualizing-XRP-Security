@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `node` (
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
   `uptime` INT NULL,
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`public_key`),
   UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `connection` (
   `connection_id` INT NOT NULL AUTO_INCREMENT,
   `start_node` VARCHAR(80) NOT NULL,
   `end_node` VARCHAR(80) NOT NULL,
-  PRIMARY KEY (`connection_id`),
+PRIMARY KEY (`start_node`, `end_node`),
   UNIQUE INDEX `connection_id_UNIQUE` (`connection_id` ASC) VISIBLE,
   FOREIGN KEY (`start_node`)
     REFERENCES `node` (`public_key`)
