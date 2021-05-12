@@ -14,7 +14,7 @@ function insertNode(node) {
         node.ip + '\', \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
-        node.uptime + '\');';
+        node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
     connection.query(insert_query, function (err, results, fields) {
         if (err) {
             console.log(err);
@@ -38,7 +38,7 @@ exports.insertNodes = insertNodes;
 function insertConnection(start_node, end_node) {
     var insert_query = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
-        end_node.pubkey + '\');';
+        end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
     connection.query(insert_query, function (err, results, fields) {
         if (err) {
             console.log(err);
