@@ -1,14 +1,14 @@
 import logo from './logo.svg';
 import React from 'react';
 import './App.css';
-import TomMap from "./components/TopMap";
+import DashboardList from "./components/DashboardList";
 
 function App() {
   return (
     <div className="App">
       
       <main>
-        <TomMap />
+        <DashboardList />
       </main>
     </div>
   );
