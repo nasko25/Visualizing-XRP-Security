@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import https from 'https';
+import net from 'net';
 import { encodeNodePublic } from 'ripple-address-codec';
 import { insertNode, insertNodes, insertConnection } from './db_connection/db_helper'
 
@@ -44,17 +45,26 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
+        // TODO save all valid servers and use the first that responds when starting the crawl
+
         // Try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
-            // TODO ensure that the server has a right format; choose the first server that is of
-            // Expected format (ip, ip:port, url, url:port are expected formats)
-
-            // Set initial server's ip to that of the chosen one from the list
-            this.rippleStartingServerIP = server;
-            // Set starting server's url to that of the chosen one from the list
-            this.rippleStartingServer = "https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`;
-            break;
+            // ensure that the server has a right format; choose the first server that is of
+            // expected format
+            if (net.isIP(server)) {
+                // Set initial server's ip to that of the chosen one from the list
+                this.rippleStartingServerIP = server;
+                // Set starting server's url to that of the chosen one from the list
+                this.rippleStartingServer = "https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`;
+                break;
+            }
+            console.log("Server \"" + server + "\" has wrong format. ");
         }
+        // if the strings are empty, then the provided server config list did not have any valid servers
+        if (this.rippleStartingServerIP === "" || this.rippleStartingServer === "") {
+            throw "RippleServersUrlWrongFormat";
+        }
+
     }
 
     crawl() {
@@ -78,6 +88,8 @@ class Crawler {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
+                console.log(response.request.connection.getPeerCertificate());
+                //throw "";
 
                 // Initialize initial node
                 let node: Node = {
