@@ -33,8 +33,12 @@ const normalizePublicKey = function(publicKey: string) {
 
 class Crawler {
 
-    rippleStartingServer = "";
-    rippleStartingServerIP = "";
+    rippleStartingServers: string[]= [];
+    //rippleStartingServer = "";
+    // a list of all valid IPs that the user has provided in config/ripple_servers.list
+    rippleStartingServerIPs: string[] = [];
+    // that actual starting server that is selected (the first server that responds to a /crawl request)
+    //rippleStartingServerIP = "";
     // This is the default XRP Peers port that will be used to make an HTTP request to /crawl if the node does not specify a custom port to be used for the peer crawler API
     readonly DEFAULT_PEER_PORT = 51235;
 
@@ -53,15 +57,15 @@ class Crawler {
             // expected format
             if (net.isIP(server)) {
                 // Set initial server's ip to that of the chosen one from the list
-                this.rippleStartingServerIP = server;
+                this.rippleStartingServerIPs.push(server);
                 // Set starting server's url to that of the chosen one from the list
-                this.rippleStartingServer = "https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`;
-                break;
+                this.rippleStartingServers.push("https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`);
+            } else {
+                console.log("Server \"" + server + "\" has wrong format. ");
             }
-            console.log("Server \"" + server + "\" has wrong format. ");
         }
         // if the strings are empty, then the provided server config list did not have any valid servers
-        if (this.rippleStartingServerIP === "" || this.rippleStartingServer === "") {
+        if (this.rippleStartingServerIPs.length === 0 || this.rippleStartingServers.length === 0) {
             throw "RippleServersUrlWrongFormat";
         }
 
@@ -79,11 +83,15 @@ class Crawler {
         const agent = new https.Agent({
             rejectUnauthorized: false,
         });
-        const rippleStartingServerIP = this.rippleStartingServerIP;
+        const rippleStartingServer = this.rippleStartingServers.shift();
+        const rippleStartingServerIP = this.rippleStartingServerIPs.shift();
+        if (rippleStartingServer === undefined || rippleStartingServerIP === undefined) {
+            throw "NoValidRippleServer"; // none of the ripple servers respond to /crawl requests
+        }
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
         // Get the peers of the initial stock node
-        axios.get(this.rippleStartingServer, {httpsAgent : agent})
+        axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
             .then( async function ( response )  {
 
                 // Keep track of already visited nodes (with a list of their IPs)
@@ -167,7 +175,15 @@ class Crawler {
                 //insertNodes(Array.from(Nodes.values()));
             })
             .catch(error => {
-                console.log(error);
+                // this will print the error if the server refuses a connection
+                // console.log(error);
+                // if this starting server does not respond, try the next one in the list provided in the config file
+                return this.crawl();
+            })
+            // this catch will be triggered if no servers provided in the config file respond
+            .catch(err => {
+                // this will print an error thrown by this.crawl()
+                console.log(err);
             });
     }
 
