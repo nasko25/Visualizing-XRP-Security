@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import React from 'react';
 import './App.css';
 import DashboardList from "./components/DashboardList";
+import DashboardChart from "./components/DashboardChart";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       
       <main>
         <DashboardList />
+        <DashboardChart />
       </main>
     </div>
   );
