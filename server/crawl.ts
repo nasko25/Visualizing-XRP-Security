@@ -108,6 +108,9 @@ class Crawler {
                                     uptime: response.data.server.uptime
                                  };
 
+                // insert the initial node that was given in config/ripple_servers.list
+                insertNode(node);
+
                 // The use of map instead of an array saves us the work we have to do later when filtering duplicate public keys
                 // Later nodes will be stored in the database
                 let Nodes = new Map<String, Node>();
