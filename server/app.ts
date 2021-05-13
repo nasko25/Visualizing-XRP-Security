@@ -64,11 +64,7 @@ app.get('/insert-connection', (req, res) => {
     res.send("connection inserted");
 })
 
-app.get('/get-all-nodes', (req, res) => {
-    var nodes = getAllNodes(function (result): void {
-        res.send(JSON.stringify(result));
-    });
-})
+
 
 app.get('/get-all-connections', (req, res) => {
     var nodes = getAllConnections(function (result): void {
@@ -82,6 +78,33 @@ app.get('/get-all-sas', (req, res) => {
     });
 })
 
+
+// Client API Endpoints
+
+app.get('/node/get-all-nodes', (req, res) => {
+    Logger.info("Received request for all nodes' geographic coordinates and basic data.");
+    var nodes = getAllNodes(function (result): void {
+        res.send(JSON.stringify(result));
+    });
+})
+
+app.get('/node/score-peers', (req, res) => {
+    Logger.info("Received request for the security assessment score and peer connections of a node.");
+});
+
+app.get('/node/score', (req, res) => {
+    Logger.info("Received request for the security assessment score of a node.");
+});
+
+app.get('/node/peers', (req, res) => {
+    Logger.info('Received request for the peer connections of a node.');
+});
+
+app.get('/node/history', (req, res) => {
+    Logger.info('Received request for the history of security analysis of a node.');
+});
+
+//
 
 app.listen(PORT, () => {
     console.log(`The application is listening on port ${PORT}!`);
