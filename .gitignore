@@ -3,5 +3,4 @@ node_modules/
 
 .idea/
 
-server/*.js
-server/db_connection/*.js
+server/**/*.js
