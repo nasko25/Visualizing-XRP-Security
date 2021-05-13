@@ -108,7 +108,7 @@ class TopMap extends React.Component {
 
     // Create a new map with the provided popup 
     createNewMap = (popup) => {
-        return <MapContainer style={{width: "600px", height: "400px"}} center={this.state.latlng} zoom={3}>
+        return <MapContainer className ='map' center={this.state.latlng} zoom={3}>
             {/* Layers */}
             <TileLayer
                 attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
