@@ -1,4 +1,5 @@
 import { Node } from './models/node'
+import { Node as CrawlerNode } from "../crawl"
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 var mysql = require('mysql');
@@ -11,12 +12,12 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
-export function insertNode(node: Node): void {
+export function insertNode(node: CrawlerNode): void {
     var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
-        node.IP + '\', \'' +
-        node.rippled_version + '\', \'' +
-        node.public_key + '\', \'' +
-        node.uptime + '\');';
+        node.ip + '\', \'' +
+        node.version + '\', \'' +
+        node.pubkey + '\', \'' +
+        node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
 
     connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
         if (err) {
@@ -26,11 +27,24 @@ export function insertNode(node: Node): void {
     });
 }
 
-export function insertConnection(start_node: Node, end_node: Node): void {
+export function insertNodes(nodes: CrawlerNode[]): void {
+    // TODO nodes are never removed from the database
+    var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
+    var vals = nodes.map(node => [ node.ip, node.version, node.pubkey, node.uptime ]);
+
+    connection.query(query, [ vals ], (err: Error, result: object, fields: JSON) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
+export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): void {
     var insert_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
-        start_node.node_id + '\', \'' +
-        end_node.node_id + '\');';
-    
+        start_node.pubkey + '\', \'' +
+        end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
+
     connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
         if (err) {
             console.log(err);

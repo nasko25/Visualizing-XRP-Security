@@ -2,6 +2,7 @@ import express from 'express';
 import Crawler from './crawl'
 import { promises as fs } from 'fs';
 import { Node } from './db_connection/models/node'
+import { Node as CrawlerNode } from './crawl';
 import { Connection } from './db_connection/models/connection'
 import { SecurityAssessment } from './db_connection/models/security_assessment'
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment } from "./db_connection/db_helper";
@@ -31,7 +32,7 @@ startCrawler().catch((e) => {
 });
 
 app.get('/insert-node', (req, res) => {
-    var n: Node = {IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
+    var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
     insertNode(n);
     res.send("node inserted");
 })
@@ -43,8 +44,8 @@ app.get('/insert-sas', (req, res) => {
 })
 
 app.get('/insert-connection', (req, res) => {
-    var start_node: Node = {node_id: 1, IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
-    var end_node: Node = {node_id: 2, IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
+    var start_node: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
+    var end_node: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
     insertConnection(start_node, end_node);
     res.send("connection inserted");
 })

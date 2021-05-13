@@ -2,7 +2,9 @@
 
 import axios from 'axios';
 import https from 'https';
+import net from 'net';
 import { encodeNodePublic } from 'ripple-address-codec';
+import { insertNode, insertNodes, insertConnection } from './db_connection/db_helper'
 
 // May need to be substituted with a better way of dealing with insecure request
 // In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
@@ -31,8 +33,12 @@ const normalizePublicKey = function(publicKey: string) {
 
 class Crawler {
 
-    rippleStartingServer = "";
-    rippleStartingServerIP = "";
+    rippleStartingServers: string[]= [];
+    //rippleStartingServer = "";
+    // a list of all valid IPs that the user has provided in config/ripple_servers.list
+    rippleStartingServerIPs: string[] = [];
+    // that actual starting server that is selected (the first server that responds to a /crawl request)
+    //rippleStartingServerIP = "";
     // This is the default XRP Peers port that will be used to make an HTTP request to /crawl if the node does not specify a custom port to be used for the peer crawler API
     readonly DEFAULT_PEER_PORT = 51235;
 
@@ -43,17 +49,26 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
+        // TODO save all valid servers and use the first that responds when starting the crawl
+
         // Try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
-            // TODO ensure that the server has a right format; choose the first server that is of
-            // Expected format (ip, ip:port, url, url:port are expected formats)
-
-            // Set initial server's ip to that of the chosen one from the list
-            this.rippleStartingServerIP = server;
-            // Set starting server's url to that of the chosen one from the list
-            this.rippleStartingServer = "https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`;
-            break;
+            // ensure that the server has a right format; choose the first server that is of
+            // expected format
+            if (net.isIP(server)) {
+                // Set initial server's ip to that of the chosen one from the list
+                this.rippleStartingServerIPs.push(server);
+                // Set starting server's url to that of the chosen one from the list
+                this.rippleStartingServers.push("https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`);
+            } else {
+                console.log("Server \"" + server + "\" has wrong format. ");
+            }
         }
+        // if the strings are empty, then the provided server config list did not have any valid servers
+        if (this.rippleStartingServerIPs.length === 0 || this.rippleStartingServers.length === 0) {
+            throw "RippleServersUrlWrongFormat";
+        }
+
     }
 
     crawl() {
@@ -68,15 +83,21 @@ class Crawler {
         const agent = new https.Agent({
             rejectUnauthorized: false,
         });
-        const rippleStartingServerIP = this.rippleStartingServerIP;
+        const rippleStartingServer = this.rippleStartingServers.shift();
+        const rippleStartingServerIP = this.rippleStartingServerIPs.shift();
+        if (rippleStartingServer === undefined || rippleStartingServerIP === undefined) {
+            throw "NoValidRippleServer"; // none of the ripple servers respond to /crawl requests
+        }
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
         // Get the peers of the initial stock node
-        axios.get(this.rippleStartingServer, {httpsAgent : agent})
+        axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
             .then( async function ( response )  {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
+                console.log(response.request.connection.getPeerCertificate());
+                //throw "";
 
                 // Initialize initial node
                 let node: Node = {
@@ -86,6 +107,9 @@ class Crawler {
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
                                     uptime: response.data.server.uptime
                                  };
+
+                // insert the initial node that was given in config/ripple_servers.list
+                insertNode(node);
 
                 // The use of map instead of an array saves us the work we have to do later when filtering duplicate public keys
                 // Later nodes will be stored in the database
@@ -112,17 +136,26 @@ class Crawler {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        ToBeVisited.push(<Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
+                                        let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        ToBeVisited.push(node);
+                                        insertNode(node);
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
                                         let normalizedPublicKey = normalizePublicKey(peer.public_key);
-                                        // Ensures that a valid ip is not changed to a undefined ip
+                                        // Ensures that a valid ip is not changed to an undefined ip
                                         if (Nodes.has(normalizedPublicKey)) {
                                             continue;
                                         } else {
-                                            Nodes.set(normalizedPublicKey, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime});
+                                            let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime};
+                                            Nodes.set(normalizedPublicKey, node);
+                                            insertNode(node);
                                         }
                                         //console.log("Peer ip is undefined: " + peer);
+                                    }
+
+                                    if (n !== undefined) {
+                                        // insert a connection between n and peer in the database
+                                        insertConnection(n, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
                                     }
                                 }
                             })
@@ -137,12 +170,23 @@ class Crawler {
 
                     }
                 }
-                console.log(Nodes);
+                // console.log(Nodes);
                 console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length);
                 console.log("How many nodes we have saved: " + Nodes.size);
+
+                // save all nodes in the database
+                //insertNodes(Array.from(Nodes.values()));
             })
             .catch(error => {
-                console.log(error);
+                // this will print the error if the server refuses a connection
+                // console.log(error);
+                // if this starting server does not respond, try the next one in the list provided in the config file
+                return this.crawl();
+            })
+            // this catch will be triggered if no servers provided in the config file respond
+            .catch(err => {
+                // this will print an error thrown by this.crawl()
+                console.log(err);
             });
     }
 
@@ -150,3 +194,4 @@ class Crawler {
 
 
 export default Crawler;
+export { Node };
