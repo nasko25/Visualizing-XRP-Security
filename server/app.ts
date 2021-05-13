@@ -1,5 +1,6 @@
 import express from 'express';
 import Crawler from './crawl'
+import PortScanner from './portScan'
 import { promises as fs } from 'fs';
 import { Node } from './db_connection/models/node'
 import { Connection } from './db_connection/models/connection'
@@ -26,10 +27,19 @@ async function startCrawler() {
     crawler.crawl()
     // for the moment simply display what has been collected in console
 }
+
+async function startPortScanner() {
+
+    
+    let portScanner = new PortScanner();
+    portScanner.start()
+}
 startCrawler().catch((e) => {
     console.log(`Crawler exited with the exception: ${e}.`);
 });
-
+startPortScanner().catch((e) => {
+    console.log(`Crawler exited with the exception: ${e}.`);
+});
 app.get('/insert-node', (req, res) => {
     var n: Node = {IP: '127.0.0.1', rippled_version: '1.7.0', public_key: 'pk', uptime: 10};
     insertNode(n);

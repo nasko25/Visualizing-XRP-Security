@@ -1,4 +1,4 @@
-import { Node, NodePorts } from './models/node'
+import { Node, NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 
@@ -97,7 +97,7 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
  
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
-    var get_nodes_non_null = 'SELECT ip, ports FROM node WHERE ports IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
     connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
         if (err) {
@@ -109,4 +109,19 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
 
     });
 
+}
+
+export function insertPorts(node: NodePortsProtocols): void {
+    var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
+        node.ip + '\', \'' +
+        node.public_key + '\', \'' +
+        node.ports + '\', \'' +
+        node.protocols + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, public_key=new.public_key, ports=new.ports, protocols=new.protocols;';
+
+    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
 }

@@ -9,6 +9,14 @@ export interface Node {
 }
 
 export interface NodePorts {
+    public_key: string,
     ip: string,
     ports: string
+}
+
+export interface NodePortsProtocols {
+    public_key: string,
+    ip: string,
+    ports: string,
+    protocols: string
 }
