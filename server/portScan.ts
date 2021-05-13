@@ -1,4 +1,3 @@
-
 import * as schedule from 'node-schedule';
 import * as exec from 'child_process';
 import * as xml2js from 'xml2js';
@@ -41,7 +40,7 @@ class PortScan{
     const job = schedule.scheduleJob(this.getRandomDate(), () =>{
       console.log('- - - BEGINNING  PORT  SCAN - - -');
       //this.portScan(openPorts).then(()=>this.scheduleAJob());
-      
+      this.start();
     });
   }
 
@@ -209,8 +208,9 @@ class PortScan{
   
 
 }
-var test = new PortScan();
-test.start();
+//Debug:
+//var test = new PortScan();
+//test.start();
 export default PortScan;
 
 /*
