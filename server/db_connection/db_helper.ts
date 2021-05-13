@@ -1,6 +1,7 @@
-import { Node } from './models/node'
+import { Node, NodePorts } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
+
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -11,6 +12,25 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
+function voidCallback(err: Error, results:any, fields: JSON) {
+    if (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+function selectCallback(callback : (res: NodePorts[]) => void ):any  {
+    
+    return function(err: Error, results: any, fields: JSON) {
+        if (err) { 
+            console.log(err);
+            throw err;
+        }
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    };
+}
+
 export function insertNode(node: Node): void {
     var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
         node.IP + '\', \'' +
@@ -18,12 +38,7 @@ export function insertNode(node: Node): void {
         node.public_key + '\', \'' +
         node.uptime + '\');';
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_query, voidCallback);
 }
 
 export function insertConnection(start_node: Node, end_node: Node): void {
@@ -31,12 +46,7 @@ export function insertConnection(start_node: Node, end_node: Node): void {
         start_node.node_id + '\', \'' +
         end_node.node_id + '\');';
     
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_query, voidCallback);
 }
 
 export function insertSecurityAssessment(security_assessment: SecurityAssessment): void {
@@ -45,12 +55,7 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
         security_assessment.metric_version + '\', \'' +
         security_assessment.score + '\');';
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_query, voidCallback);
 }
 
 export function getAllNodes(callback: (res: Node[]) => void): void {
@@ -87,4 +92,21 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
         var res = JSON.parse(JSON.stringify(results));
         return callback(res);
     });
+}
+
+ 
+// [ "port:protocol", "port:protocol" ] 
+export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
+    var get_nodes_non_null = 'SELECT ip, ports FROM node WHERE ports IS NOT NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
+
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePorts[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
 }

@@ -7,3 +7,8 @@ export interface Node {
     public_key: string,
     uptime: number
 }
+
+export interface NodePorts {
+    ip: string,
+    ports: string
+}
