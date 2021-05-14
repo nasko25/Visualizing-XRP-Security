@@ -4,6 +4,7 @@ import './App.css';
 import DashboardList from "./components/DashboardList";
 import DashboardChart from "./components/DashboardChart";
 import TopMap from "./components/TopMap";
+import DashboardNavbar from "./components/DashboardNavbar";
 import axios from 'axios';
 
 // let data = [];
@@ -19,6 +20,7 @@ function App() {
     <div className="App">
       
       <main className='main'>
+        <DashboardNavbar />
         <div className='test'>
         <TopMap />
         <DashboardList />
