@@ -25,10 +25,10 @@ function App() {
         <DashboardNavbar />
         <div className='test'>
         <TopMap />
+        <DashboardList data = {getData()}/>
         </div>
         <DashboardChart />
       </main>
-        <DashboardList data = {getData()}/>
     </div>
   );
 }
