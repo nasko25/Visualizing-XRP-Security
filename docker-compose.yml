@@ -30,7 +30,7 @@ services:
     volumes:
       - "server:/server"
     image: "server"
-    
+
 volumes:
   server:
   client:
