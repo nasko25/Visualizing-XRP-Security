@@ -1,4 +1,5 @@
 import express from 'express';
+var cors = require('cors');
 import Crawler from './crawl'
 import { promises as fs } from 'fs';
 import { Node } from './db_connection/models/node'
@@ -8,6 +9,7 @@ import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSec
 var mysql = require('mysql');
 
 const app = express();
+app.use(cors());
 
 const PORT = 8080;
 
