@@ -7,18 +7,19 @@ import TopMap from "./components/TopMap";
 import DashboardNavbar from "./components/DashboardNavbar";
 import axios from 'axios';
 
-// let data = [];
-// async function getData () {
-//   await axios.get("http://localhost:8080/get-all-nodes").then(response => {
-//     console.log(response);
-//   });
-// }
-
+let data = [];
+async function getData () {
+  await axios.get("http://localhost:8080/get-all-nodes").then(response => {
+    console.log(response);
+  });
+}
 
 function App() {
+  getData();
+
   return (
     <div className="App">
-      
+
       <main className='main'>
         <DashboardNavbar />
         <div className='test'>
