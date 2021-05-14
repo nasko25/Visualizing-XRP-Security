@@ -27,8 +27,6 @@ export default class DashboardList extends Component {
     }
 
     rowRenderer({index, isScrolling, key, style}) {
-        // let IP = this.state.nodes[index].IP;
-        // IP = IP === "undefined" ? "IP Hidden" : IP;
         return (
             <div style = {style} key = {key} >
                 <ListGroup.Item>
@@ -65,17 +63,19 @@ export default class DashboardList extends Component {
 
     render() {
         return (
+            <div className='list'>
             <ListGroup>
                 <List
                     rowRenderer={this.rowRenderer}
                     rowCount={this.state.nodes.length}
-                    height={300}
+                    height={420}
                     rowHeight={40}
-                    width= {600}
+                    width= {1000}
                     overscanRowCount = {10}
                     noRowsRenderer={this.noRowsRenderer}
                 />
             </ListGroup>
+            </div>
         )
     }
 }
