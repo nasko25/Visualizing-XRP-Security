@@ -4,25 +4,26 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { MDBContainer } from 'mdbreact';
 
-let nodes = [];
-
-for (let i=0; i<15; i++) {
-    nodes.push(<ListGroup.Item>
-            <span className="ip">IP</span>
-            <span className="version">Version</span>
-            <span className="public_key">Public Key</span>
-            <span className="uptime">Uptime</span>
-            <span className="security_metric">Security Metric</span>
-        </ListGroup.Item>);
-}
-
 export default class DashboardList extends Component {
-    data = [];
+    nodes = [];
 
-    constructor(props, data) {
+    constructor(props) {
         super(props);
         this.state = {};
-        this.data = data;
+        console.log(this.props.data);
+    }
+
+    createList() {
+        for (let i=0; i<this.props.data.length; i++) {
+            this.nodes.push(<ListGroup.Item>
+                    <span className="ip">IP</span>
+                    <span className="version">Version</span>
+                    <span className="public_key">Public Key</span>
+                    <span className="uptime">Uptime</span>
+                    <span className="security_metric">Security Metric</span>
+                </ListGroup.Item>);
+        }
+        return this.nodes;
     }
 
     
@@ -34,7 +35,7 @@ export default class DashboardList extends Component {
                     <MDBContainer>
                         <div className="scrollbar scrollbar-primary  mt-5 mx-auto">
                             <ListGroup className='list_group'>
-                                {nodes}
+                                {this.createList()}
                             </ListGroup>
                         </div>
                     </MDBContainer>

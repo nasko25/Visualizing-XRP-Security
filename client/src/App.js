@@ -9,14 +9,15 @@ import axios from 'axios';
 
 let data = [];
 async function getData () {
-  await axios.get("http://localhost:8080/get-all-nodes").then(response => {
-    console.log(response);
+  return await axios.get("http://localhost:8080/get-all-nodes").then(response => {
+    return response.data;
+    // console.log(data);
+    // return response.data;
   });
 }
 
 function App() {
-  getData();
-
+  // getData();
   return (
     <div className="App">
 
@@ -24,7 +25,7 @@ function App() {
         <DashboardNavbar />
         <div className='test'>
         <TopMap />
-        <DashboardList />
+        <DashboardList data = {getData()}/>
         </div>
         <DashboardChart />
       </main>
