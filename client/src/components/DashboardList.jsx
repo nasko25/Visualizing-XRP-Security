@@ -13,18 +13,23 @@ export default class DashboardList extends Component {
         this.data = this.props.data;
         this.state = {nodes: []};
 
+        // need to bind "this" to the rowRenderer function, so we can use "this" in the function
+        this.rowRenderer = this.rowRenderer.bind(this);
     }
     componentDidMount() {
         this.createList();
     }
 
-    _noRowsRenderer() {
+    noRowsRenderer() {
         return <div >No rows</div>;
     }
-    _rowRenderer({index, isScrolling, key, style}) {
+
+    rowRenderer({index, isScrolling, key, style}) {
+        let IP = this.state.nodes[index].IP;
+        IP = IP === "undefined" ? "IP Hidden" : IP;
         return (
             <div style = {style} key = {key} >
-                <span className="ip">IP {index} </span>
+                <span className="ip">IP {IP} </span>
                     <span className="version">Version</span>
                     <span className="public_key">Public Key</span>
                     <span className="uptime">Uptime</span>
@@ -55,14 +60,13 @@ export default class DashboardList extends Component {
     render() {
         return (
             <List
-                ref = "List"
-    rowRenderer={this._rowRenderer}
+                rowRenderer={this.rowRenderer}
                 rowCount={this.state.nodes.length}
                 height={300}
                 rowHeight={40}
                 width= {600}
                 overscanRowCount = {10}
-    noRowsRenderer={this._noRowsRenderer}
+                noRowsRenderer={this.noRowsRenderer}
             />
         )
     }
