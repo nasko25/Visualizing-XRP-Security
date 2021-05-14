@@ -2,7 +2,10 @@ import { Component } from "react";
 import React from 'react';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
-const data = [{name: 'Day 1', security: 50}, {name: 'Day 2', security: 35}, {name: 'Day 3', security: 100}]
+const data = [];
+for (let i=1; i<=30; i++) {
+    data.push({name: "Day " + i, security: 50});
+}
 
 export default class DashboardChart extends Component {
     render() {
