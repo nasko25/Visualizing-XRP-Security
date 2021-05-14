@@ -10,7 +10,6 @@ export default class DashboardList extends Component {
     constructor(props) {
         super(props);
         this.state = {};
-        console.log(this.props.data);
     }
 
     createList() {

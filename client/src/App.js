@@ -8,8 +8,9 @@ import DashboardNavbar from "./components/DashboardNavbar";
 import axios from 'axios';
 
 let data = [];
-async function getData () {
-  return await axios.get("http://localhost:8080/get-all-nodes").then(response => {
+function getData() {
+  return axios.get("http://localhost:8080/get-all-nodes").then(response => {
+    console.log(response.data);
     return response.data;
     // console.log(data);
     // return response.data;
@@ -17,7 +18,6 @@ async function getData () {
 }
 
 function App() {
-  // getData();
   return (
     <div className="App">
 
