@@ -7,7 +7,6 @@ import TopMap from "./components/TopMap";
 import DashboardNavbar from "./components/DashboardNavbar";
 import axios from 'axios';
 
-let data = [];
 function getData() {
   return axios.get("http://localhost:8080/get-all-nodes").then(response => {
     console.log(response.data);

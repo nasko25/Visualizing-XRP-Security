@@ -105,3 +105,21 @@
   white-space: nowrap; */
   margin-top: 50px;
 }
+
+.wrapper {
+  float: right;
+  margin-top: 8px;
+}
+
+.navbar {
+  background-color: white;
+}
+
+.el {
+  display: inline-block;
+  margin: 10px;
+}
+
+.el:last-child {
+  margin-right: 50px;
+}
