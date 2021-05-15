@@ -123,3 +123,16 @@
 .el:last-child {
   margin-right: 50px;
 }
+
+.name {
+  margin-left: 50px;
+}
+
+.linechart {
+  margin-top: 50px;
+}
+
+.map {
+  height: 620px;
+  width: 1000px;
+}

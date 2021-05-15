@@ -64,17 +64,17 @@ export default class DashboardList extends Component {
     render() {
         return (
             <div className='list'>
-            <ListGroup>
-                <List
-                    rowRenderer={this.rowRenderer}
-                    rowCount={this.state.nodes.length}
-                    height={420}
-                    rowHeight={40}
-                    width= {1000}
-                    overscanRowCount = {10}
-                    noRowsRenderer={this.noRowsRenderer}
-                />
-            </ListGroup>
+                <ListGroup>
+                    <List
+                        rowRenderer={this.rowRenderer}
+                        rowCount={this.state.nodes.length}
+                        height={620}
+                        rowHeight={40}
+                        width= {1000}
+                        overscanRowCount = {10}
+                        noRowsRenderer={this.noRowsRenderer}
+                    />
+                </ListGroup>
             </div>
         )
     }
