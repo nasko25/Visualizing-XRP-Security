@@ -23,6 +23,7 @@ services:
     volumes:
       - ./db/mysql/init/init.sql:/docker-entrypoint-initdb.d/init.sql
   server:
+    restart: always
     container_name: 'server'
     build: server
     ports:
