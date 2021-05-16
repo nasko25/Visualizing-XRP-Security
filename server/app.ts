@@ -29,9 +29,20 @@ async function startCrawler() {
     crawler.crawl()
     // for the moment simply display what has been collected in console
 }
-startCrawler().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
+
+// Function for the crawling process
+// Runs the crawler repeatedly by setting a timeout and after a specified period of time calls the function
+// Currently the crawler is ran every 5 minutes
+function repeated_crawl() {
+    console.log("\n");
+    console.log("Crawler ran...");
+    startCrawler().catch((e) => {
+        console.log(`Crawler exited with the exception: ${e}.`);
+    });
+    setTimeout(repeated_crawl, 300000);
+}
+
+repeated_crawl();
 
 app.get('/insert-node', (req, res) => {
     var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
