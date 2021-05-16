@@ -2,7 +2,7 @@
 import {Express} from 'express'
 import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNodeOutgoingPeers } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
 
 
@@ -46,7 +46,7 @@ export default function setupClientAPIEndpoints(app: Express) {
         var public_key: String = String(req.query.public_key);
         getHistoricalData(function (result): void{
             res.send(calculateSMA(result) + " " +  calculateEMA(result));
-        }, public_key);
+        }, public_key, 30);
         Logger.info("Received request for the security assessment score of a node.");
     });
     
@@ -70,11 +70,43 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
     
     app.get('/node/history', (req, res) => {
-        var public_key: String = String(req.query.public_key);
-        getHistoricalData(function (result): void{
-            res.send(JSON.stringify(result));
-        }, public_key);
         Logger.info('Received request for the history of security analysis of a node.');
+
+        const public_key: String = String(req.query.public_key);
+        if (public_key === null) {
+            Logger.error(ERROR_KEY_NOT_FOUND);
+            res.status(400).send(ERROR_KEY_NOT_FOUND);
+        }
+        else {
+            const duration: number = req.query.duration ?  Number(req.query.duration) : 30;
+
+            getHistoricalData(function (result): void{
+                res.send(JSON.stringify(result));
+            }, public_key, duration);
+        }
+
+    });
+
+    app.get('/validator/history', (req, res) => {
+        Logger.info('Received request for the history of trust analysis of a validator.');
+
+        const public_key: string = String(req.query.public_key);
+        if (public_key === null) {
+            Logger.error(ERROR_KEY_NOT_FOUND);
+            res.status(400).send(ERROR_KEY_NOT_FOUND);
+        }
+        else {
+            const duration: number = req.query.duration ?  Number(req.query.duration) : 30;
+            getValidatorHistoricalData(public_key, duration, (err, results) => {
+                if (err) {
+                    let error_string: string = `${ERROR_DATABASE_QUERY} : ${err.message}`;
+                    Logger.error(error_string);
+                    res.status(400).send(error_string);
+                }
+                else res.send(JSON.stringify(results));
+            });
+        }
+
     });
     
 

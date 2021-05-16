@@ -3,7 +3,7 @@ import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
-
+import { ValidatorAssessment } from './models/validator_assessment';
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -113,7 +113,6 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
         return callback(res);
     });
 }
-
  
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
@@ -146,10 +145,10 @@ export function insertPorts(node: NodePortsProtocols): void {
     });
 }
 
-export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String): void {
+export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String, duration: Number): void {
     var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' +
         public_key +
-        "\" and timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);";
+        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
     connection.query(get_historical_data, function (err: Error, results: JSON[], fields: JSON) {
         if (err) {
             console.log(err);
@@ -165,7 +164,7 @@ function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (er
        if (err) {
            return callback(err, []);
        }
-       let res = JSON.parse(JSON.stringify(results));
+       let res: T[] = JSON.parse(JSON.stringify(results));
        return callback(err, res);
     };
 }
@@ -175,3 +174,9 @@ export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, 
    connection.query(get_node_outgoing_peers, create_query_callback(callback));
 
 }
+
+
+export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
+    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
+    connection.query(get_validator_history, create_query_callback(callback)); 
+} 
