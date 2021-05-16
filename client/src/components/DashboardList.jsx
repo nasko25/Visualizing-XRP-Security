@@ -27,16 +27,24 @@ export default class DashboardList extends Component {
     }
 
     rowRenderer({index, isScrolling, key, style}) {
+        let name = 'item_darker';
+
+        if (index % 2 != 0) {
+            name = 'item_lighter';
+        }
+
         return (
-            <div style = {style} key = {key} >
+            <div style = {style} key = {key} className={name}>
                 <ListGroup.Item>
-                    <span className="ip">IP : {
-                        this.state.nodes[index].IP === "undefined" ? "IP Hidden": this.state.nodes[index].IP
-                    } | </span>
-                    <span className="version">Version : {this.state.nodes[index].rippled_version} | </span>
-                    <span className="public_key">Public Key : {this.state.nodes[index].public_key} | </span>
-                    <span className="uptime">Uptime : {this.state.nodes[index].uptime} | </span>
-                    <span className="security_metric">Security Metric : </span>
+                    <span className='item'>
+                        IP : {
+                            this.state.nodes[index].IP === "undefined" ? "IP Hidden": this.state.nodes[index].IP
+                        } | 
+                        Version : {this.state.nodes[index].rippled_version} | 
+                        Public Key : {this.state.nodes[index].public_key} | 
+                        Uptime : {this.state.nodes[index].uptime} | 
+                        Security Metric :
+                    </span> 
                 </ListGroup.Item>
             </div>
         );
@@ -70,7 +78,7 @@ export default class DashboardList extends Component {
                         rowCount={this.state.nodes.length}
                         height={620}
                         rowHeight={40}
-                        width= {1000}
+                        width= {1400}
                         overscanRowCount = {10}
                         noRowsRenderer={this.noRowsRenderer}
                     />

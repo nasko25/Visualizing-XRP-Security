@@ -93,7 +93,7 @@
 
 .main {
   height: 100vh;
-  background-color: #333;
+  background-color: #222;
 }
 
 .linechart {
@@ -135,4 +135,21 @@
 .map {
   height: 620px;
   width: 1000px;
+}
+
+.chart {
+  height: 40%;
+}
+
+.item {
+  float: left;
+  color: white;
+}
+
+div.list-group-item {
+  height: 40px;
+  background-color: #222;
+}
+.item_lighter > div.list-group-item {
+  background-color: #333;
 }
