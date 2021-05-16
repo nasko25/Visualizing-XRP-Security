@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `security_assessment` (
   `metric_version` FLOAT NOT NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `score` FLOAT NOT NULL 
-);
+)
 ENGINE = InnoDB;
 
 USE db;
