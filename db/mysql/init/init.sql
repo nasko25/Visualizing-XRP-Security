@@ -13,9 +13,13 @@ CREATE TABLE IF NOT EXISTS `node` (
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
   `uptime` INT NULL,
+  `ports` VARCHAR(3000) NULL,
+  `protocols` VARCHAR(3000) NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`public_key`),
   UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)
+
+
 ENGINE = InnoDB;
 
 

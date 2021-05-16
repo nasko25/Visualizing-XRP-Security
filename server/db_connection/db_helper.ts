@@ -1,7 +1,9 @@
 import { Node } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
+import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
+
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -12,6 +14,25 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
+function voidCallback(err: Error, results:any, fields: JSON) {
+    if (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+function selectCallback(callback : (res: NodePorts[]) => void ):any  {
+    
+    return function(err: Error, results: any, fields: JSON) {
+        if (err) { 
+            console.log(err);
+            throw err;
+        }
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    };
+}
+
 export function insertNode(node: CrawlerNode): void {
     var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
         node.ip + '\', \'' +
@@ -19,12 +40,7 @@ export function insertNode(node: CrawlerNode): void {
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_query, voidCallback);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): void {
@@ -59,12 +75,7 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
         security_assessment.metric_version + '\', \'' +
         security_assessment.score + '\');';
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_query, voidCallback);
 }
 
 export function getAllNodes(callback: (res: Node[]) => void): void {
@@ -100,5 +111,37 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
         }
         var res = JSON.parse(JSON.stringify(results));
         return callback(res);
+    });
+}
+
+ 
+// [ "port:protocol", "port:protocol" ] 
+export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
+
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePorts[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
+
+export function insertPorts(node: NodePortsProtocols): void {
+    var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
+        node.ip + '\', \'' +
+        node.public_key + '\', \'' +
+        node.ports + '\', \'' +
+        node.protocols + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, public_key=new.public_key, ports=new.ports, protocols=new.protocols;';
+
+    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
     });
 }
