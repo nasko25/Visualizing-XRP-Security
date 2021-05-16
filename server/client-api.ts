@@ -6,6 +6,10 @@ import { getAllNodes, getHistoricalData, getNodeOutgoingPeers } from './db_conne
 import Logger from './logger';
 
 
+export var LAST_CRAWL: number = Date.now();
+export var LAST_SEC_SCAN: number = Date.now();
+export var LAST_TRUST_SCAN: number = Date.now();
+
 /*
     This file exports a function which takes an Express object
 and adds a couple of endpoints to it. These are the endpoints
@@ -14,6 +18,17 @@ meant for use by the Web Client of the application.
 */
 
 export default function setupClientAPIEndpoints(app: Express) {
+
+    app.get('/last-modifications', (req, res) => {
+
+        Logger.info("Received request for checking the last modification timestamps.");
+        res.send(JSON.stringify({
+            LAST_CRAWL: LAST_CRAWL,
+            LAST_SEC_SCAN: LAST_SEC_SCAN,
+            LAST_TRUST_SCAN: LAST_TRUST_SCAN
+        }));
+
+    });
 
     app.get('/node/get-all-nodes', (req, res) => {
         Logger.info("Received request for all nodes' geographic coordinates and basic data.");
