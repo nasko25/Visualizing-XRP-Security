@@ -4,7 +4,9 @@ export interface Node {
     IP: string,
     rippled_version: string,
     public_key: string,
-    uptime: number
+    uptime: number,
+    longtitude?: number,
+    latitude?: number
 }
 
 export interface NodePorts {

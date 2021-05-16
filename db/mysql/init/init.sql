@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS `node` (
   `uptime` INT NULL,
   `ports` VARCHAR(3000) NULL,
   `protocols` VARCHAR(3000) NULL,
+  `longtitude` DOUBLE NULL,
+  `latitude` DOUBLE NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`public_key`),
   UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)

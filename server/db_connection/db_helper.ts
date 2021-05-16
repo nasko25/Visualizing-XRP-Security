@@ -46,9 +46,9 @@ export function insertNode(node: CrawlerNode): void {
 export function insertNodes(nodes: CrawlerNode[]): void {
     // TODO nodes are never removed from the database
     var query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
-    var vals = nodes.map(node => [ node.ip, node.version, node.pubkey, node.uptime ]);
+    var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime]);
 
-    connection.query(query, [ vals ], (err: Error, result: object, fields: JSON) => {
+    connection.query(query, [vals], (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
@@ -144,4 +144,18 @@ export function insertPorts(node: NodePortsProtocols): void {
             throw err;
         }
     });
+}
+
+export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String): void {
+    var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = ' +
+        public_key +
+        " and timestamp >= DATE_SUB(NOW(),INTERVAL 30 DAY);";
+    connection.query(get_historical_data, function (err: Error, results: JSON[], fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    })
 }
