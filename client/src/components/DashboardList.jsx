@@ -15,11 +15,20 @@ export default class DashboardList extends Component {
 
         // need to bind "this" to the rowRenderer function, so we can use "this" in the function
         this.rowRenderer = this.rowRenderer.bind(this);
+        this.update_info = this.update_info.bind(this);
+        this.createList = this.createList.bind(this);
 
         console.log(this.nodes)
     }
     componentDidMount() {
+        // this.createList();
+        this.update_info();
+    }
+
+    update_info() {
         this.createList();
+        console.log("Node info updated...");
+        setTimeout(this.update_info, 300000);
     }
 
     noRowsRenderer() {
