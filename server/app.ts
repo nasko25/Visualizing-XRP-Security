@@ -7,6 +7,10 @@ import { Node as CrawlerNode } from './crawl';
 import { Connection } from './db_connection/models/connection'
 import { SecurityAssessment } from './db_connection/models/security_assessment'
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment } from "./db_connection/db_helper";
+
+// Logger
+import Logger from './logger'
+
 var mysql = require('mysql');
 
 const app = express();
@@ -77,6 +81,7 @@ app.get('/get-all-sas', (req, res) => {
         res.send(JSON.stringify(result));
     });
 })
+
 
 app.listen(PORT, () => {
     console.log(`The application is listening on port ${PORT}!`);
