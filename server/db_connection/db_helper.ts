@@ -147,9 +147,9 @@ export function insertPorts(node: NodePortsProtocols): void {
 }
 
 export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String): void {
-    var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = ' +
+    var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' +
         public_key +
-        " and timestamp >= DATE_SUB(NOW(),INTERVAL 30 DAY);";
+        "\" and timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);";
     connection.query(get_historical_data, function (err: Error, results: JSON[], fields: JSON) {
         if (err) {
             console.log(err);
@@ -158,4 +158,20 @@ export function getHistoricalData(callback: (res: SecurityAssessment[]) => void,
         var res = JSON.parse(JSON.stringify(results));
         return callback(res);
     })
+}
+
+function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (err: Error, results: JSON[], fields: JSON) => void {
+    return function query_callback(err: Error, results: JSON[], fields: JSON) {
+       if (err) {
+           return callback(err, []);
+       }
+       let res = JSON.parse(JSON.stringify(results));
+       return callback(err, res);
+    };
+}
+
+export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, res: Connection[]) => void): void {
+   const get_node_outgoing_peers = "SELECT end_node FROM connection WHERE start_node=\"" + public_key + "\";";
+   connection.query(get_node_outgoing_peers, create_query_callback(callback));
+
 }

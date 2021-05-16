@@ -6,7 +6,10 @@ import { Node } from './db_connection/models/node';
 import { Node as CrawlerNode } from './crawl';
 import { Connection } from './db_connection/models/connection'
 import { SecurityAssessment } from './db_connection/models/security_assessment'
-import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData } from "./db_connection/db_helper";
+import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
+import { calculateEMA, calculateSMA } from "./calculate_metrics";
+import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND} from "./config/messages.js";
+
 
 // Logger
 import Logger from './logger'
@@ -92,13 +95,30 @@ app.get('/node/score-peers', (req, res) => {
 
 app.get('/node/score', (req, res) => {
     var pub_key = req.query;
+    var public_key: String = String(req.query.public_key);
+    getHistoricalData(function (result): void{
+        res.send(calculateSMA(result) + " " +  calculateEMA(result));
+    }, public_key);
     Logger.info("Received request for the security assessment score of a node.");
 });
 
 app.get('/node/peers', (req, res) => {
-    var pub_key = req.query;
-    console.log(pub_key);
     Logger.info('Received request for the peer connections of a node.');
+    let public_key: string = String(req.query.public_key);
+    if (public_key === null) {
+        Logger.error(ERROR_KEY_NOT_FOUND);
+        res.status(400).send(ERROR_KEY_NOT_FOUND);
+    } else {
+        getNodeOutgoingPeers(public_key, (err, results) => {
+            if (err) {
+                let error_string: string = `${ERROR_DATABASE_QUERY} : ${err.message}`;
+                Logger.error(error_string);
+                res.status(400).send(error_string);
+            }
+            else res.send(JSON.stringify(results));
+        });
+
+    }
 });
 
 app.get('/node/history', (req, res) => {
