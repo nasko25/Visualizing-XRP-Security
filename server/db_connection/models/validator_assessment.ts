@@ -1,6 +1,6 @@
 export interface ValidatorAssessment {
     public_key:  string,
     trust_metric_version: number,
-    timestamp?: string,
+    timestamp?: Date,
     score: number 
 }
