@@ -6,29 +6,12 @@ import { MDBContainer } from 'mdbreact';
 import {List, InfiniteLoader, AutoSizer} from 'react-virtualized';
 
 export default class DashboardList extends Component {
-    nodes = [];
 
     constructor(props) {
         super(props);
-        this.data = this.props.data;
-        this.state = {nodes: []};
 
         // need to bind "this" to the rowRenderer function, so we can use "this" in the function
         this.rowRenderer = this.rowRenderer.bind(this);
-        this.update_info = this.update_info.bind(this);
-        this.createList = this.createList.bind(this);
-
-        console.log(this.nodes)
-    }
-    componentDidMount() {
-        // this.createList();
-        this.update_info();
-    }
-
-    update_info() {
-        this.createList();
-        console.log("Node info updated...");
-        setTimeout(this.update_info, 300000);
     }
 
     noRowsRenderer() {
@@ -47,11 +30,11 @@ export default class DashboardList extends Component {
                 <ListGroup.Item>
                     <span className='item'>
                         IP : {
-                            this.state.nodes[index].IP === "undefined" ? "IP Hidden": this.state.nodes[index].IP
+                            this.props.data[index].IP === "undefined" ? "IP Hidden": this.props.data[index].IP
                         } | 
-                        Version : {this.state.nodes[index].rippled_version} | 
-                        Public Key : {this.state.nodes[index].public_key} | 
-                        Uptime : {this.state.nodes[index].uptime} | 
+                        Version : {this.props.data[index].rippled_version} | 
+                        Public Key : {this.props.data[index].public_key} | 
+                        Uptime : {this.props.data[index].uptime} | 
                         Security Metric :
                     </span> 
                 </ListGroup.Item>
@@ -59,32 +42,13 @@ export default class DashboardList extends Component {
         );
   }
 
-    createList() {
-        console.log("data")
-        console.log(this.data)
-        this.data.then(data => {
-            console.log("here" + data[0].IP)
-        /*for (let i=0; i< data.length; i++) {
-            let updatedNodes = this.state.nodes.concat(<ListGroup.Item>
-                    <span className="ip">IP</span>
-                    <span className="version">Version</span>
-                    <span className="public_key">Public Key</span>
-                    <span className="uptime">Uptime</span>
-                    <span className="security_metric">Security Metric</span>
-                </ListGroup.Item>);
-            this.setState({nodes: updatedNodes });*/
-            this.setState({nodes: data});
-            //}
-        });
-    }
-
     render() {
         return (
             <div className='list'>
                 <ListGroup>
                     <List
                         rowRenderer={this.rowRenderer}
-                        rowCount={this.state.nodes.length}
+                        rowCount={this.props.data.length}
                         height={620}
                         rowHeight={40}
                         width= {1400}
