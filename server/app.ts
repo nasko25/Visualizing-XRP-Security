@@ -5,6 +5,8 @@ import { Node } from './db_connection/models/node'
 import { Connection } from './db_connection/models/connection'
 import { SecurityAssessment } from './db_connection/models/security_assessment'
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment } from "./db_connection/db_helper";
+import GeoLocate from './geoLocate';
+import { testData } from './geoLocate';
 var mysql = require('mysql');
 
 const app = express();
@@ -14,6 +16,8 @@ const PORT = 8080;
 app.get('/', (req, res) => {
     res.send('Well done!');
 });
+
+new GeoLocate(testData).locate();
 
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import config from './config/config.json';
 
 
 var testData: string[] = ['91.12.98.74', '209.195.2.50', '194.35.86.10']
@@ -21,7 +22,7 @@ class GeoLocate{
 
     async getData(ip: string) {
         //access key needed for ipstack api
-        const accessKey: string = '1f7dce5f41b09991c3b932423e359995';
+        const accessKey: string = config.accessKey;
         try {
            let response = await axios({
                 url: 'http://api.ipstack.com/' + ip + '?access_key=' + accessKey,
@@ -55,7 +56,7 @@ class GeoLocate{
         }
         
         try{
-        this.locateHelper(0);
+            this.locateHelper(0);
         } catch(e){
             console.log(e);
         }
@@ -64,3 +65,4 @@ class GeoLocate{
 }
 
 export default GeoLocate;
+export { testData };
