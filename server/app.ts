@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
     res.send("Well done!");
 });
 
-new GeoLocate(testData).locate();
+new GeoLocate(/*testData*/).locate();
 
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
@@ -38,16 +38,15 @@ async function startCrawler() {
 
 async function startPortScanner() {
 
-    
     let portScanner = new PortScanner();
     portScanner.start()
 }
-startCrawler().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
-startPortScanner().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
+//startCrawler().catch((e) => {
+//    console.log(`Crawler exited with the exception: ${e}.`);
+//});
+//startPortScanner().catch((e) => {
+//    console.log(`Crawler exited with the exception: ${e}.`);
+//});
 app.get('/insert-node', (req, res) => {
     var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
     insertNode(n);
