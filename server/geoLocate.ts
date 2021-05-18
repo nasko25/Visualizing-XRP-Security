@@ -7,12 +7,19 @@ var testData: string[] = ['91.12.98.74', '209.195.2.50', '194.35.86.10']
 class GeoLocate{
     IPList: string[];
 
-    constructor(IPs: string[]){
-        this.IPList = IPs;
+    constructor(IPs?: string[]){
+        // if the IPs argument is provided, use the given IPs to get their geoloaction,
+        // but if no IPs are provided, get the geolocation of nodes whose geolocation we don't yet know
+        this.IPList = IPs || this.getIPsFromDB();
     }
 
     setIPList(newList: string[]){
         this.IPList = newList;
+    }
+
+    // helper function that gets the IP addresses of nodes that do not have a geolocation yet
+    getIPsFromDB(): string[] {
+        return [];
     }
 
     async wait(seconds: number){

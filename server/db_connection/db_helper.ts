@@ -90,6 +90,19 @@ export function getAllNodes(callback: (res: Node[]) => void): void {
     });
 }
 
+export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => void): void {
+    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE longtitude IS NULL OR latitude IS NULL;';
+    connection.query(get_all_nodes_without_location_query, function (err: Error, results: JSON[], fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    });
+}
+
 export function getAllConnections(callback: (res: Connection[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM connection;';
     connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
@@ -113,7 +126,7 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
         return callback(res);
     });
 }
- 
+
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
     var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
@@ -179,4 +192,4 @@ export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, 
 export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
     const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
     connection.query(get_validator_history, create_query_callback(callback)); 
-} 
+}
