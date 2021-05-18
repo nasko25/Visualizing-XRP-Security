@@ -5,6 +5,11 @@ import DashboardList from "../components/DashboardList";
 import DashboardChart from "../components/DashboardChart";
 import TopMap from "../components/TopMap";
 import axios from 'axios';
+import {
+    Route,
+    BrowserRouter,
+    Switch
+} from 'react-router-dom'
 
 export default class Dashboard extends Component {
 
@@ -41,14 +46,25 @@ export default class Dashboard extends Component {
 
     render() {
         return(
-            <div className='Dashboard'>
-                <DashboardNavbar />
-                <div className='test'>
-                    <TopMap />
-                    <DashboardList data = {this.state.nodes} number={this.state.number} key={this.state.updateKey}/>
-                </div>
-                <DashboardChart />
-            </div>
+
+                <BrowserRouter>
+                    <Switch>
+                        <Route path={"/"}>
+                            <div className='Dashboard'>
+                                <DashboardNavbar />
+                                <div className='test'>
+                                    <TopMap />
+                                    <DashboardList data = {this.state.nodes} number={this.state.number} key={this.state.updateKey}/>
+                                </div>
+
+                                <DashboardChart />
+                            </div>
+                        </Route>
+                        <Route path={"/node-info"}>
+                        {/*  Place the other page component here  */}
+                        </Route>
+                    </Switch>
+                </BrowserRouter>
         );
     }
 
