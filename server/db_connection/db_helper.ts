@@ -34,8 +34,8 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
-        node.ip + '\', \'' +
+    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+        node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
@@ -90,8 +90,10 @@ export function getAllNodes(callback: (res: Node[]) => void): void {
     });
 }
 
+// this function will return the IPs of nodes that do not have geolocation yet
+// it will ignore NULL IPs
 export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => void): void {
-    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE longtitude IS NULL OR latitude IS NULL;';
+    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE IP IS NOT NULL AND (longtitude IS NULL OR latitude IS NULL);';
     connection.query(get_all_nodes_without_location_query, function (err: Error, results: JSON[], fields: JSON) {
         if (err) {
             console.log(err);

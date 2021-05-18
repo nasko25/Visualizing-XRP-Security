@@ -74,7 +74,6 @@ class GeoLocate{
         }
 
         // TODO add comments
-        // TODO deal with undefined IPs
         // TODO IPs with the ::ffff:1.2.3.4 format do not work with the geolocator API
         try{
             this.locateHelper(0);
