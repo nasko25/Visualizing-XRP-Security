@@ -1,3 +1,4 @@
+import NodePopup from "./NodePopup";
 
 const CSS_CLASSES =  {
     node_info_main: "main",
@@ -24,7 +25,17 @@ class NodeInfo extends React.Component {
         return (
             <div className={CSS_CLASSES.node_info_main}>
                 {this.createNodeInfo()}
+
+                <NodePopup node_info={{
+                    public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
+                    IP: "34.221.161.114",
+                    peers: [{trust_score: 0.3}, {trust_score: 0.8}, {trust_score: 0.9}, {trust_score: 0.1}],
+                    trust_score: 1
+                }}/>
+
+
             </div>
+
         )
     }
 

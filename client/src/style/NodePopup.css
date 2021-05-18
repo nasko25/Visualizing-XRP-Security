@@ -1,0 +1,41 @@
+.modal {
+    color: black;
+}
+
+.modal-content {
+    background-color: black;
+    color: black;
+    text-align: center;
+}
+
+.modal-header {
+    background-color: #282c34;
+    color: white;
+    text-align: center;
+    align-content: center;
+}
+
+.modal-title{
+    text-align: center;
+}
+
+.modal-body {
+    background-color: #282c34;
+    color: white;
+    text-align: center;
+}
+
+.modal-footer {
+    background-color: #1b1d22;
+    color: white;
+    text-align: center;
+}
+
+.peer-network {
+    width: 50%;
+    float: left;
+}
+
+.node-info {
+    width: 50%;
+}
