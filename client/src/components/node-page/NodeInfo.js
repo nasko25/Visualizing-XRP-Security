@@ -1,3 +1,4 @@
+import React from "react";
 import NodePopup from "./NodePopup";
 
 const CSS_CLASSES =  {
@@ -42,6 +43,7 @@ class NodeInfo extends React.Component {
 
     createNodeInfo() {
         let result = [];
+        let node = this.state.node;
 
         // Iterate the keys
         for (let key in node) {

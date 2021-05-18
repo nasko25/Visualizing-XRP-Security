@@ -50,6 +50,11 @@ export default class Dashboard extends Component {
 
                 <BrowserRouter>
                     <Switch>
+
+                        <Route path={"/node-info"}>
+                        {/*  Place the other page component here  */}
+                        <NodeInfo node={{ key1: "value1", key2: "value2" }}/>
+                        </Route>
                         <Route path={"/"}>
                             <div className='Dashboard'>
                                 <DashboardNavbar />
@@ -60,10 +65,6 @@ export default class Dashboard extends Component {
 
                                 <DashboardChart />
                             </div>
-                        </Route>
-                        <Route path={"/node-info"}>
-                        {/*  Place the other page component here  */}
-                        <NodeInfo node={{ key1: "value1", key2: "value2" }}/>
                         </Route>
                     </Switch>
                 </BrowserRouter>
