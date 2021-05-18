@@ -1,0 +1,22 @@
+.node_box {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+
+}
+
+.node_main {
+    height: 80%;
+    width: 70%;
+    border-radius: 25px 25px 25px 25px;
+    background: darkcyan;
+    text-align: center;
+    margin: auto;
+}
+
+
+.node_list_item {
+    background: #61dafb;
+    height: 10%;
+    width: 90%;
+}
