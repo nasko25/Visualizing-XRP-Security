@@ -150,6 +150,16 @@ div.list-group-item {
   height: 40px;
   background-color: #222;
 }
+
 .item_lighter > div.list-group-item {
   background-color: #333;
+}
+
+.linechart {
+  background-color: #222;
+}
+
+.navbar {
+  background-color: #333;
+  color: white;
 }

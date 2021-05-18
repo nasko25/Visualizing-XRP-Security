@@ -25,9 +25,9 @@ export default class DashboardNavbar extends Component {
                     <h1>Visualing Security Metrics</h1>
                 </div>
                 <div className='wrapper'>
-                    <div className="el">
+                    {/* <div className="el">
                         <a>Home</a>
-                    </div>
+                    </div> */}
                     <div className="el">
                         <a>Dashboard</a>
                     </div>
