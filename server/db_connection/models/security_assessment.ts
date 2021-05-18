@@ -4,6 +4,6 @@
 export interface SecurityAssessment {
     public_key:  string,
     metric_version: number,
-    timestamp?: string,
+    timestamp?: Date,
     score: number 
 }

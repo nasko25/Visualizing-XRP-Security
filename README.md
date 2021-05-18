@@ -25,14 +25,17 @@ docker build client/ -t <client_image_name>
 docker run -p 3000:3000 -d <client_image_name>
 ```
 
-### Or you can use `docker-compose` to run both:
+### Or you can use `docker-compose` to run all three containers:
+#### Note: when running the containers with `docker-compose` you need to separately run the database container to ensure that it starts before the server container
 ```
 docker-compose build
-docker-compose up -d
+docker-compose up -d db
+docker-compose up -d server client
 ```
 or
 ```
-docker-compose up --build
+docker-compose up --build db
+docker-compose up --build server client
 ```
 after that you can:
 ```

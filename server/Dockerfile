@@ -7,6 +7,10 @@ COPY package*.json ./
 
 RUN npm install
 
+# install nmap
+RUN apt-get update
+RUN apt-get install nmap -y
+
 # For building the code for production use:
 # RUN npm ci --only=production
 
@@ -17,3 +21,4 @@ COPY . .
 EXPOSE 8080
 
 CMD npm start
+
