@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
 import { PartItem, DataSet, Network } from "vis-network";
 
-export default class NodePopup extends Component {
+export default class NodePeerGraph extends Component {
     constructor(props) {
         super(props);
         this.state = {};

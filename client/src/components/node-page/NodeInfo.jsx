@@ -1,7 +1,7 @@
 import React from "react";
 import ReactJson from "react-json-view";
-import NodePopup from "./NodePopup";
-import './NodeInfo.css'
+import NodePeerGraph from "./NodePeerGraph";
+import "./NodeInfo.css";
 
 const CSS_CLASSES = {
     main: "node_info_main",
@@ -13,6 +13,7 @@ const CSS_CLASSES = {
 class NodeInfo extends React.Component {
     state = {
         node: null,
+        node_info: null,
     };
 
     /**
@@ -22,25 +23,38 @@ class NodeInfo extends React.Component {
      * */
     constructor(props) {
         super(props);
-        this.state.node = props.node;
+        // this.state.node = props.node;
+        this.state.node = {
+            public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
+            IP: "34.221.161.114",
+            peers: [
+                { trust_score: 0.3 },
+                { trust_score: 0.8 },
+                { trust_score: 0.9 },
+                { trust_score: 0.1 },
+            ],
+            trust_score: 1,
+        };
     }
 
     render() {
         return (
             <div className={CSS_CLASSES.node_info_main}>
                 <div className={CSS_CLASSES.peer_graph}>
-                    The component that shows the peers of the node using a library - made in Markoland
-                <NodePopup  node_info={{
-                    public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
-                    IP: "34.221.161.114",
-                    peers: [{trust_score: 0.3}, {trust_score: 0.8}, {trust_score: 0.9}, {trust_score: 0.1}],
-                    trust_score: 1
-                }}/>
+                    {/* The component that shows the peers of the node using a
+                    library - made in Markoland */}
+                    <NodePeerGraph node_info={this.state.node} />
                 </div>
 
                 <div className={CSS_CLASSES.json_view}>
                     {/* A component that shows all the information for the node in a pretty HTML JSON view. */}
-                    <ReactJson theme={"twilight"} src={this.state.node} />
+                    <ReactJson
+                        name={"node"}
+                        displayDataTypes={false}
+                        displayObjectSize={false}
+                        theme={"twilight"}
+                        src={this.state.node}
+                    />
                 </div>
             </div>
         );

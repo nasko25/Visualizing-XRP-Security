@@ -1,11 +1,7 @@
 
-
-
 .node_box {
     height: 100%;
     width: 100%;
-    text-align: center;
-
 }
 
 .node_info_main {
@@ -13,13 +9,14 @@
     width: 70%;
     border-radius: 25px 25px 25px 25px;
     background: darkcyan;
-    text-align: center;
-    margin: auto;
 }
 
 .node_info_peer_graph, .node_info_json_view {
     width: 50%;
     height: 100%;
     display: inline-block;
-    align-content: center;
+}
+
+.node_info_json_view {
+    text-align: left;
 }
