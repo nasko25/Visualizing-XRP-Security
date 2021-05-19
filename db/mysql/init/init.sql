@@ -13,9 +13,15 @@ CREATE TABLE IF NOT EXISTS `node` (
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
   `uptime` INT NULL,
+  `ports` VARCHAR(3000) NULL,
+  `protocols` VARCHAR(3000) NULL,
+  `longtitude` DOUBLE NULL,
+  `latitude` DOUBLE NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`public_key`),
   UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)
+
+
 ENGINE = InnoDB;
 
 
@@ -48,7 +54,18 @@ CREATE TABLE IF NOT EXISTS `security_assessment` (
   `metric_version` FLOAT NOT NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `score` FLOAT NOT NULL 
-);
+)
+ENGINE = InnoDB;
+
+USE db;
+CREATE TABLE IF NOT EXISTS `validator_assessment` (
+  `public_key` VARCHAR(80) NOT NULL,
+  `trust_metric_version` FLOAT NOT NULL,
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `score` FLOAT NOT NULL
+)
+ENGINE = InnoDB;
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
