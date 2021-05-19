@@ -45,6 +45,20 @@ export default class Dashboard extends Component {
         setTimeout(this.update_state, 300000);
     }
 
+    getNodeInfo() {
+        return {
+            public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
+            IP: "34.221.161.114",
+            peers: [
+                { trust_score: 0.3 },
+                { trust_score: 0.8 },
+                { trust_score: 0.9 },
+                { trust_score: 0.1 },
+            ],
+            trust_score: 1,
+        }
+    }
+
     render() {
         return(
 
@@ -53,7 +67,7 @@ export default class Dashboard extends Component {
 
                         <Route path={"/node-info"}>
                         {/*  Place the other page component here  */}
-                        <NodeInfo node={{ key1: "value1", key2: "value2" }}/>
+                        <NodeInfo node={this.getNodeInfo()}/>
                         </Route>
                         <Route path={"/"}>
                             <div className='Dashboard'>

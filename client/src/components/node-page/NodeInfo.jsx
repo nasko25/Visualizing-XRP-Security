@@ -13,7 +13,6 @@ const CSS_CLASSES = {
 class NodeInfo extends React.Component {
     state = {
         node: null,
-        node_info: null,
     };
 
     /**
@@ -23,18 +22,7 @@ class NodeInfo extends React.Component {
      * */
     constructor(props) {
         super(props);
-        // this.state.node = props.node;
-        this.state.node = {
-            public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
-            IP: "34.221.161.114",
-            peers: [
-                { trust_score: 0.3 },
-                { trust_score: 0.8 },
-                { trust_score: 0.9 },
-                { trust_score: 0.1 },
-            ],
-            trust_score: 1,
-        };
+        this.state.node = props.node;
     }
 
     render() {
@@ -60,6 +48,7 @@ class NodeInfo extends React.Component {
         );
     }
 
+    // Currently NOT USED
     createNodeInfo() {
         let result = [];
         let node = this.state.node;
@@ -78,6 +67,7 @@ class NodeInfo extends React.Component {
         return result;
     }
 
+    // Currently NOT USED
     createPeersInfo(peers) {
         return (
             <div id="peers" className={CSS_CLASSES.list_item}>
