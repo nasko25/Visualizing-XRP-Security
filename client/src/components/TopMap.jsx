@@ -20,65 +20,15 @@ class TopMap extends React.Component {
     state = {
         latlng: latLng(50.680797, 6.37207),
         addressPoints: {
-            points: [
-                {
-                    latLng: [50.625073, 9.733887],
-                    title: "GERMAN VERIFIER",
-                    trustScore: 0,
-                    connections: [5, 6],
-                },
-                {
-                    latLng: [50.614617, 9.236633],
-                    title: "GERMAN NODE",
-                    trustScore: 1,
-                    connections: [0, 4],
-                },
-                {
-                    latLng: [50.071244, 8.76709],
-                    title: "FRANKFURT CENTRAL NODE",
-                    trustScore: 1,
-                    connections: [0, 1, 4, 5],
-                },
-                {
-                    latLng: [50.171244, 8.76709],
-                    title: "A BRADWURST WAGON",
-                    trustScore: 1,
-                    connections: [2],
-                },
-                {
-                    latLng: [49.98302, 8.404541],
-                    title: "MAINZ CENTRAL NODE",
-                    trustScore: 1,
-                    connections: [5],
-                },
-                {
-                    latLng: [49.996264, 8.275452],
-                    title: "MAINZ PROXY",
-                    trustScore: 1,
-                    connections: [4],
-                },
-                {
-                    latLng: [49.996264, 8.275452],
-                    title: "MAINZ PROXY 2",
-                    trustScore: 1,
-                    connections: [4],
-                },
-                {
-                    latLng: [51.944265, 4.394531],
-                    title: "TU DELFT",
-                    trustScore: 1,
-                    connections: [4],
-                },
-                {
-                    latLng: [51.910391, 4.460449],
-                    title: "ROTTERDAM VERIFIER",
-                    trustScore: 1,
-                    connections: [4],
-                },
-            ],
+            points: [],
         },
         popup: null
     };
+
+    constructor(props) {
+        super(props);
+        this.state.addressPoints.points = props.data;
+    }
 
 
     onClusterClick = (a) => {
@@ -111,7 +61,7 @@ class TopMap extends React.Component {
         return <MapContainer className ='map' center={this.state.latlng} zoom={3}>
             {/* Layers */}
             <TileLayer
-                attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
+                // attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
                 url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
                 minZoom="2"
                 maxZoom="11"

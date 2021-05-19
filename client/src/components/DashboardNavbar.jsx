@@ -22,7 +22,7 @@ export default class DashboardNavbar extends Component {
 
             <div className='navbar'>
                 <div className='name'>
-                    <h1>Visualing Security Metrics</h1>
+                    <h1>CISELab</h1>
                 </div>
                 <div className='wrapper'>
                     {/* <div className="el">

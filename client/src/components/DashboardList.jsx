@@ -35,7 +35,7 @@ export default class DashboardList extends Component {
                         Version : {this.props.data[index].rippled_version} | 
                         Public Key : {this.props.data[index].public_key} | 
                         Uptime : {this.props.data[index].uptime} | 
-                        Security Metric :
+                        Trust Score : {this.props.data[index].trustScore}
                     </span> 
                 </ListGroup.Item>
             </div>

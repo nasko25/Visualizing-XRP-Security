@@ -5,22 +5,27 @@ import DashboardList from "../components/DashboardList";
 import DashboardChart from "../components/DashboardChart";
 import TopMap from "../components/TopMap";
 import axios from 'axios';
+let dataJson = require("../nodes.json");
 
 export default class Dashboard extends Component {
+    // Hardcoded data for example purposes for the midterm presentaion
+    // Will be removed when website is fully functional
+    data = dataJson.data;
 
     constructor(props) {
         super(props);
-        this.state = {nodes: []};
+        //this.state = {nodes: []};
+        this.state = {nodes: this.data};
 
         this.update_state = this.update_state.bind(this);
     }
 
     componentDidMount() {
-        this.update_state();
+        // this.update_state();
     }
 
     componentWillUnmount() {
-        clearInterval(this.timer);
+        // clearInterval(this.timer);
     }
 
     getData() {
@@ -44,8 +49,8 @@ export default class Dashboard extends Component {
             <div className='Dashboard'>
                 <DashboardNavbar />
                 <div className='test'>
-                    <TopMap />
-                    <DashboardList data = {this.state.nodes} number={this.state.number} key={this.state.updateKey}/>
+                    <TopMap data={this.state.nodes}/>
+                    <DashboardList data = {this.state.nodes} key={this.state.updateKey}/>
                 </div>
                 <DashboardChart />
             </div>
