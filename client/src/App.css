@@ -36,3 +36,130 @@
     transform: rotate(360deg);
   }
 }
+
+.scrollbar {
+  overflow: scroll;
+  width: 800px;
+  height: 400px;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* custom colors  */
+.scrollbar-primary::-webkit-scrollbar {
+  background-color: #F5F5F5;
+}
+.scrollbar-primary {
+  scrollbar-color: #4285f4 #f5f5f5;
+}
+.scrollbar-primary::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  background-color: #4285F4;
+}
+
+.chart {
+  height: 50%;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+}
+
+.map {
+  width: 70em;
+  height: 35em;
+  top: 50px;
+}
+
+.test {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.scrollbar {
+  height: 26.25em;
+}
+
+.main {
+  height: 100vh;
+  background-color: #222;
+}
+
+.linechart {
+  background-color: white;
+}
+
+.list {
+  /* overflow-x: scroll;
+  white-space: nowrap; */
+  margin-top: 50px;
+}
+
+.wrapper {
+  float: right;
+  margin-top: 8px;
+}
+
+.navbar {
+  background-color: white;
+}
+
+.el {
+  display: inline-block;
+  margin: 10px;
+}
+
+.el:last-child {
+  margin-right: 50px;
+}
+
+.name {
+  margin-left: 50px;
+}
+
+.linechart {
+  margin-top: 50px;
+}
+
+.map {
+  height: 620px;
+  width: 1000px;
+}
+
+.chart {
+  height: 40%;
+}
+
+.item {
+  float: left;
+  color: white;
+}
+
+div.list-group-item {
+  height: 40px;
+  background-color: #222;
+}
+
+.item_lighter > div.list-group-item {
+  background-color: #333;
+}
+
+.linechart {
+  background-color: #222;
+}
+
+.navbar {
+  background-color: #333;
+  color: white;
+}

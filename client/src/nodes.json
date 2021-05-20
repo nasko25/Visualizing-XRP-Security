@@ -1,0 +1,204 @@
+{
+    "data": [
+        {
+            "latLng": [50.625073, 9.733887],
+            "title": "GERMAN VERIFIER",
+            "trustScore": 0,
+            "connections": [5, 6],
+            "IP": "155.135.27.39",
+            "rippled_version": "rippled-1.7.0-b2",
+            "public_key": "n94GQ8bFv1utF8qDbRNPyshV93Frwfc2WXEDxprRvjm4hp6ZDBbu",
+            "uptime": 185673
+        },
+        {
+            "latLng": [50.614617, 9.236633],
+            "title": "GERMAN NODE",
+            "trustScore": 18,
+            "connections": [0, 4],
+            "IP": "178.188.180.22",
+            "rippled_version": "rippled-1.7.0-b2",
+            "public_key": "n9J6MfXuV5hnASpuShrEDdBCz11sGpzRQ2iPz3JQGFQTgK2yjPWh",
+            "uptime": 202
+        },
+        {
+            "latLng": [50.071244, 8.76709],
+            "title": "FRANKFURT CENTRAL NODE",
+            "trustScore": 100,
+            "connections": [0, 1, 4, 5],
+            "IP": "60.114.106.93",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9KXL1JynrB7ZXLWmkDwUQ4Kvps8tyuH6EsdHAqtjf3Ev9MyiWq3",
+            "uptime": 5
+        },
+        {
+            "latLng": [50.171244, 8.76709],
+            "title": "A BRADWURST WAGON",
+            "trustScore": 11,
+            "connections": [2],
+            "IP": "234.232.216.240",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9L1jVkErytRtPM1yrtgQF1ASQowmKmptAYpeLNUYnxvSKUH7x7A",
+            "uptime": 102
+        },
+        {
+            "latLng": [49.98302, 8.404541],
+            "title": "MAINZ CENTRAL NODE",
+            "trustScore": 67,
+            "connections": [5],
+            "IP": "234.227.234.191",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9M7PfcLw9DNDMYZvrfoKHh51t24LHfXesNKP8k1pk4CZRRuTary",
+            "uptime": 7621
+        },
+        {
+            "latLng": [49.996264, 8.275452],
+            "title": "MAINZ PROXY",
+            "trustScore": 53,
+            "connections": [4],
+            "IP": "92.98.156.123",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LEi7zcSYUoHFdHvNuSSLiGg66w87vS793spNYHrHB95ojfX2pZ",
+            "uptime": 74254
+        },
+        {
+            "latLng": [49.996264, 8.275452],
+            "title": "MAINZ PROXY 2",
+            "trustScore": 81,
+            "connections": [4],
+            "IP": "228.134.142.52",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n944UHZysPDLYnVY1gHdLGNvbZUoYumG5iYbd4SfxfgmE1LbWG9Z",
+            "uptime": 3432
+        },
+        {
+            "latLng": [51.944265, 4.394531],
+            "title": "TU DELFT",
+            "trustScore": 100,
+            "connections": [4],
+            "IP": "119.55.65.240",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9KgwEan1ucdkUtVnUWHA1WLcgFZu9WBxtC3GeiczA88EpC7fyzr",
+            "uptime": 53
+        },
+        {
+            "latLng": [51.910391, 4.460449],
+            "title": "ROTTERDAM VERIFIER",
+            "trustScore": 23,
+            "connections": [4],
+            "IP": "144.101.193.118",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9Mx2kbc73FZseEzu5SpDKF7zin4kofnV5RGPnxTKDJdD1DTatuo",
+            "uptime": 273
+        },
+        {
+            "latLng": [48.864716, 2.349014],
+            "title": "Paris Node",
+            "trustScore": 54,
+            "connections": [4],
+            "IP": "212.79.122.154",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LJKF2P228W9MFA6BGcMm3oLkRi74xiU7oajafxyhV1Lr9M3CHs",
+            "uptime": 47312
+        },
+        {
+            "latLng": [51.509865, -0.118092],
+            "title": "London Node",
+            "trustScore": 76,
+            "connections": [4],
+            "IP": "58.163.73.87",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n94BqZ8THqX8C9bYxCG2vtGsGGfJC2ma11tgK1SWkmDCjb9v3DDf",
+            "uptime": 123
+        },
+        {
+            "latLng": [52.514610, 13.239665],
+            "title": "Berlin Node",
+            "trustScore": 41,
+            "connections": [4],
+            "IP": "231.204.89.52",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LV3gRC67EcnaMWLBYZpMUi5En9md4Z6xTziusBcyVAXaqUFsUk",
+            "uptime": 3462
+        },
+        {
+            "latLng": [52.232361, 21.002769],
+            "title": "Warsaw Node",
+            "trustScore": 45,
+            "connections": [4],
+            "IP": "193.253.127.149",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LSWyNfqKu9UmihKwrNK9tpj9pEWVh57Wn8XbjLes7uLFW3kKtc",
+            "uptime": 1267
+        },
+        {
+            "latLng": [42.510578, 27.461014],
+            "title": "Burgas Node",
+            "trustScore": 0,
+            "connections": [4],
+            "IP": "134.57.101.172",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9JYcLUk3PkQtgMVRFjupZUJhsVRDSdQZ5ga94zfnGhCV7hyHc4R",
+            "uptime": 8345
+        },
+        {
+            "latLng": [40.415524, -3.707488],
+            "title": "Madrid Node",
+            "trustScore": 78,
+            "connections": [4],
+            "IP": "253.153.224.23",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LEi7zcSYUoHFdHvNuSSLiGg66w87vS793spNYHrHB95ojfX2pZ",
+            "uptime": 6221
+        },
+        {
+            "latLng": [60.197552, 11.100415],
+            "title": "Oslo Node",
+            "trustScore": 13,
+            "connections": [4],
+            "IP": "21.72.2.220",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LiXYG2sVzVroQEgKj94LbXh33PuNZj1MQA2Ug3gZJssXg5s4BK",
+            "uptime": 53
+        },
+        {
+            "latLng": [55.754093, 37.620407],
+            "title": "Moscow Node",
+            "trustScore": 99,
+            "connections": [4],
+            "IP": "208.14.143.187",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9Jz3qSKsxewaKYJvh5GkLDwv4yfJSXtY8rj8vQioKY3FeJGjiKd",
+            "uptime": 6231
+        },
+        {
+            "latLng": [45.464664, 9.188540],
+            "title": "Milan Node",
+            "trustScore": 16,
+            "connections": [4],
+            "IP": "101.139.43.49",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9M15b8DC1Lm7urwg9CgSXv3Df3WFFcsfSh15bmbb6fmc5bSpUKs",
+            "uptime": 523162
+        },
+        {
+            "latLng": [40.730610, -73.935242],
+            "title": "New York Node",
+            "trustScore": 84,
+            "connections": [4],
+            "IP": "49.232.94.248",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9LBoHMYATc97SMqVobVKA4iZXp21yfSSj3qU4YMfCCYFWbBn14i",
+            "uptime": 562154
+        },
+        {
+            "latLng": [42.361145, -71.057083],
+            "title": "Boston Node",
+            "trustScore": 36,
+            "connections": [4],
+            "IP": "229.113.59.169",
+            "rippled_version": "rippled-1.7.0",
+            "public_key": "n9KArRyaHG3aLMEQR5uz5ATi6BzcqnTWVQ2XfnDHRSsAoeYHBxGV",
+            "uptime": 754274
+        }
+    ]
+}
