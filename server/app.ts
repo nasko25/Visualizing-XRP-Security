@@ -18,19 +18,19 @@ app.get("/", (req, res) => {
     res.send("Well done!");
 });
 
-async function startCrawler() {
-    // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
-    let rippleServersArr = (
-        await fs.readFile("config/ripple_servers.list", "utf8")
-    ).split(/[\s|\n]+/);
+// async function startCrawler() {
+//     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
+//     let rippleServersArr = (
+//         await fs.readFile("config/ripple_servers.list", "utf8")
+//     ).split(/[\s|\n]+/);
 
-    // remove the empty last line
-    rippleServersArr.splice(-1, 1);
-    console.log(rippleServersArr);
-    let crawler = new Crawler(rippleServersArr);
-    crawler.crawl();
-    // for the moment simply display what has been collected in console
-}
+//     // remove the empty last line
+//     rippleServersArr.splice(-1, 1);
+//     console.log(rippleServersArr);
+//     let crawler = new Crawler(rippleServersArr);
+//     crawler.crawl();
+//     // for the moment simply display what has been collected in console
+// }
 
 async function startPortScanner() {
 
@@ -38,9 +38,9 @@ async function startPortScanner() {
     let portScanner = new PortScanner();
     portScanner.start()
 }
-startCrawler().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
+// startCrawler().catch((e) => {
+//     console.log(`Crawler exited with the exception: ${e}.`);
+// });
 startPortScanner().catch((e) => {
     console.log(`Crawler exited with the exception: ${e}.`);
 });
