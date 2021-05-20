@@ -1,0 +1,23 @@
+image: docker:19.03.12
+
+cache:
+  key: "1234"
+  paths:
+    - server/.npm
+    - client/.npm
+    - server/node_modules
+    - client/node_modules
+
+services:
+  - docker:19.03.12-dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+build:
+  stage: build
+  script:
+    - docker build server/ -t server
+    - docker build client/ -t client
+    #- run tests (when we add tests)

@@ -1,0 +1,8 @@
+node_modules/
+*.swp
+
+.idea/
+
+server/**/*.js
+
+db/mysql/storage
