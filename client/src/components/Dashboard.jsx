@@ -29,16 +29,12 @@ export default class Dashboard extends Component {
     }
 
     getData() {
-        return axios.get("http://localhost:8080/get-all-nodes").then(response => {
-          console.log(response.data);
-          return response.data;
-        });
+        return axios.get("http://localhost:8080/get-all-nodes");
       }
 
     update_state() {
-        let temp = this.getData();
-        temp.then(data => {
-            this.setState({nodes: data});
+        this.getData().then(response => {
+            this.setState({nodes: response.data});
         })
         console.log("Node info updated...");
         setTimeout(this.update_state, 300000);
