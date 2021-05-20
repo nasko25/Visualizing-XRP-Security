@@ -1,4 +1,4 @@
-import { Node } from './models/node'
+import { Node, NodePortsNull } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
@@ -129,7 +129,20 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
     });
 
 }
+export function getNullPortNodes(callback: (res: NodePortsNull[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip FROM node WHERE ports IS NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePortsNull[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
 export function insertPorts(node: NodePortsProtocols): void {
     var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
         node.ip + '\', \'' +
