@@ -90,9 +90,9 @@ class NodePageMain extends React.Component {
                     </Grid>
                 </Header>
 
-                <Main>
+                <Main style={{ width: "100%", height: "90%" }}>
                     <Grid
-                        style={{ width: "100%", height: "90%" }}
+                        style={{ width: "100%", height: "100%" }}
                         rows={["1/2", "1/2"]}
                         columns={["1/2", "1/2"]}
                         areas={[
@@ -106,9 +106,11 @@ class NodePageMain extends React.Component {
                         </Box>
                         <Box round="5%" border={{ color: "doc" }} margin="2%" gridArea="stats" background="rgb(38, 38, 38)">
                             <List
-                                style={{ width: "50%", alignSelf: "center" }}
+                                style={{ width: "70%", height:"70%", alignSelf: "center"}}
+
                                 primaryKey="name"
                                 secondaryKey="value"
+                                
                                 data={[
                                     { name: 'Security score', value: 0.9 },
                                     { name: 'rippled version', value: "1.7.0" },
@@ -116,9 +118,24 @@ class NodePageMain extends React.Component {
                                     { name: 'Eric', value: 80 },
                                 ]}
                             />
+                            <Box  style={{height: "30%"}} margin="2%" round="20px" border={{ color: "doc" }} background="rgb(70, 70, 38)">
+                            <List
+                                style={{ width: "70%", alignSelf: "center"}}
+
+                                primaryKey="key"
+                                secondaryKey="score"
+                                
+                                data={[
+                                    { key: 'r910920', score: 0.9 },
+                                    { key: 'r92e988', score: 1.0 },
+                                    { key: 'r23r3e2', score: 0.23 },
+                                    { key: 'r923rrfr', score: 0.00001 },
+                                ]}
+                            />
+                            </Box>
                         </Box>
                         <Box round="5%" border={{ color: "doc" }} margin="2%" gridArea="info" background="rgb(38, 38, 38)" color="doc">
-                            Info
+                            <Text size="xlarge">Info</Text>
                         </Box>
                     </Grid>
                 </Main>
