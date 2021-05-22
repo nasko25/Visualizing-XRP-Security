@@ -9,7 +9,8 @@ class NodePageMain extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            node_info: {}
+            key: null,
+            speed: 3
         };
         this.getNodeInfo = this.getNodeInfo.bind(this);
         if (this.props.node_info) {
@@ -136,7 +137,9 @@ class NodePageMain extends React.Component {
                         </Box>
                         <Box round="5%" border={{ color: "doc" }} margin="2%" gridArea="info" background="rgb(38, 38, 38)" color="doc">
                             <Text size="xlarge">Info</Text>
-                        </Box>
+                            <Box margin="20px" alignSelf="center" width="200px" height="200px">
+                            <img width="100%" style={{  animation: `spin ${this.state.speed}s linear infinite`}} sizes={{}} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img"/>
+                            </Box>  </Box>
                     </Grid>
                 </Main>
             </Grommet>
