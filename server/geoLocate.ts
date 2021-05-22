@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from './config/config.json';
-import { getAllNodesWithoutLocation } from './db_connection/db_helper';
+import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
 
 
 var testData: string[] = ['91.12.98.74', '209.195.2.50', '194.35.86.10']
@@ -35,6 +35,7 @@ class GeoLocate{
     }
 
     async getData(ip: string) {
+        // TODO use geoip
         //access key needed for ipstack api
         const accessKey: string = config.accessKey;
         try {
@@ -57,7 +58,10 @@ class GeoLocate{
             return;
         }
         this.getData(this.IPList[curr]).then(res => {
+
+            // insert the longitude and latitude in the database
             console.log(res);
+            insertLocation(res, this.IPList[curr]);
             //Delay requests by 1 second, so to not get blocked by the API
 
             this.wait(1).then((res) => this.locateHelper(curr+1)); 

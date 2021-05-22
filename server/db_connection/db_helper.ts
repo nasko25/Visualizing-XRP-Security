@@ -56,6 +56,27 @@ export function insertNodes(nodes: CrawlerNode[]): void {
     });
 }
 
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertLocation(loc: number[], ip: string) {
+    const query = 'UPDATE node SET longtitude = ?, latitude = ? where IP = ?;'
+    const vals = loc.map(coordinate => {
+        // if the location is not known, save it as null
+        // otherwise, convert it to a string (because longitude and latitude are numbers)
+        if (coordinate === null)
+            return null;
+        else
+            return String(coordinate)
+    }).concat(ip);
+
+    connection.query(query, vals, (err: Error, result: object, fields: JSON) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
 export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): void {
     var insert_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
