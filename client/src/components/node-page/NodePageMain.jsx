@@ -47,6 +47,14 @@ class NodePageMain extends React.Component {
         return info;
     }
 
+    // Event Handler for the Search Bar
+    onKeyPressSearch(e) {
+        if(e.code === "Enter") alert("Search Triggered! Key entered is: " + e.target.value);
+        // TODO send request to check for the key
+        // If key exists and information is obtained, render a green button to lead to the page
+        // If not, render a red box with message
+    }
+
     render() {
         return (
             <Grommet
@@ -84,9 +92,10 @@ class NodePageMain extends React.Component {
                             direction="row"
                             alignSelf="center"
                             justify="center"
-                            gap="small">
+                            gap="small"
+                            margin="10px">
                             <Text alignSelf="center" weight="bold">Search</Text>
-                            <TextInput size="small" />
+                            <TextInput size="small" onKeyPress={this.onKeyPressSearch}/>
                         </Box>
                     </Grid>
                 </Header>
