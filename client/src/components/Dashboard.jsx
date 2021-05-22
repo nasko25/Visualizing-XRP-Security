@@ -46,15 +46,14 @@ export default class Dashboard extends Component {
     }
 
     getNodeInfo() {
+        var peers = [];
+        for(var i = 0; i < 50; i++){
+            peers.push({trust_score: Math.random()});
+        }
         return {
             public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
             IP: "34.221.161.114",
-            peers: [
-                { trust_score: 0.3 },
-                { trust_score: 0.8 },
-                { trust_score: 0.9 },
-                { trust_score: 0.1 },
-            ],
+            peers: peers,
             trust_score: 1,
         }
     }
