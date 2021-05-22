@@ -16,7 +16,7 @@ export default class Dashboard extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {nodes: []};
+        this.state = { nodes: [] };
 
         this.update_state = this.update_state.bind(this);
     }
@@ -31,15 +31,15 @@ export default class Dashboard extends Component {
 
     getData() {
         return axios.get("http://localhost:8080/get-all-nodes").then(response => {
-          console.log(response.data);
-          return response.data;
+            console.log(response.data);
+            return response.data;
         });
-      }
+    }
 
     update_state() {
         let temp = this.getData();
         temp.then(data => {
-            this.setState({nodes: data});
+            this.setState({ nodes: data });
         })
         console.log("Node info updated...");
         setTimeout(this.update_state, 300000);
@@ -47,8 +47,8 @@ export default class Dashboard extends Component {
 
     getNodeInfo() {
         var peers = [];
-        for(var i = 0; i < 50; i++){
-            peers.push({trust_score: Math.random()});
+        for (var i = 0; i < 50; i++) {
+            peers.push({ trust_score: Math.random() });
         }
         return {
             public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
@@ -59,30 +59,25 @@ export default class Dashboard extends Component {
     }
 
     render() {
-        return(
-
-                <BrowserRouter>
-                    <Switch>
-
-                        <Route path={"/node-info"}>
+        return (
+            <BrowserRouter>
+                <Switch>
+                    <Route path={"/node-info"}>
                         {/*  Place the other page component here  */}
-                        <NodeInfo node={this.getNodeInfo()}/>
-                        </Route>
-                        <Route path={"/"}>
-                            <div className='Dashboard'>
-                                <DashboardNavbar />
-                                <div className='test'>
-                                    <TopMap />
-                                    <DashboardList data = {this.state.nodes} number={this.state.number} key={this.state.updateKey}/>
-                                </div>
-
-                                <DashboardChart />
+                        <NodeInfo node={this.getNodeInfo()} />
+                    </Route>
+                    <Route path={"/"}>
+                        <div className='Dashboard'>
+                            <DashboardNavbar />
+                            <div className='test'>
+                                <TopMap />
+                                <DashboardList data={this.state.nodes} number={this.state.number} key={this.state.updateKey} />
                             </div>
-                        </Route>
-                    </Switch>
-                </BrowserRouter>
+                            <DashboardChart />
+                        </div>
+                    </Route>
+                </Switch>
+            </BrowserRouter>
         );
     }
-
-
 }
