@@ -4,6 +4,7 @@ import {Box, Button, Grid, Grommet, Header, Heading, Main, Menu, Nav, Tab, Table
 
 
 class NodePageMain extends React.Component {
+    
     state = {
         
     };
@@ -15,54 +16,29 @@ class NodePageMain extends React.Component {
 
     render() {
         return (
-            <Grommet
+            <Grommet style={{width:"100%", height:"100%"}}
                 theme={{ global: { colors: { doc: '#C3C3C3', t: "#000000"} } }} >
 
-                <Header background="doc" height="xsmall" >
-                    {/* <Nav direction="row"  align="center">
-                        <Heading size="3xl" weight="bold" color="t">Node Page</Heading>
-                        <Button>Back to Homepage</Button>
-                        <TextInput size="small"/>
-                    </Nav> */}
-
+                <Header background="doc" style={{width:"100%", height:"10%"}} >
                     <Grid
-                        size="auto"
-                        rows={["small"]}
-                        columns={["large", "medium", "medium"]}
+                        style={{width: "100%", height: "100%"}}
+                        rows={["xsmall"]}
+                        gap="medium"
+                        columns={["1/5", "2/5", "2/5"]}
                         areas={[
                             { name: 'heading', start: [0, 0], end: [0, 0] },
                             { name: 'button_return', start: [1, 0], end: [1, 0] },
                             { name: 'search', start: [2, 0], end: [2, 0] },
                         
                         ]}>
-                            <Box gridArea="heading" aria-expanded="true" background="brand"></Box>
-                            <Box gridArea="button_return" size="auto"></Box>
-                            <Box gridArea="search"size="auto" ></Box>
+                            <Box gridArea="heading" alignSelf="center" ><Heading size="3xl" weight="bold" color="t">Node Page</Heading></Box>
+                            <Box height="80%" gridArea="button_return" justify="center" alignSelf="center" background="#909090"><Button alignSelf="center" style={{width: "80%"}}><Text color="#383838" size="large" weight="bold">Back To Homepage</Text></Button></Box>
+                            <Box gridArea="search" alignSelf="center" direction="row" alignSelf="center" justify="center" gap="small"><Text alignSelf="center" weight="bold">Search</Text><TextInput size="small"/></Box>
                     </Grid>
                 </Header>
 
-                <Main>
-                    <Grid
-                        rows={["large", "medium"]}
-                        columns={["large", "large"]}
-                        areas={[
-                            { name: 'map', start: [0, 0], end: [0, 0] },
-                            { name: 'stats', start: [0, 1], end: [0, 1] },
-                            { name: 'info', start: [1, 0], end: [2, 0] },
-                        
-                        ]}>
-                           <Box gridArea="map" background="doc">{/*  */}
-                                Map
-                           </Box>
-                           <Box gridArea="stats" background="doc">
-                               Stats
-                           </Box>
-                           <Box gridArea="info" background="doc" color="doc">
-                               Info
-                           </Box>
-                        
-                    </Grid>
-                        
+                <Main style={{width:"100%", height:"90%"}} >
+                    
                 </Main>
 
             </Grommet>
