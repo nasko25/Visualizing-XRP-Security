@@ -16,6 +16,7 @@ export default class NodePeerGraph extends Component {
         nodes.push({
             id: 1,
             shape: "dot",
+            size: 15,
             color: {
                 border: "white",
                 background: "black",
@@ -26,6 +27,7 @@ export default class NodePeerGraph extends Component {
             nodes.push({
                 id: i,
                 shape: "dot",
+                size: 15,
                 color: {
                     background:
                         this.props.node_info.peers[i - 2].trust_score < 0.5
@@ -49,7 +51,9 @@ export default class NodePeerGraph extends Component {
         };
         const options = {
             physics: {
-                enabled: false,
+                hierarchicalRepulsion: {
+                    nodeDistance: 140
+                }
             },
         };
         const network = new Network(container, data, options);
@@ -58,12 +62,7 @@ export default class NodePeerGraph extends Component {
     render() {
         return (
             <>
-                <div>
-                    <div className="peer-network" ref={this.networkRef} />
-                    <div className="node-info">
-                        <h1>Nice</h1>
-                    </div>
-                </div>
+                <div className="peer-network" ref={this.networkRef} />
                 <Button onClick={this.createNetwork}>Peers</Button>
             </>
         );

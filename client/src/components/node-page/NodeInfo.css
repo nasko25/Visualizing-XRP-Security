@@ -20,3 +20,13 @@
 .node_info_json_view {
     text-align: left;
 }
+
+.peer-network {
+    width: 1000px;
+    height: 1000px;
+}
+
+.nodeMain {
+    width: 100vw;
+    height: 100vh;
+}

@@ -15,15 +15,16 @@ class NodePageMain extends React.Component {
 
     render() {
         return (
-            <Grommet
+            <Grommet 
+                style={{ width: "100%", height: "100%" }}
                 theme={{ global: { colors: { doc: '#C3C3C3', t: "#000000"} } }} >
 
-                <Header background="doc" height="xsmall" >
+                <Header background="doc" style={{ width: "100%", height: "10%" }}>
                     {/* <Nav direction="row"  align="center">
                         <Heading size="3xl" weight="bold" color="t">Node Page</Heading>
                         <Button>Back to Homepage</Button>
                         <TextInput size="small"/>
-                    </Nav> */}
+                    </Nav>
 
                     <Grid
                         size="auto"
@@ -38,26 +39,29 @@ class NodePageMain extends React.Component {
                             <Box gridArea="heading" aria-expanded="true" background="brand"></Box>
                             <Box gridArea="button_return" size="auto"></Box>
                             <Box gridArea="search"size="auto" ></Box>
-                    </Grid>
+                    </Grid> */}
                 </Header>
 
-                <Main>
+                <Main className="nodeMain">
                     <Grid
-                        rows={["large", "medium"]}
-                        columns={["large", "large"]}
+                        style={{ width: "98%", height: "88%" }}
+                        rows={["1/2", "1/2"]}
+                        columns={["1/2", "1/2"]}
+                        gap="2%"
+                        // border="true"
                         areas={[
                             { name: 'map', start: [0, 0], end: [0, 0] },
-                            { name: 'stats', start: [0, 1], end: [0, 1] },
-                            { name: 'info', start: [1, 0], end: [2, 0] },
+                            { name: 'stats', start: [1, 0], end: [1, 1] },
+                            { name: 'info', start: [0, 1], end: [0, 1] },
                         
                         ]}>
-                           <Box gridArea="map" background="doc">{/*  */}
+                           <Box round="5%" border={{color: "doc"}} gridArea="map" background="rgb(38, 38, 38)">{/*  */}
                                 Map
                            </Box>
-                           <Box gridArea="stats" background="doc">
+                           <Box round="5%" border={{color: "doc"}} gridArea="stats" background="rgb(38, 38, 38)">
                                Stats
                            </Box>
-                           <Box gridArea="info" background="doc" color="doc">
+                           <Box round="5%" border={{color: "doc"}} gridArea="info" background="rgb(38, 38, 38)" color="doc">
                                Info
                            </Box>
                         
