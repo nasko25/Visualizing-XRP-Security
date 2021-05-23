@@ -8,7 +8,6 @@
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
     "bootstrap": "^5.0.0",
-    "chokidar": "^3.5.1",
     "grommet": "^2.17.2",
     "leaflet": "^1.7.1",
     "leaflet.markercluster": "^1.5.0",
@@ -17,7 +16,6 @@
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.0",
     "react-dom": "^17.0.2",
-    "react-json-view": "^1.21.3",
     "react-leaflet": "^3.1.0",
     "react-leaflet-markercluster": "^3.0.0-rc1",
     "react-router-dom": "^5.2.0",
@@ -27,8 +25,7 @@
     "styled-components": "^5.3.0",
     "typescript": "^4.2.4",
     "vis-data": "^7.1.2",
-    "vis-network": "^9.0.4",
-    "web-vitals": "^1.1.1"
+    "vis-network": "^9.0.4"
   },
   "scripts": {
     "start": " react-scripts start",
