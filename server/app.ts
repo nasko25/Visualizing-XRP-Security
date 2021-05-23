@@ -55,9 +55,9 @@ function repeated_crawl() {
 
 repeated_crawl();
 
-startPortScanner().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
+// startPortScanner().catch((e) => {
+//     console.log(`Crawler exited with the exception: ${e}.`);
+// });
 
 app.get('/insert-node', (req, res) => {
     var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
