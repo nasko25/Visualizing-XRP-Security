@@ -19,6 +19,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "express": "^4.17.1",
+    "geoip-lite": "^1.4.2",
     "mysql": "2.18.1",
     "node-nmap": "^4.0.0",
     "node-schedule": "^2.0.0",

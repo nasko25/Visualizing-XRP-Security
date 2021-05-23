@@ -1,4 +1,5 @@
 import axios from 'axios';
+const geoip  = require('geoip-lite');
 import config from './config/config.json';
 import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
 
@@ -9,7 +10,11 @@ class GeoLocate{
     IPList: string[];
     DBRequestResolved = true;
 
+    // configurable from the config.json file
+    useIPStack = false;
+
     constructor(IPs?: string[]){
+        this.useIPStack = config.useIPStack;
         // if the IPs argument is provided, use the given IPs to get their geoloaction,
         // but if no IPs are provided, get the geolocation of nodes whose geolocation we don't yet know
         this.IPList = IPs || this.getIPsFromDB();
@@ -35,21 +40,28 @@ class GeoLocate{
     }
 
     async getData(ip: string) {
-        // TODO use geoip
-        //access key needed for ipstack api
-        const accessKey: string = config.accessKey;
-        try {
-           let response = await axios({
-                url: 'http://api.ipstack.com/' + ip + '?access_key=' + accessKey,
-                method: 'get',
-                timeout: 8000
-            })
-            if(response.status == 200){
-                return [response.data.latitude, response.data.longitude];
+        if (this.useIPStack) {
+            //access key needed for ipstack api
+            const accessKey: string = config.accessKey;
+            try {
+               let response = await axios({
+                    url: 'http://api.ipstack.com/' + ip + '?access_key=' + accessKey,
+                    method: 'get',
+                    timeout: 8000
+                })
+                if(response.status == 200){
+                    return [response.data.latitude, response.data.longitude];
+                }
+                throw new Error('response was not 200');    //sad moments here
+            }catch (err) {
+                throw new Error(err);
             }
-            throw new Error('response was not 200');    //sad moments here
-        }catch (err) {
-            throw new Error(err);
+        }
+        else {
+            const location = geoip.lookup(ip);
+            if (location)
+                return location.ll;
+            throw new Error(`Cannot get geolocation of IP address ${ip}`);
         }
     }
     //Recursively call from callback. This is probably forbidden by the Geneva Convention, but no other way to do it.
@@ -63,9 +75,15 @@ class GeoLocate{
             console.log(res);
             insertLocation(res, this.IPList[curr]);
             //Delay requests by 1 second, so to not get blocked by the API
+            // (but only if using ipstack)
 
-            this.wait(1).then((res) => this.locateHelper(curr+1)); 
-        })
+            if (this.useIPStack)
+                this.wait(1).then((res) => this.locateHelper(curr+1));
+            else
+                this.locateHelper(curr+1);
+        }).catch(err => {
+            console.error("Geolocator returned an error: ", err);
+        });
     }
 
     locate(){
@@ -78,7 +96,7 @@ class GeoLocate{
         }
 
         // TODO add comments
-        // TODO IPs with the ::ffff:1.2.3.4 format do not work with the geolocator API
+        // TODO IPs with the ::ffff:1.2.3.4 format do not work with the geolocator API and the npm package
         try{
             this.locateHelper(0);
         } catch(e){
