@@ -10,7 +10,7 @@ import {
     BrowserRouter,
     Switch
 } from 'react-router-dom'
-import NodeInfo from "./node-page/NodeInfo";
+import NodePageMain from "./node-page/NodePageMain";
 
 export default class Dashboard extends Component {
 
@@ -64,7 +64,7 @@ export default class Dashboard extends Component {
                 <Switch>
                     <Route path={"/node-info"}>
                         {/*  Place the other page component here  */}
-                        <NodeInfo node={this.getNodeInfo()} />
+                        <NodePageMain key="22" node_info={{}}/>
                     </Route>
                     <Route path={"/"}>
                         <div className='Dashboard'>

@@ -8,7 +8,7 @@ type NodePageProps = {
     key: string
 }
 
-class NodePageMain extends React.Component {
+class NodePageMain extends React.Component<NodePageProps> {
 
     // The state
     state = {
