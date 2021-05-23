@@ -1,9 +1,9 @@
 import React, { ChangeEvent, ReactPropTypes } from "react";
-import { Box, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPress, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
+import { Box, DataChart, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPress, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import {Port, Peer, NodeInfo, NodePageState, NodePageProps} from "./NodePageTypes";
+import { Port, Peer, NodeInfo, NodePageState, NodePageProps } from "./NodePageTypes";
 
 
 /**
@@ -60,30 +60,47 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
         }
         peers.sort((a: Peer, b: Peer) => {
-            return(b.score - a.score);
+            return (b.score - a.score);
         });
         var info = {
             public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
             IP: "34.221.161.114",
             peers: peers,
             trust_score: 1,
-            ports: [{port_number: 22, service: "SSH"},
-                    {port_number: 80, service: "HTTP"}],
+            ports: [{ port_number: 22, service: "SSH" },
+            { port_number: 80, service: "HTTP" }],
             rippled_version: "1.7.0"
         };
-        if(this.state.node_info){
-            if(this.state.node_info.public_key === ""){
+        if (this.state.node_info) {
+            if (this.state.node_info.public_key === "") {
                 this.setState({ node_info: info });
             }
         }
-        
+
         return info;
     }
+
+    createDataChart() {
+        const data = [{ date: '2020-08-20', amount: 2 }, { date: '2020-08-21', amount: 47 }, { date: '2020-08-22', amount: 33 }, { date: '2020-08-23', amount: 47 }];
+        return (
+            <DataChart
+                // style={{width: "100%"}}
+                data={data}
+                series={['date', { property: 'amount' }]}
+                chart={[
+                    { property: 'amount', type: 'line', opacity: 'weak', thickness: '2%' },
+                    { property: 'amount', type: 'point', point: 'circle', thickness: '2%' }
+                ]}
+                // bounds="align"
+                guide={{ x: { granularity: 'fine' } }}
+            />
+        );
+    };
 
     // Event Handler for the Search Bar
     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
-        this.setState({displayGreen: !this.state.displayGreen});
+        this.setState({ displayGreen: !this.state.displayGreen });
         // TODO send request to check for the key
         // If key exists and information is obtained, render a green button to lead to the page
         // If not, render a red box with message
@@ -92,10 +109,37 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     preparePortList() {
         var ports: string = "";
         var thisPorts = this.state.node_info.ports;
-        for(var i = 0; i < thisPorts.length; i++){
+        for (var i = 0; i < thisPorts.length; i++) {
             ports = ports.concat("Port: " + thisPorts[i].port_number + " Service: " + thisPorts[i].service + "\n");
         }
         return ports;
+    }
+
+    createNodeInformationList() {
+        return <List
+            style={{ width: "70%", height: "70%", alignSelf: "center" }}
+
+            primaryKey="name"
+            secondaryKey="value"
+
+            data={[
+                { name: 'Security score', value: this.state.node_info.trust_score },
+                { name: 'IP', value: this.state.node_info.IP },
+                { name: 'rippled_version', value: this.state.node_info.rippled_version },
+                { name: 'ports', value: this.preparePortList() },
+            ]}
+        />
+    }
+
+    createPeerList() {
+        return <List
+            style={{ width: "70%", alignSelf: "center" }}
+
+            primaryKey="public_key"
+            secondaryKey="score"
+
+            data={this.state.node_info.peers}
+        />
     }
 
     render() {
@@ -133,7 +177,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             alignSelf="center"
                         // background="#909090"
                         >
-                            <Button variant="dark" onClick= {() => this.setState({displayButton: true})} style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                            <Button variant="dark" onClick={() => this.setState({ displayButton: true })} style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
                             </Button>
                         </Box>
@@ -167,42 +211,24 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'info', start: [0, 1], end: [0, 1] },
                         ]}>
                         <Box round="5%" margin="2%" gridArea="map" background={COLORS.main}>
-                            {/* <NodePeerGraph node_info={this.state.node_info === {} ? this.getNodeInfo() : this.state.node_info}></NodePeerGraph> */}
                             <NodePeerGraph node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
-                            {/* <Heading size="100%" margin="2%">Node Information</Heading> */}
                             <Heading size="100%" margin="3%">{this.state.node_info.public_key}</Heading>
-                            <List
-                                style={{ width: "70%", height: "70%", alignSelf: "center" }}
-
-                                primaryKey="name"
-                                secondaryKey="value"
-
-                                data={[
-                                    { name: 'Security score', value: this.state.node_info.trust_score },
-                                    { name: 'IP', value: this.state.node_info.IP },
-                                    { name: 'rippled_version', value: this.state.node_info.rippled_version },
-                                    { name: 'ports', value: this.preparePortList() },
-                                ]}
-                            />
+                                {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
-                            <Box className="scrollbar-hidden" overflow="auto" style={{ height: "30%" }} margin="2%" round="20px" border={{ color: "hd_bgnd" }} background="rgb(70, 70, 38)">
-                                <List
-                                    style={{ width: "70%", alignSelf: "center" }}
-
-                                    primaryKey="public_key"
-                                    secondaryKey="score"
-
-                                    data={this.state.node_info.peers}
-                                />
+                            <Box className="scrollbar-hidden" overflow="auto" style={{ height: "40%" }} margin="2%" round="20px" border={{ color: "hd_bgnd" }} background="rgb(70, 70, 38)">
+                                {this.createPeerList()}
                             </Box>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
-                            <Text size="xlarge">Info</Text>
-                            <Box margin="20px" alignSelf="center" width="200px" height="200px">
+                            {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
-                            </Box>  </Box>
+                            </Box> */}
+                            <Box alignSelf="center" width="100%" height="100%">
+                                {this.createDataChart()}
+                            </Box>
+                        </Box>
                     </Grid>
                 </main>
             </Grommet>

@@ -39,7 +39,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         nodes.push({
             id: 1,
             shape: "dot",
-            size: 15,
+            size: 20,
             color: {
                 border: "white",
                 background: "black",
@@ -54,12 +54,12 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             nodes.push({
                 id: i,
                 shape: "dot",
-                size: 15,
+                size: 20,
                 color: {
                     background:
                         curr.score < 0.5
-                            ? "rgb(255," + 2 * curr.score * 255 +  ", 0)"
-                            : "rgb("+ 2 * (1 - curr.score) * 255 + ", 255, 0)",
+                            ? "red"
+                            : "rgb(" + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 255, 0)",
                     border: "white",
                 },
                 title: "Public key: " + curr.public_key + "\nScore: " + curr.score,
@@ -67,7 +67,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             edges.push({
                 from: 1,
                 to: i,
-                width: 5,
+                width: 2,
                 color: "white",
             });
         }
@@ -79,23 +79,15 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         };
         const options = {
             physics: false,
-            // configure: {
-            //     enabled: true,
-            //     showButton: true
-            // }
             interaction: {
-                // tooltipDelay: 10,
-                hover: true      // Set a really big delay - one hour
+                hover: true
             },
             manipulation: {
                 enabled: true
             }
         };
         const network = new Network(container, data, options);
-        // network.on("click", function (params) {
-        //     // Check if you clicked on a node; if so, display the title (if any) in a popup
-        //     network.interactionHandler._checkShowPopup(params.pointer.DOM);
-        // });
+
     }
 
     render() {
