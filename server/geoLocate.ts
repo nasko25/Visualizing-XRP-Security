@@ -1,8 +1,10 @@
 import axios from 'axios';
-const geoip  = require('geoip-lite');
 import config from './config/config.json';
 import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
 
+let geoip: any;
+if (!config.useIPStack)
+    geoip = require('geoip-lite');
 
 var testData: string[] = ['91.12.98.74', '209.195.2.50', '194.35.86.10']
 
@@ -58,9 +60,11 @@ class GeoLocate{
             }
         }
         else {
-            const location = geoip.lookup(ip);
-            if (location)
-                return location.ll;
+            if (geoip){
+                const location = geoip.lookup(ip);
+                if (location)
+                    return location.ll;
+            }
             throw new Error(`Cannot get geolocation of IP address ${ip}`);
         }
     }
