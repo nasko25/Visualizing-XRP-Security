@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import { Network } from "vis-network";
 
 /**
- * Componenta that visualizes the peer connections of a Node
+ * Component that visualizes the peer connections of a Node
  * Each peer is colored according to their trust score
  */
 
@@ -43,9 +43,9 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 background: "black",
             },
         });
-
+        console.log("graphe", this.props.node_info);
         // Add network node and connection for each peer
-        var node_info: any = this.state.node_info;
+        var node_info: any = this.props.node_info;
 
         for (var i = 2; i <= node_info.peers.length + 1; i++) {
             nodes.push({

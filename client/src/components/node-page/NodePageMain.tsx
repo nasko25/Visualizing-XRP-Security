@@ -16,7 +16,7 @@ import "./NodePage.css";
 
 // The properties that should be passed in JSX to this component
 type NodePageProps = {
-    node_info?: NodeInfo,
+    node_info: NodeInfo,
     key: string
 }
 
@@ -33,7 +33,14 @@ type NodeInfo = {
     public_key: string,
     peers: Peer[],
     trust_score: number,
-    IP: string
+    IP: string,
+    rippled_version: string,
+    ports: Port[]
+}
+
+type Port = {
+    port_number: number,
+    service: string
 }
 
 type Peer = {
@@ -60,11 +67,13 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         // The state
         this.state = {
             key: "",
-            node_info: {
+            node_info: this.props.node_info ? this.props.node_info : {
                 public_key: "",
+                IP: "",
                 peers: [],
                 trust_score: 0,
-                IP: ""
+                rippled_version: "",
+                ports: []
             },
             speed: 3,
             displayButton: false,
@@ -74,27 +83,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         // this.state.key = props.key;
 
         this.getNodeInfo = this.getNodeInfo.bind(this);
-
-        // If we have the node information in the props, we set the state
-        // Otherwise, we send a request to the server
-        if (props.node_info) {
-            this.setState({ node_info: props.node_info });
-            console.log(this.state, "not bruh");
-        } else {
-            // this.getNodeInfo();
-            this.setState({node_info: {
-                IP: "nice",
-                peers: [{
-                    public_key: "bruh",
-                    score: 0.42
-                }],
-                public_key: "pk",
-                trust_score: 1
-            }}, () => {
-                console.log(this.state);    
-            })
-            console.log(this.state);
-        }
+        this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
     }
 
     // Just for testing
@@ -102,29 +91,38 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     getNodeInfo() {
         var peers = [];
         for (var i = 0; i < 50; i++) {
-            peers.push({ public_key: "cbwidvcd", score: Math.random() });
+            peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
         }
         var info = {
             public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
             IP: "34.221.161.114",
             peers: peers,
             trust_score: 1,
+            ports: [{port_number: 22, service: "SSH"}],
+            rippled_version: "1.7.0"
         };
-        // this.setState({ node_info: info }, () => {
-        //     console.log("nice");
-        // });
+        if(this.state.node_info){
+            if(this.state.node_info.public_key === ""){
+                this.setState({ node_info: info }, () => {
+                    console.log("nice");
+                });
+            }
+        }
+        
         return info;
     }
 
     // Event Handler for the Search Bar
     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
+        this.setState({displayGreen: !this.state.displayGreen});
         // TODO send request to check for the key
         // If key exists and information is obtained, render a green button to lead to the page
         // If not, render a red box with message
     }
 
     render() {
+        this.getNodeInfo();
         return (
             <Grommet
                 style={{ width: "100%", height: "100%" }}
@@ -158,7 +156,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             alignSelf="center"
                         // background="#909090"
                         >
-                            <Button style={{ width: "80%", height: "80%", alignSelf: "center", background: "red" }} >
+                            <Button onClick= {() => this.setState({displayButton: true})} style={{ width: "80%", height: "80%", alignSelf: "center", background: "red" }} >
                                 <Text contentEditable="false" color={COLORS.main} size="large" weight="bold">Back To Homepage</Text>
                             </Button>
                         </Box>
@@ -193,10 +191,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         ]}>
                         <Box round="5%" margin="2%" gridArea="map" background={COLORS.main}>
                             {/* <NodePeerGraph node_info={this.state.node_info === {} ? this.getNodeInfo() : this.state.node_info}></NodePeerGraph> */}
-                            <NodePeerGraph node_info={this.getNodeInfo()}></NodePeerGraph>
+                            <NodePeerGraph node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
-                            <Heading size="100%" margin="2%">Node Information</Heading>
+                            {/* <Heading size="100%" margin="2%">Node Information</Heading> */}
+                            <Heading size="100%" margin="3%">{this.state.node_info.public_key}</Heading>
                             <List
                                 style={{ width: "70%", height: "70%", alignSelf: "center" }}
 
@@ -204,9 +203,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 secondaryKey="value"
 
                                 data={[
-                                    { name: 'Security score', value: 0.9 },
-                                    { name: 'rippled version', value: "1.7.0" },
-                                    { name: 'IP', value: "92.123.145.165" },
+                                    { name: 'Security score', value: this.state.node_info.trust_score },
+                                    { name: 'IP', value: this.state.node_info.IP },
+                                    { name: 'rippled_version', value: this.state.node_info.rippled_version },
+                                    { name: 'ports', value: this.state.node_info.ports.toString },
                                 ]}
                             />
                             <Heading size="100%" margin="2%">Peer Information</Heading>
