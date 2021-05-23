@@ -505,9 +505,9 @@ class PortScan {
      */
     defScanOfIp(IP: string) {
         return new Promise<Node | null>((resolve) => {
-            var add = "-4";
+            var arg_ip_version = "-4";
             if (IP.includes(":")) {
-                add = "-6";
+                arg_ip_version = "-6";
             }
             exec.exec(
                 "nmap " +
@@ -515,7 +515,7 @@ class PortScan {
                     " -Pn -T" +
                     T_LEVEL_SHORT +
                     " " +
-                    add +
+                    arg_ip_version +
                     " -oX - --host-timeout " +
                     TIMEOUT_SHORT_SCAN,
                 { maxBuffer: Infinity },
@@ -532,15 +532,15 @@ class PortScan {
      * @param portList list of ports to check whether they are open
      * @returns Promise that resolves to either null or a Node object (ip, open ports, is it up)
      */
-    checkSpecificports(IP: string, portList: string | null) {
+    checkSpecificports(IP: string, portList?: string | null) {
         return new Promise<Node | null>((resolve) => {
-            if (portList == null || portList == "") {
+            if (portList === null || portList === "") {
                 resolve(null);
                 return;
             }
-            var add = "-4";
+            var arg_ip_version = "-4";
             if (IP.includes(":")) {
-                add = "-6";
+                arg_ip_version = "-6";
             }
             exec.exec(
                 "nmap " +
@@ -548,7 +548,7 @@ class PortScan {
                     " -Pn -T" +
                     T_LEVEL_SHORT +
                     " " +
-                    add +
+                    arg_ip_version +
                     " -oX - --host-timeout " +
                     TIMEOUT_SHORT_SCAN +
                     " -p " +
@@ -601,23 +601,23 @@ class PortScan {
                     });
                     continue;
                 }
-                var buff = currentHost.ports[0].port;
-                var outData = Array();
-                if (buff) {
-                    for (var port in buff) {
+                var curHostPorts = currentHost.ports[0].port;
+                var outOpenPorts = Array();
+                if (curHostPorts) {
+                    for (var port in curHostPorts) {
                         if (
-                            buff[port].state[0].$.state &&
-                            buff[port].state[0].$.state == "open"
+                          curHostPorts[port].state[0].$.state &&
+                          curHostPorts[port].state[0].$.state === "open"
                         ) {
-                            outData.push({
-                                protocol: buff[port].service[0].$.name,
-                                portid: buff[port].$.portid,
+                          outOpenPorts.push({
+                                protocol: curHostPorts[port].service[0].$.name,
+                                portid: curHostPorts[port].$.portid,
                             });
                         }
                     }
                     returnVal.push({
                         ip: currentHost.address[0].$.addr,
-                        openPorts: outData,
+                        openPorts: outOpenPorts,
                         up: true,
                     });
                 }
@@ -633,15 +633,15 @@ class PortScan {
      * @param IPv4 specifies whether the list is in IPv4 or IPv6 format (mix of both will fail)
      * @returns Promise object which will resolve to an array of nodes or null
      */
-    checkBulk(IPList: string, IPv4: boolean) {
-        var add = " -4";
-        if (!IPv4) add = " -6";
+    checkBulk(IPList: string, isIPv4: boolean) {
+        var arg_ip_version = " -4";
+        if (!isIPv4) arg_ip_version = " -6";
         console.log(" checking bulk  " + IPList);
         return new Promise<Node[] | null>((resolve) => {
             exec.exec(
                 "nmap " +
                     IPList +
-                    add +
+                    arg_ip_version +
                     " -Pn -T" +
                     T_LEVEL_LONG +
                     " -oX - -p 0-65535 --host-timeout " +
