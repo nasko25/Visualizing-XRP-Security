@@ -1,7 +1,5 @@
 import { Component } from "react";
 import React from 'react';
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
 
 export default class DashboardNavbar extends Component {
     render() {
@@ -22,18 +20,18 @@ export default class DashboardNavbar extends Component {
 
             <div className='navbar'>
                 <div className='name'>
-                    <h1>Visualing Security Metrics</h1>
+                    <h1>CISELab</h1>
                 </div>
                 <div className='wrapper'>
-                    <div className="el">
+                    {/* <div className="el">
                         <a>Home</a>
-                    </div>
-                    <div className="el">
+                    </div> */}
+                    {/* <div className="el">
                         <a>Dashboard</a>
                     </div>
                     <div className="el">
                         <a>About Us</a>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         )

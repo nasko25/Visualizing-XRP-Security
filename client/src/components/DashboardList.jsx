@@ -1,62 +1,67 @@
 import { Component } from "react";
 import React from 'react';
-import ListGroup from 'react-bootstrap/ListGroup';
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { MDBContainer } from 'mdbreact';
-import {List, InfiniteLoader, AutoSizer} from 'react-virtualized';
+import { Grommet, DataTable, Text, Box} from "grommet";
+import Button from 'react-bootstrap/Button'
 
 export default class DashboardList extends Component {
 
     constructor(props) {
         super(props);
-
-        // need to bind "this" to the rowRenderer function, so we can use "this" in the function
-        this.rowRenderer = this.rowRenderer.bind(this);
     }
-
-    noRowsRenderer() {
-        return <div >No rows</div>;
-    }
-
-    rowRenderer({index, isScrolling, key, style}) {
-        let name = 'item_darker';
-
-        if (index % 2 != 0) {
-            name = 'item_lighter';
-        }
-
-        return (
-            <div style = {style} key = {key} className={name}>
-                <ListGroup.Item>
-                    <span className='item'>
-                        IP : {
-                            this.props.data[index].IP === "undefined" ? "IP Hidden": this.props.data[index].IP
-                        } | 
-                        Version : {this.props.data[index].rippled_version} | 
-                        Public Key : {this.props.data[index].public_key} | 
-                        Uptime : {this.props.data[index].uptime} | 
-                        Security Metric :
-                    </span> 
-                </ListGroup.Item>
-            </div>
-        );
-  }
 
     render() {
         return (
-            <div className='list'>
-                <ListGroup>
-                    <List
-                        rowRenderer={this.rowRenderer}
-                        rowCount={this.props.data.length}
-                        height={620}
-                        rowHeight={40}
-                        width= {1400}
-                        overscanRowCount = {10}
-                        noRowsRenderer={this.noRowsRenderer}
+
+            <div className='table-group'>
+                <Grommet style={{color: 'white', maxHeight: '80%', maxWidth: '100%'}}>
+                    <Box style={{}}>
+                    <DataTable
+                        columns={[
+                            {
+                                property: 'public_key',
+                                header: <Text>Public Key</Text>,
+                                size: '50%'
+                            },
+                            {
+                                property: 'rippled_version',
+                                header: <Text>Version</Text>,
+                                size: '15%'
+                            },
+                            {
+                                property: 'uptime',
+                                header: <Text>Uptime</Text>,
+                                size: '10%',
+                                align: 'start'
+                            },
+                            {
+                                property: 'trustScore',
+                                header: <Text>Trust Score</Text>,
+                                size: '10%',
+                                align: 'start'
+                            }
+                        ]}
+                        data={this.props.data}
+                        step='10'
+                        size='large'
                     />
-                </ListGroup>
+                    </Box>
+                </Grommet>
+                <div className='buttons'>
+                    <div className='button-duo'>
+                        <div className='button-stock'>
+                        <Button variant="dark" size='lg'>Stock Nodes</Button>
+                        </div>
+                        <div className='button-validtor'>
+                        <Button variant="dark" size='lg'>Validator Nodes</Button>
+                        </div>
+                    </div>
+                    <div className='button-go-to'>
+                    <Button variant="dark" size='lg'>Go To Node Page</Button>
+                    </div>
+                </div>
             </div>
+
         )
     }
 }

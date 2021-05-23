@@ -2,17 +2,16 @@ import { Component } from "react";
 import React from 'react';
 import DashboardNavbar from "../components/DashboardNavbar";
 import DashboardList from "../components/DashboardList";
-import DashboardChart from "../components/DashboardChart";
 import TopMap from "../components/TopMap";
 import axios from 'axios';
-import {
-    Route,
-    BrowserRouter,
-    Switch
-} from 'react-router-dom'
+
 import NodePageMain from "./node-page/NodePageMain";
+let dataJson = require("../nodes.json");
 
 export default class Dashboard extends Component {
+    // Hardcoded data for example purposes for the midterm presentaion
+    // Will be removed when website is fully functional
+    data = dataJson.data;
 
     constructor(props) {
         super(props);
@@ -30,16 +29,13 @@ export default class Dashboard extends Component {
     }
 
     getData() {
-        return axios.get("http://localhost:8080/get-all-nodes").then(response => {
-            console.log(response.data);
-            return response.data;
-        });
-    }
+        return axios.get("http://localhost:8080/node/get-all-nodes");
+      }
 
     update_state() {
-        let temp = this.getData();
-        temp.then(data => {
-            this.setState({ nodes: data });
+        this.getData().then(response => {
+            console.log(response.data);
+            this.setState({nodes: response.data});
         })
         console.log("Node info updated...");
         setTimeout(this.update_state, 300000);
@@ -59,25 +55,16 @@ export default class Dashboard extends Component {
     }
 
     render() {
-        return (
-            <BrowserRouter>
-                <Switch>
-                    <Route path={"/node-info"}>
-                        {/*  Place the other page component here  */}
-                        <NodePageMain key="22" node_info={{}}/>
-                    </Route>
-                    <Route path={"/"}>
-                        <div className='Dashboard'>
-                            <DashboardNavbar />
-                            <div className='test'>
-                                <TopMap />
-                                <DashboardList data={this.state.nodes} number={this.state.number} key={this.state.updateKey} />
-                            </div>
-                            <DashboardChart />
-                        </div>
-                    </Route>
-                </Switch>
-            </BrowserRouter>
+        return(
+            <div className='Dashboard'>
+                <div className='dashboard_nav'>
+                <DashboardNavbar />
+                </div>
+                <div className='dashboard_body'>
+                    <TopMap data={this.state.nodes}/>
+                    <DashboardList data = {this.state.nodes} key={this.state.updateKey}/>
+                </div>
+            </div>
         );
     }
 }
