@@ -3,6 +3,7 @@ import { Box, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPress, List, Ma
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
+import {Port, Peer, NodeInfo, NodePageState, NodePageProps} from "./NodePageTypes";
 
 
 /**
@@ -12,41 +13,6 @@ import "./NodePage.css";
  * a statistical chart and an info box.
  * 
  */
-
-
-// The properties that should be passed in JSX to this component
-type NodePageProps = {
-    node_info: NodeInfo,
-    key: string
-}
-
-// How the state should look like
-type NodePageState = {
-    key: string,
-    node_info: NodeInfo,
-    speed: number,
-    displayButton: boolean,
-    displayGreen: boolean
-}
-
-type NodeInfo = {
-    public_key: string,
-    peers: Peer[],
-    trust_score: number,
-    IP: string,
-    rippled_version: string,
-    ports: Port[]
-}
-
-type Port = {
-    port_number: number,
-    service: string
-}
-
-type Peer = {
-    public_key: string,
-    score: number
-}
 
 var SETUP = {
     header_height: 10,
@@ -59,7 +25,6 @@ var COLORS = {
 }
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
-
 
     constructor(props: NodePageProps) {
         super(props);
@@ -84,28 +49,31 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
         this.getNodeInfo = this.getNodeInfo.bind(this);
         this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
+        this.preparePortList = this.preparePortList.bind(this);
     }
 
     // Just for testing
     // Should actually send a request to server if props is empty
     getNodeInfo() {
-        var peers = [];
+        var peers: Peer[] = [];
         for (var i = 0; i < 50; i++) {
             peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
         }
+        peers.sort((a: Peer, b: Peer) => {
+            return(b.score - a.score);
+        });
         var info = {
             public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
             IP: "34.221.161.114",
             peers: peers,
             trust_score: 1,
-            ports: [{port_number: 22, service: "SSH"}],
+            ports: [{port_number: 22, service: "SSH"},
+                    {port_number: 80, service: "HTTP"}],
             rippled_version: "1.7.0"
         };
         if(this.state.node_info){
             if(this.state.node_info.public_key === ""){
-                this.setState({ node_info: info }, () => {
-                    console.log("nice");
-                });
+                this.setState({ node_info: info });
             }
         }
         
@@ -119,6 +87,15 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         // TODO send request to check for the key
         // If key exists and information is obtained, render a green button to lead to the page
         // If not, render a red box with message
+    }
+
+    preparePortList() {
+        var ports: string = "";
+        var thisPorts = this.state.node_info.ports;
+        for(var i = 0; i < thisPorts.length; i++){
+            ports = ports.concat("Port: " + thisPorts[i].port_number + " Service: " + thisPorts[i].service + "\n");
+        }
+        return ports;
     }
 
     render() {
@@ -156,8 +133,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             alignSelf="center"
                         // background="#909090"
                         >
-                            <Button onClick= {() => this.setState({displayButton: true})} style={{ width: "80%", height: "80%", alignSelf: "center", background: "red" }} >
-                                <Text contentEditable="false" color={COLORS.main} size="large" weight="bold">Back To Homepage</Text>
+                            <Button variant="dark" onClick= {() => this.setState({displayButton: true})} style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                                <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
                             </Button>
                         </Box>
 
@@ -206,7 +183,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                     { name: 'Security score', value: this.state.node_info.trust_score },
                                     { name: 'IP', value: this.state.node_info.IP },
                                     { name: 'rippled_version', value: this.state.node_info.rippled_version },
-                                    { name: 'ports', value: this.state.node_info.ports.toString },
+                                    { name: 'ports', value: this.preparePortList() },
                                 ]}
                             />
                             <Heading size="100%" margin="2%">Peer Information</Heading>
