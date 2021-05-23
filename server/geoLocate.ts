@@ -65,7 +65,8 @@ class GeoLocate{
                 if (location)
                     return location.ll;
             }
-            throw new Error(`Cannot get geolocation of IP address ${ip}`);
+            console.error(`Cannot get geolocation of IP address ${ip}`);
+            return [null, null];
         }
     }
     //Recursively call from callback. This is probably forbidden by the Geneva Convention, but no other way to do it.
