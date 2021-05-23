@@ -1,16 +1,28 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
-import { PartItem, DataSet, Network } from "vis-network";
+import { Network } from "vis-network";
 
 /**
  * Componenta that visualizes the peer connections of a Node
  * Each peer is colored according to their trust score
  */
 
-export default class NodePeerGraph extends Component {
-    constructor(props) {
+type NodePeerGraphProps = {
+    node_info: object,
+
+}
+
+export default class NodePeerGraph extends Component<NodePeerGraphProps> {
+
+    networkRef: React.RefObject<HTMLDivElement>;
+
+    state = {
+        node_info: {},
+    }
+
+    constructor(props : NodePeerGraphProps) {
         super(props);
-        this.state = {};
+        this.state.node_info = props.node_info;
         this.networkRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
     }
@@ -33,14 +45,16 @@ export default class NodePeerGraph extends Component {
         });
 
         // Add network node and connection for each peer
-        for (var i = 2; i <= this.props.node_info.peers.length + 1; i++) {
+        var node_info: any = this.state.node_info;
+
+        for (var i = 2; i <= node_info.peers.length + 1; i++) {
             nodes.push({
                 id: i,
                 shape: "dot",
                 size: 15,
                 color: {
                     background:
-                        this.props.node_info.peers[i - 2].trust_score < 0.5
+                        node_info.peers[i - 2].trust_score < 0.5
                             ? "red"
                             : "green",
                     border: "white",
@@ -54,7 +68,7 @@ export default class NodePeerGraph extends Component {
             });
         }
 
-        const container = this.networkRef.current;
+        const container: any = this.networkRef.current;
         const data = {
             nodes: nodes,
             edges: edges,
