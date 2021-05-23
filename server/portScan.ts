@@ -353,9 +353,9 @@ class PortScan {
      * @param listOfNodes the list of nodes which we are scanning
      */
     async shortScan(listOfNodes: NodePorts[]): Promise<void> {
-        for (var ip in listOfNodes) {
+        for (var index in listOfNodes) {
             var mapUnique = new Map();
-            if (listOfNodes[ip].ports == null) continue;
+            if (listOfNodes[index].ports === null) continue;
             var outPorts: string = "";
             var outProtocols: string = "";
             //console.log("First Scan")
@@ -364,10 +364,10 @@ class PortScan {
             var success2 = false;
 
             let out1: Node | null = await this.checkSpecificports(
-                listOfNodes[ip].ip,
-                listOfNodes[ip].ports
+                listOfNodes[index].ip,
+                listOfNodes[index].ports
             );
-            if (out1 != null && out1 && out1.up) {
+            if (out1 !== null && out1 && out1.up) {
                 var i: number = 0;
                 if (out1.openPorts.length > 0) {
                     mapUnique.set(
@@ -393,9 +393,9 @@ class PortScan {
 
             //console.log("Second scan")
 
-            var out2 = await this.defScanOfIp(listOfNodes[ip].ip);
+            var out2 = await this.defScanOfIp(listOfNodes[index].ip);
             //console.log("done " + out2);
-            if (out2 != null && out2 && out2.up) {
+            if (out2 !== null && out2 && out2.up) {
                 var i: number = 0;
                 if (flag == 0) {
                     outPorts = out2.openPorts[i].portid;
@@ -416,10 +416,10 @@ class PortScan {
             }
 
             if (success2 || success1) {
-                console.log(listOfNodes[ip].ip + " " + outPorts);
+                console.log(listOfNodes[index].ip + " " + outPorts);
                 var putin: NodePortsProtocols = {
-                    ip: listOfNodes[ip].ip,
-                    public_key: listOfNodes[ip].public_key,
+                    ip: listOfNodes[index].ip,
+                    public_key: listOfNodes[index].public_key,
                     ports: outPorts,
                     protocols: outProtocols,
                 };
@@ -470,24 +470,24 @@ class PortScan {
                 resolve(returnVal);
                 return;
             }
-            var buff = result.nmaprun.host[0].ports[0].port;
-            var outData = Array();
-            if (buff) {
-                for (var port in buff) {
+            var openPorts = result.nmaprun.host[0].ports[0].port;
+            var outOpenPorts = Array();
+            if (openPorts) {
+                for (var port in openPorts) {
                     if (
-                        buff[port].state[0].$.state &&
-                        buff[port].state[0].$.state == "open"
+                        openPorts[port].state[0].$.state &&
+                        openPorts[port].state[0].$.state === "open"
                     ) {
                         //console.log({ protocol: buff[port].service[0].$.name, portid: buff[port].$.portid })
-                        outData.push({
-                            protocol: buff[port].service[0].$.name,
-                            portid: buff[port].$.portid,
+                        outOpenPorts.push({
+                            protocol: openPorts[port].service[0].$.name,
+                            portid: openPorts[port].$.portid,
                         });
                     }
                 }
                 let returnVal: Node = {
                     ip: result.nmaprun.host[0].address[0].$.addr,
-                    openPorts: outData,
+                    openPorts: outOpenPorts,
                     up: true,
                 };
                 resolve(returnVal);
