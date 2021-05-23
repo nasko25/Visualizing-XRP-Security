@@ -1,20 +1,30 @@
 
-import React from "react";
-import { Box, Button, Grid, Grommet, Header, Heading, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
+import React, { ChangeEvent, ReactPropTypes } from "react";
+import { Box, Button, Grid, Grommet, Header, Heading, KeyPress, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
 import NodePeerGraph from "./NodePeerGraph";
 
+type NodePageProps = {
+    node_info?: any,
+    key: string
+}
 
 class NodePageMain extends React.Component {
 
-    constructor(props) {
+    // The state
+    state = {
+        key: "",
+        node_info: {},
+        speed: 3
+    }
+
+    constructor(props: NodePageProps) {
         super(props);
-        this.state = {
-            key: null,
-            speed: 3
-        };
+        this.state.key = props.key;
+
         this.getNodeInfo = this.getNodeInfo.bind(this);
-        if (this.props.node_info) {
-            this.setState({ node_info: this.props.node_info });
+        
+        if (props.node_info) {
+            this.setState({ node_info: props.node_info });
             console.log(this.state, "not bruh");
         } else {
             // this.setState({ node_info: this.getNodeInfo() });
@@ -48,8 +58,8 @@ class NodePageMain extends React.Component {
     }
 
     // Event Handler for the Search Bar
-    onKeyPressSearch(e) {
-        if(e.code === "Enter") alert("Search Triggered! Key entered is: " + e.target.value);
+    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
+        if(e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
         // TODO send request to check for the key
         // If key exists and information is obtained, render a green button to lead to the page
         // If not, render a red box with message
@@ -75,7 +85,7 @@ class NodePageMain extends React.Component {
                         <Box
                             gridArea="heading"
                             alignSelf="center" >
-                            <Heading size="3xl" weight="bold" color="t">Node Page</Heading>
+                            <Heading size="3xl" color="t">Node Page</Heading>
                         </Box>
                         <Box
                             height="80%"
@@ -90,7 +100,6 @@ class NodePageMain extends React.Component {
                         <Box gridArea="search"
                             alignSelf="center"
                             direction="row"
-                            alignSelf="center"
                             justify="center"
                             gap="small"
                             margin="10px">
@@ -100,7 +109,7 @@ class NodePageMain extends React.Component {
                     </Grid>
                 </Header>
 
-                <Main style={{ width: "100%", height: "90%" }}>
+                <main style={{ width: "100%", height: "90%" }}>
                     <Grid
                         style={{ width: "100%", height: "100%" }}
                         rows={["1/2", "1/2"]}
@@ -147,10 +156,10 @@ class NodePageMain extends React.Component {
                         <Box round="5%" border={{ color: "doc" }} margin="2%" gridArea="info" background="rgb(38, 38, 38)" color="doc">
                             <Text size="xlarge">Info</Text>
                             <Box margin="20px" alignSelf="center" width="200px" height="200px">
-                            <img width="100%" style={{  animation: `spin ${this.state.speed}s linear infinite`}} sizes={{}} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img"/>
+                            <img width="100%" style={{  animation: `spin ${this.state.speed}s linear infinite`}}  src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img"/>
                             </Box>  </Box>
                     </Grid>
-                </Main>
+                </main>
             </Grommet>
         );
     }
