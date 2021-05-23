@@ -54,7 +54,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 size: 15,
                 color: {
                     background:
-                        node_info.peers[i - 2].trust_score < 0.5
+                        node_info.peers[i - 2].score < 0.5
                             ? "red"
                             : "green",
                     border: "white",
@@ -88,10 +88,10 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             <>
                 <div
                     className="peer-network"
-                    style={{ width: "100%", height: "90%" }}
+                    style={{ width: "100%", height: "84%" }}
                     ref={this.networkRef} />
                 <Button
-                    style={{ width: "10%", height: "10%", alignSelf: "center" }}
+                    style={{ width: "10%", height: "10%", alignSelf: "center", margin: "1%"}}
                     onClick={this.createNetwork}>Peers</Button>
             </>
         );
