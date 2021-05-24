@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
 import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
+import { Link } from "react-router-dom";
 
 
 /**
@@ -199,7 +200,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             <Text alignSelf="center" weight="bold">Search</Text>
                             <TextInput size="small" onKeyPress={this.onKeyPressSearch} />
                             {this.state.displayButton === false ? null : this.state.displayGreen === false ?
-                                <Button style={{ alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
+                                <Link to="/">
+                                    <Button style={{ alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
+                                </Link>
                                 :
                                 <Button style={{ alignSelf: "center", background: "red", borderRadius: "10%", fontWeight: "bold" }} color="black" >Wrong Key</Button>
                             }

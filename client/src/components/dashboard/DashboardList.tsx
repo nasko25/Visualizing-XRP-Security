@@ -3,6 +3,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
 import Button from 'react-bootstrap/Button'
+import { Link } from "react-router-dom";
 
 
 export type DashboardListProps = {
@@ -56,14 +57,16 @@ export default class DashboardList extends Component<DashboardListProps> {
                 <div className='buttons'>
                     <div className='button-duo'>
                         <div className='button-stock'>
-                        <Button variant="dark" size='lg'>Stock Nodes</Button>
+                            <Button variant="dark" size='lg'>Stock Nodes</Button>
                         </div>
                         <div className='button-validtor'>
-                        <Button variant="dark" size='lg'>Validator Nodes</Button>
+                            <Button variant="dark" size='lg'>Validator Nodes</Button>
                         </div>
                     </div>
                     <div className='button-go-to'>
-                    <Button variant="dark" size='lg'>Go To Node Page</Button>
+                        <Link to="/node">
+                        <Button variant="dark" size='lg'>Go To Node Page</Button>
+                        </Link>
                     </div>
                 </div>
             </div>
