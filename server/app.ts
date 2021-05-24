@@ -51,7 +51,8 @@ function repeated_crawl() {
         console.log(`Crawler exited with the exception: ${e}.`);
     });
 
-    new GeoLocate().locate();
+    // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
+    setTimeout(() => new GeoLocate().locate(), 30 * 1000);
     setTimeout(repeated_crawl, 300000);
 }
 
