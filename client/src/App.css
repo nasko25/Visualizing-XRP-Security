@@ -155,6 +155,10 @@ div.list-group-item {
   background-color: #333;
 }
 
+@keyframes spin {
+  from {transform:rotate(0deg);}
+  to {transform:rotate(360deg);}
+}
 .linechart {
   background-color: #222;
 }
