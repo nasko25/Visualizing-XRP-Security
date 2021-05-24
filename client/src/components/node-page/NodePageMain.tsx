@@ -53,7 +53,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.nodeOnClick = this.nodeOnClick.bind(this);
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.getNodeInfo();
     }
 
@@ -62,11 +62,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     getNodeInfo() {
         var peers: Peer[] = [];
         var history: HistoricalScore[] = [];
-        for (var i = 0; i < 50; i++) {
+        for (var i = 0; i < 40; i++) {
             peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
         }
         for (var i = 1; i <= 30; i++) {
-            history.push({ date: "2020-08-"+i, score: Math.random()});
+            history.push({ date: "2020-08-" + i, score: Math.random() });
         }
         peers.sort((a: Peer, b: Peer) => {
             return (b.score - a.score);
@@ -77,11 +77,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             peers: peers,
             trust_score: 1,
             ports: [{ port_number: 22, service: "SSH" },
-                    { port_number: 80, service: "HTTP" }],
+            { port_number: 80, service: "HTTP" }],
             rippled_version: "1.7.0",
             history: history
         };
-        
+
         this.setState({ node_info: info });
         return info;
     }
@@ -97,7 +97,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 ]}
                 guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
                 size={{ width: "fill" }}
-                axis={{x: { granularity: "medium"}, y: { granularity: "fine"}}}
+                axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
+                legend
+                detail
             />
         );
     };
@@ -148,12 +150,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     nodeOnClick(public_key: string) {
-        this.setState({key: public_key});
+        this.setState({ key: public_key });
         this.getNodeInfo();
     }
 
     render() {
-        // this.getNodeInfo();
         return (
             <Grommet
                 style={{ width: "100%", height: "100%" }}
@@ -231,7 +232,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box pad={{left: "5%", right: "5%"}} justify="center" round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box pad={{ left: "5%", right: "5%" }} justify="center" round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
                             {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
                             </Box> */}
