@@ -2,11 +2,11 @@ import axios from 'axios';
 import config from './config/config.json';
 import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
 
+// only load the geoip-lite module if it will be used
+// (it can be configured in `config/config.json` by setting `useIPStack` to false)
 let geoip: any;
 if (!config.useIPStack)
     geoip = require('geoip-lite');
-
-var testData: string[] = ['91.12.98.74', '209.195.2.50', '194.35.86.10']
 
 class GeoLocate{
     IPList: string[];
@@ -15,6 +15,9 @@ class GeoLocate{
     // configurable from the config.json file
     useIPStack = false;
 
+    // if you pass a list of IPs to the constructor, the GeoLocator will find only their geolocation
+    // if you do not pass anything to the constructor, the GeoLocator will get all IPs that have unknown location from the
+    //  database, and find their geolocation
     constructor(IPs?: string[]){
         this.useIPStack = config.useIPStack;
         // if the IPs argument is provided, use the given IPs to get their geoloaction,
@@ -28,6 +31,8 @@ class GeoLocate{
 
     // helper function that gets the IP addresses of nodes that do not have geolocation in the database yet
     getIPsFromDB(): string[] {
+        // since requests to the database are asynchronous, we need to set a flag `DBRequestResolved` to false
+        //  and then when the request is resolved set it to true
         this.DBRequestResolved = false;
         getAllNodesWithoutLocation(nodes => {
             this.IPList = nodes.map(node => node.IP);
@@ -42,6 +47,7 @@ class GeoLocate{
     }
 
     async getData(ip: string) {
+        // if the useIPStack flag is set to true, use the ipstack.com service to resolve the IPs to a location
         if (this.useIPStack) {
             //access key needed for ipstack api
             const accessKey: string = config.accessKey;
@@ -59,12 +65,15 @@ class GeoLocate{
                 throw new Error(err);
             }
         }
+        // otherwise use geoip-lite
         else {
             if (geoip){
                 const location = geoip.lookup(ip);
+                // if the location given by geoip is not null, return the latitude and longitude tuple
                 if (location)
                     return location.ll;
             }
+            // if geoip cannot resolve the geolocation of a given IP, log it to the console and return [null, null]
             console.error(`Cannot get geolocation of IP address ${ip}`);
             return [null, null];
         }
@@ -76,12 +85,13 @@ class GeoLocate{
         }
         this.getData(this.IPList[curr]).then(res => {
 
+            // log the [latitude, longitude] tuple
+            // console.log(res);
             // insert the longitude and latitude in the database
-            console.log(res);
             insertLocation(res, this.IPList[curr]);
+
             //Delay requests by 1 second, so to not get blocked by the API
             // (but only if using ipstack)
-
             if (this.useIPStack)
                 this.wait(1).then((res) => this.locateHelper(curr+1));
             else
@@ -92,6 +102,7 @@ class GeoLocate{
     }
 
     locate(){
+        // recursively call locate() every 100ms until the database request is resolved
         if (!this.DBRequestResolved) {
             setTimeout(() => { this.locate() }, 100);
             return;
@@ -100,8 +111,6 @@ class GeoLocate{
             return;
         }
 
-        // TODO add comments
-        // TODO IPs with the ::ffff:1.2.3.4 format do not work with the geolocator API and the npm package
         try{
             this.locateHelper(0);
         } catch(e){
@@ -112,4 +121,3 @@ class GeoLocate{
 }
 
 export default GeoLocate;
-export { testData };

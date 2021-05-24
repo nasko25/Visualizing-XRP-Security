@@ -5,7 +5,6 @@ import { promises as fs } from 'fs';
 import { Node as CrawlerNode } from './crawl';
 import { SecurityAssessment } from './db_connection/models/security_assessment'
 import GeoLocate from './geoLocate';
-import { testData } from './geoLocate';
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 
 // Logger
@@ -20,7 +19,7 @@ app.get("/", (req, res) => {
     res.send("Well done!");
 });
 
-new GeoLocate(/*testData*/).locate();
+new GeoLocate().locate();
 
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
