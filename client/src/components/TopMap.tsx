@@ -6,7 +6,7 @@ import "../MarkerCluster.Default.css"
 import Button from 'react-bootstrap/Button'
 
 
-function MyComponent(props) {
+function MyComponent(props: any) {
     const map = useMapEvents({
         zoomend: () => {
             console.log("Mitko");
@@ -17,7 +17,11 @@ function MyComponent(props) {
     return null;
 }
 
-class TopMap extends React.Component {
+type Props = {
+    data: any
+}
+
+class TopMap extends React.Component<Props> {
     state = {
         latlng: latLng(50.680797, 6.37207),
         addressPoints: {
@@ -26,13 +30,13 @@ class TopMap extends React.Component {
         popup: null
     };
 
-    constructor(props) {
+    constructor(props : any) {
         super(props);
         this.state.addressPoints.points = props.data;
     }
 
 
-    onClusterClick = (a) => {
+    onClusterClick = (a : any) => {
 
             var children = a.layer.getAllChildMarkers();
             var lis = [];
@@ -53,19 +57,19 @@ class TopMap extends React.Component {
     }
 
     // Create a popup with position and content
-    createNewPopup = (a, content) => {
+    createNewPopup = (a: any, content : any) => {
         return <Popup position={a.latlng}>{content}</Popup>
     }
 
     // Create a new map with the provided popup 
-    createNewMap = (popup) => {
+    createNewMap = (popup : any) => {
         return <MapContainer className ='map' center={this.state.latlng} zoom={3}>
             {/* Layers */}
             <TileLayer
                 // attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
                 url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
-                minZoom="2"
-                maxZoom="11"
+                minZoom={2}
+                maxZoom={11}
             />
             {/* Cluster Markers */}
             {this.createMarkerGroup()}
@@ -79,8 +83,8 @@ class TopMap extends React.Component {
         let markers = [];
 
         for (var i = 0; i < this.state.addressPoints.points.length; i++) {
-            var a = this.state.addressPoints.points[i];
-            var title = a.title;
+            var a : any = this.state.addressPoints.points[i];
+            var title  = a.title;
             var colour = "green";
             if (a.trustScore === 0) colour = "red";
             var size = 1000;
@@ -93,7 +97,6 @@ class TopMap extends React.Component {
                         fillColor={colour}
                         fillOpacity={0.5}
                         radius={size}
-                        title={title}
                 >
                     <Popup>
                         {title}

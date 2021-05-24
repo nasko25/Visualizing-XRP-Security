@@ -53,6 +53,8 @@
   },
   "devDependencies": {
     "@types/react": "^17.0.6",
+    "@types/react-leaflet": "^2.8.1",
+    "@types/react-leaflet-markercluster": "^2.0.0",
     "@types/react-router-dom": "^5.1.7"
   }
 }
