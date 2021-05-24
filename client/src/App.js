@@ -8,7 +8,7 @@ function App() {
     <div className="App">
 
       <main className='main'>
-        <NodePageMain/>
+        <Dashboard/>
       </main>
     </div>
   );
