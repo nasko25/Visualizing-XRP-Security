@@ -20,7 +20,8 @@ export type NodeInfo = {
     trust_score: number,
     IP: string,
     rippled_version: string,
-    ports: Port[]
+    ports: Port[],
+    history: HistoricalScore[]
 }
 
 export type Port = {
@@ -30,5 +31,10 @@ export type Port = {
 
 export type Peer = {
     public_key: string,
+    score: number
+}
+
+export type HistoricalScore = {
+    date: string,
     score: number
 }

@@ -62,7 +62,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                             : "rgb(" + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 255, 0)",
                     border: "white",
                 },
-                title: "Public key: " + curr.public_key + "\nScore: " + curr.score,
+                title: "Public key: " + curr.public_key + "\nScore: " + curr.score.toFixed(2),
             });
             edges.push({
                 from: 1,

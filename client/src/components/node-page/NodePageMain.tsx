@@ -3,7 +3,7 @@ import { Box, DataChart, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPres
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Port, Peer, NodeInfo, NodePageState, NodePageProps } from "./NodePageTypes";
+import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
 
 
 /**
@@ -38,7 +38,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 peers: [],
                 trust_score: 0,
                 rippled_version: "",
-                ports: []
+                ports: [],
+                history: []
             },
             speed: 3,
             displayButton: false,
@@ -50,14 +51,19 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.getNodeInfo = this.getNodeInfo.bind(this);
         this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
         this.preparePortList = this.preparePortList.bind(this);
+        this.createDataChart = this.createDataChart.bind(this);
     }
 
     // Just for testing
     // Should actually send a request to server if props is empty
     getNodeInfo() {
         var peers: Peer[] = [];
+        var history: HistoricalScore[] = [];
         for (var i = 0; i < 50; i++) {
             peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
+        }
+        for (var i = 1; i <= 30; i++) {
+            history.push({ date: "2020-08-"+i, score: Math.random()});
         }
         peers.sort((a: Peer, b: Peer) => {
             return (b.score - a.score);
@@ -69,7 +75,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             trust_score: 1,
             ports: [{ port_number: 22, service: "SSH" },
             { port_number: 80, service: "HTTP" }],
-            rippled_version: "1.7.0"
+            rippled_version: "1.7.0",
+            history: history
         };
         if (this.state.node_info) {
             if (this.state.node_info.public_key === "") {
@@ -81,18 +88,18 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     createDataChart() {
-        const data = [{ date: '2020-08-20', amount: 2 }, { date: '2020-08-21', amount: 47 }, { date: '2020-08-22', amount: 33 }, { date: '2020-08-23', amount: 47 }];
         return (
             <DataChart
                 // style={{width: "100%"}}
-                data={data}
-                series={['date', { property: 'amount' }]}
+                data={this.state.node_info.history}
+                series={['date', { property: 'score' }]}
                 chart={[
-                    { property: 'amount', type: 'line', opacity: 'weak', thickness: '2%' },
-                    { property: 'amount', type: 'point', point: 'circle', thickness: '2%' }
+                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
+                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
                 ]}
-                // bounds="align"
-                guide={{ x: { granularity: 'fine' } }}
+                guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
+                size={{ width: "fill" }}
+                axis={{x: { granularity: "coarse"}, y: { granularity: "fine"}}}
             />
         );
     };
@@ -215,19 +222,18 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.node_info.public_key}</Heading>
-                                {this.createNodeInformationList()}
+                            {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box className="scrollbar-hidden" overflow="auto" style={{ height: "40%" }} margin="2%" round="20px" border={{ color: "hd_bgnd" }} background="rgb(70, 70, 38)">
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box pad={{left: "5%", right: "5%"}} justify="center" round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
                             {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
                             </Box> */}
-                            <Box alignSelf="center" width="100%" height="100%">
-                                {this.createDataChart()}
-                            </Box>
+                            <Heading size="100%" margin="2%">Score over Time</Heading>
+                            {this.createDataChart()}
                         </Box>
                     </Grid>
                 </main>
