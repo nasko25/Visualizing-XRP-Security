@@ -7,7 +7,7 @@ import Button from 'react-bootstrap/Button'
 
 
 function MyComponent(props: any) {
-    const map = useMapEvents({
+    useMapEvents({
         zoomend: () => {
             console.log("Mitko");
             var popup = null;

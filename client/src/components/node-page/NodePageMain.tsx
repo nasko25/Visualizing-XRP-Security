@@ -1,9 +1,9 @@
-import React, { ChangeEvent, ReactPropTypes } from "react";
-import { Box, DataChart, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPress, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
+import React from "react";
+import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet'
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
+import { Peer, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
 
 
 /**
@@ -59,10 +59,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     getNodeInfo() {
         var peers: Peer[] = [];
         var history: HistoricalScore[] = [];
-        for (var i = 0; i < 50; i++) {
+        for (let i = 0; i < 50; i++) {
             peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
         }
-        for (var i = 1; i <= 30; i++) {
+        for (let i = 1; i <= 30; i++) {
             history.push({ date: "2020-08-"+i, score: Math.random()});
         }
         peers.sort((a: Peer, b: Peer) => {
