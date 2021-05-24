@@ -2,7 +2,7 @@ import { Component } from "react";
 import React from 'react';
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
-const data = [];
+const data: any[] = [];
 for (let i=1; i<=30; i++) {
     data.push({name: "Day " + i, trust_score: 50});
 }

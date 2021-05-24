@@ -4,13 +4,19 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
 import Button from 'react-bootstrap/Button'
 
-export default class DashboardList extends Component {
 
-    constructor(props) {
+export type DashboardListProps = {
+    arrNodesData: Array<any>,
+}
+
+export default class DashboardList extends Component<DashboardListProps> {
+
+    constructor(props : DashboardListProps) {
         super(props);
     }
 
     render() {
+
         return (
 
             <div className='table-group'>
@@ -41,8 +47,8 @@ export default class DashboardList extends Component {
                                 align: 'start'
                             }
                         ]}
-                        data={this.props.data}
-                        step='10'
+                        data={this.props.arrNodesData}
+                        step={10}
                         size='large'
                     />
                     </Box>

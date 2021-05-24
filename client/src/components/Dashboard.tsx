@@ -1,8 +1,8 @@
 import { Component } from "react";
 import React from 'react';
-import DashboardNavbar from "../components/DashboardNavbar";
-import DashboardList from "../components/DashboardList";
-import TopMap from "../components/TopMap";
+import DashboardNavbar from "./DashboardNavbar";
+import DashboardList from "./DashboardList";
+import TopMap from "./TopMap";
 import axios from 'axios';
 
 import NodePageMain from "./node-page/NodePageMain";
@@ -12,8 +12,12 @@ export default class Dashboard extends Component {
     // Hardcoded data for example purposes for the midterm presentaion
     // Will be removed when website is fully functional
     data = dataJson.data;
+    timer = undefined;
+    state = {
+        nodes: []
+    }
 
-    constructor(props) {
+    constructor(props : any) {
         super(props);
         this.state = { nodes: [] };
 
@@ -62,7 +66,7 @@ export default class Dashboard extends Component {
                 </div>
                 <div className='dashboard_body'>
                     <TopMap data={this.state.nodes}/>
-                    <DashboardList data = {this.state.nodes} key={this.state.updateKey}/>
+                    <DashboardList arrNodesData = {this.state.nodes}/>
                 </div>
             </div>
         );
