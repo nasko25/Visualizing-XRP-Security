@@ -46,12 +46,15 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             displayGreen: false
         }
 
-        // this.state.key = props.key;
-
         this.getNodeInfo = this.getNodeInfo.bind(this);
         this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
         this.preparePortList = this.preparePortList.bind(this);
         this.createDataChart = this.createDataChart.bind(this);
+        this.nodeOnClick = this.nodeOnClick.bind(this);
+    }
+
+    componentDidMount(){
+        this.getNodeInfo();
     }
 
     // Just for testing
@@ -74,23 +77,18 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             peers: peers,
             trust_score: 1,
             ports: [{ port_number: 22, service: "SSH" },
-            { port_number: 80, service: "HTTP" }],
+                    { port_number: 80, service: "HTTP" }],
             rippled_version: "1.7.0",
             history: history
         };
-        if (this.state.node_info) {
-            if (this.state.node_info.public_key === "") {
-                this.setState({ node_info: info });
-            }
-        }
-
+        
+        this.setState({ node_info: info });
         return info;
     }
 
     createDataChart() {
         return (
             <DataChart
-                // style={{width: "100%"}}
                 data={this.state.node_info.history}
                 series={['date', { property: 'score' }]}
                 chart={[
@@ -99,7 +97,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 ]}
                 guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
                 size={{ width: "fill" }}
-                axis={{x: { granularity: "coarse"}, y: { granularity: "fine"}}}
+                axis={{x: { granularity: "medium"}, y: { granularity: "fine"}}}
             />
         );
     };
@@ -149,8 +147,13 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         />
     }
 
-    render() {
+    nodeOnClick(public_key: string) {
+        this.setState({key: public_key});
         this.getNodeInfo();
+    }
+
+    render() {
+        // this.getNodeInfo();
         return (
             <Grommet
                 style={{ width: "100%", height: "100%" }}
@@ -218,10 +221,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'info', start: [0, 1], end: [0, 1] },
                         ]}>
                         <Box round="5%" margin="2%" gridArea="map" background={COLORS.main}>
-                            <NodePeerGraph node_info={this.state.node_info}></NodePeerGraph>
+                            <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
-                            <Heading size="100%" margin="3%">{this.state.node_info.public_key}</Heading>
+                            <Heading size="100%" margin="3%">{this.state.key}</Heading>
                             {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box className="scrollbar-hidden" overflow="auto" style={{ height: "40%" }} margin="2%" round="20px" border={{ color: "hd_bgnd" }} background="rgb(70, 70, 38)">
