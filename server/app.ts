@@ -1,4 +1,5 @@
 import express from 'express';
+var cors = require('cors');
 import Crawler from './crawl'
 import PortScanner from './portScan'
 import { promises as fs } from 'fs';
@@ -12,14 +13,13 @@ import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 
 const app = express();
+app.use(cors());
 
 const PORT = 8080;
 
 app.get("/", (req, res) => {
     res.send("Well done!");
 });
-
-new GeoLocate().locate();
 
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
@@ -40,12 +40,27 @@ async function startPortScanner() {
     let portScanner = new PortScanner();
     portScanner.start()
 }
-//startCrawler().catch((e) => {
-//    console.log(`Crawler exited with the exception: ${e}.`);
-//});
-//startPortScanner().catch((e) => {
-//    console.log(`Crawler exited with the exception: ${e}.`);
-//});
+
+// Function for the crawling process
+// Runs the crawler repeatedly by setting a timeout and after a specified period of time calls the function
+// Currently the crawler is ran every 5 minutes
+function repeated_crawl() {
+    console.log("\n");
+    console.log("Crawler ran...");
+    startCrawler().catch((e) => {
+        console.log(`Crawler exited with the exception: ${e}.`);
+    });
+
+    new GeoLocate().locate();
+    setTimeout(repeated_crawl, 300000);
+}
+
+repeated_crawl();
+
+startPortScanner().catch((e) => {
+    console.log(`Crawler exited with the exception: ${e}.`);
+});
+
 app.get('/insert-node', (req, res) => {
     var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
     insertNode(n);
