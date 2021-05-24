@@ -79,20 +79,25 @@ class TopMap extends React.Component<Props> {
     }
 
     createMarkerGroup = () => {
-
         let markers = [];
 
-        for (var i = 0; i < this.state.addressPoints.points.length; i++) {
-            var a : any = this.state.addressPoints.points[i];
-            var title  = a.title;
+        for (var i = 0; i < this.props.data.length; i++) {
+            var a : any = this.props.data[i];
+            // var title  = a.title;
+            var title = "Title";
             var colour = "green";
-            if (a.trustScore === 0) colour = "red";
-            var size = 1000;
 
+            // Nodes still don't have trust score
+            // Uncomment when trust score is implemented
+            // if (a.trustScore === 0) colour = "red";
+            var size = 1000;
+            if (a.latitude == null || a.longtitude == null) {
+                continue;
+            }
             let marker = (
                 <Circle key={"circle_" + i}
 
-                        center={a.latLng}
+                        center={[a.longtitude, a.latitude]}
                         color={colour}
                         fillColor={colour}
                         fillOpacity={0.5}
