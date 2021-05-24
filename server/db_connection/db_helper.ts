@@ -34,8 +34,8 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
-        node.ip + '\', \'' +
+    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+        node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
@@ -49,6 +49,27 @@ export function insertNodes(nodes: CrawlerNode[]): void {
     var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime]);
 
     connection.query(query, [vals], (err: Error, result: object, fields: JSON) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertLocation(loc: number[], ip: string) {
+    const query = 'UPDATE node SET longtitude = ?, latitude = ? where IP = ?;'
+    const vals = loc.map(coordinate => {
+        // if the location is not known, save it as null
+        // otherwise, convert it to a string (because longitude and latitude are numbers)
+        if (coordinate === null)
+            return null;
+        else
+            return String(coordinate)
+    }).concat(ip);
+
+    connection.query(query, vals, (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
@@ -90,6 +111,21 @@ export function getAllNodes(callback: (res: Node[]) => void): void {
     });
 }
 
+// this function will return the IPs of nodes that do not have geolocation yet
+// it will ignore NULL IPs
+export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => void): void {
+    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE IP IS NOT NULL AND (longtitude IS NULL OR latitude IS NULL);';
+    connection.query(get_all_nodes_without_location_query, function (err: Error, results: JSON[], fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    });
+}
+
 export function getAllConnections(callback: (res: Connection[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM connection;';
     connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
@@ -113,7 +149,7 @@ export function getAllSecurityAssessments(callback: (res: Node[]) => void): void
         return callback(res);
     });
 }
- 
+
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
     var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
@@ -179,4 +215,4 @@ export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, 
 export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
     const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
     connection.query(get_validator_history, create_query_callback(callback)); 
-} 
+}
