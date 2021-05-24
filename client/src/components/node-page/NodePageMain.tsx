@@ -3,7 +3,6 @@ import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput }
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
 import { Link } from "react-router-dom";
 import { Peer, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
 
