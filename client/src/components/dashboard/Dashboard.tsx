@@ -1,11 +1,9 @@
 import { Component } from "react";
-import React from 'react';
 import DashboardNavbar from "./DashboardNavbar";
 import DashboardList from "./DashboardList";
 import TopMap from "../TopMap";
 import axios from 'axios';
 
-import NodePageMain from "../node-page/NodePageMain";
 let dataJson = require("../../nodes.json");
 
 export default class Dashboard extends Component {

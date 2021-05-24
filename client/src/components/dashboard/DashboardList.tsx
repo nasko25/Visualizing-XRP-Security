@@ -1,5 +1,4 @@
 import { Component } from "react";
-import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
 import Button from 'react-bootstrap/Button'
@@ -11,10 +10,6 @@ export type DashboardListProps = {
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
-
-    constructor(props : DashboardListProps) {
-        super(props);
-    }
 
     render() {
 
