@@ -6,7 +6,7 @@ export type NodePageProps = {
 
 // How the state should look like
 export type NodePageState = {
-    key: string,
+    public_key: string,
     node_info: NodeInfo,
     speed: number,
     displayButton: boolean,
@@ -26,7 +26,8 @@ export type NodeInfo = {
 
 export type Port = {
     port_number: number,
-    service: string
+    service: string,
+    version: string
 }
 
 export type Peer = {

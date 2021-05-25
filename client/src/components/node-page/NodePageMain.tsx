@@ -1,9 +1,9 @@
 import React, { ChangeEvent, ReactPropTypes } from "react";
-import { Box, DataChart, Grid, Grommet, Header, Heading, InfiniteScroll, KeyPress, List, Main, Menu, Nav, Tab, Table, TableBody, TableCell, TableHeader, TableRow, Text, TextInput } from 'grommet'
+import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet'
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
+import { Peer, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
 
 
 /**
@@ -15,13 +15,13 @@ import { Port, Peer, NodeInfo, NodePageState, NodePageProps, HistoricalScore } f
  */
 
 var SETUP = {
-    header_height: 10,
+    header_height: 7.5,
     hd_bgnd: '#C3C3C3',
 }
 
 var COLORS = {
     main: "#383838",
-    button: "#"
+    button: "#212529;"
 }
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
@@ -31,7 +31,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
         // The state
         this.state = {
-            key: "",
+            public_key: "",
             node_info: this.props.node_info ? this.props.node_info : {
                 public_key: "",
                 IP: "",
@@ -63,10 +63,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         var peers: Peer[] = [];
         var history: HistoricalScore[] = [];
         for (var i = 0; i < 40; i++) {
-            peers.push({ public_key: Math.random().toString(36).substring(7), score: Math.random() });
+            peers.push({ public_key: Math.random().toString(36).substring(7), score: parseFloat(Math.random().toFixed(3)) });
         }
         for (var i = 1; i <= 30; i++) {
-            history.push({ date: "2020-08-" + i, score: Math.random() });
+            history.push({ date: "2020-08-" + i, score: parseFloat(Math.random().toFixed(3)) });
         }
         peers.sort((a: Peer, b: Peer) => {
             return (b.score - a.score);
@@ -76,13 +76,13 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             IP: "34.221.161.114",
             peers: peers,
             trust_score: 1,
-            ports: [{ port_number: 22, service: "SSH" },
-            { port_number: 80, service: "HTTP" }],
+            ports: [{ port_number: 22, service: "SSH", version: "12.3" },
+            { port_number: 80, service: "HTTP", version: "N/a" }],
             rippled_version: "1.7.0",
             history: history
         };
 
-        this.setState({ node_info: info });
+        this.setState({ public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD", node_info: info });
         return info;
     }
 
@@ -141,16 +141,15 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     createPeerList() {
         return <List
             style={{ width: "70%", alignSelf: "center" }}
-
             primaryKey="public_key"
             secondaryKey="score"
-
             data={this.state.node_info.peers}
+            border={false}
         />
     }
 
     nodeOnClick(public_key: string) {
-        this.setState({ key: public_key });
+        this.setState({ public_key: public_key });
         this.getNodeInfo();
     }
 
@@ -160,35 +159,31 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 style={{ width: "100%", height: "100%" }}
                 theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} >
 
-                <Header background="hd_bgnd" style={{ width: "100%", height: `${SETUP.header_height}%` }} >
+                <Header background={COLORS.main} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
                     <Grid
                         style={{ width: "100%", height: "100%" }}
-                        rows={["100%"]}
-                        gap="medium"
-                        columns={["1/5", "2/5", "2/5"]}
+                        rows={["1"]}
+                        columns={["1/4", "1/4", "1/2"]}
                         areas={[
                             { name: 'heading', start: [0, 0], end: [0, 0] },
                             { name: 'button_return', start: [1, 0], end: [1, 0] },
                             { name: 'search', start: [2, 0], end: [2, 0] },
                         ]}>
 
-                        {/* The Heading for the Page */}
-                        <Box
-                            gridArea="heading"
-                            alignSelf="center" >
-                            <Heading size="3xl" color="t">Node Page</Heading>
-                        </Box>
+                        {/* The heading. */}
+                        <Heading margin="2%" gridArea="heading" alignSelf="center" size="small">Node Page</Heading>
 
                         {/* The Button for returning to the main page. */}
                         <Box
-                            round="10%"
                             height="80%"
                             gridArea="button_return"
                             justify="center"
                             alignSelf="center"
-                        // background="#909090"
-                        >
-                            <Button variant="dark" onClick={() => this.setState({ displayButton: true })} style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                            margin="2%">
+                            <Button 
+                                variant="dark" 
+                                // onClick={() => this.setState({ displayButton: true })}
+                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
                             </Button>
                         </Box>
@@ -198,15 +193,18 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             alignSelf="center"
                             direction="row"
                             justify="center"
-                            gap="small"
-                            margin="10px">
-                            <Text alignSelf="center" weight="bold">Search</Text>
-                            <TextInput size="small" onKeyPress={this.onKeyPressSearch} />
-                            {this.state.displayButton === false ? null : this.state.displayGreen === false ?
-                                <Button style={{ alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
+                            background={COLORS.button}
+                            margin="2%">
+                            <TextInput 
+                                onKeyPress={this.onKeyPressSearch}
+                                textAlign="center"
+                                placeholder="Search Public Key"
+                                />
+                            {/* {this.state.displayButton === false ? null : this.state.displayGreen === false ?
+                                <Button style={{ width: "10%", alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
                                 :
-                                <Button style={{ alignSelf: "center", background: "red", borderRadius: "10%", fontWeight: "bold" }} color="black" >Wrong Key</Button>
-                            }
+                                <Button style={{ width: "10%", alignSelf: "center", background: "red", borderRadius: "10%", fontWeight: "bold" }} color="black" >Wrong Key</Button>
+                            } */}
                         </Box>
                     </Grid>
                 </Header>
@@ -217,18 +215,24 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         rows={["1/2", "1/2"]}
                         columns={["1/2", "1/2"]}
                         areas={[
-                            { name: 'map', start: [0, 0], end: [0, 0] },
-                            { name: 'stats', start: [1, 0], end: [1, 1] },
-                            { name: 'info', start: [0, 1], end: [0, 1] },
+                            { name: 'map', start: [1, 0], end: [1, 0] },
+                            { name: 'stats', start: [0, 0], end: [0, 1] },
+                            { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
                         <Box round="5%" margin="2%" gridArea="map" background={COLORS.main}>
                             <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
-                            <Heading size="100%" margin="3%">{this.state.key}</Heading>
+                            <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
                             {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
-                            <Box className="scrollbar-hidden" overflow="auto" style={{ height: "40%" }} margin="2%" round="20px" border={{ color: "hd_bgnd" }} background="rgb(70, 70, 38)">
+                            <Box 
+                                className="scrollbar-hidden"
+                                overflow="auto" 
+                                style={{ height: "40%" }} 
+                                margin="2%" 
+                                round="20px" 
+                                background={COLORS.button}>
                                 {this.createPeerList()}
                             </Box>
                         </Box>

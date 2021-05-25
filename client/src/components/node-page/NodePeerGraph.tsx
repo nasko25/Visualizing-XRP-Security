@@ -89,21 +89,20 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             },
             interaction: {
                 hover: true
-            },
-            manipulation: {
-                enabled: true
             }
         };
         var func = this.props.on_node_click;
-        console.log("func", func);
+        
         const network = new Network(container, data, options);
         network.on("click", function (properties) {
             var ids = properties.nodes;
-            var clickedNodes = nodes.get(ids);
-            console.log("clicked" + JSON.stringify(clickedNodes[0]));
-            var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
-            var public_key: string = JSON.stringify(n.title);
-            func(public_key);
+            var clickedNodes: Object[] = nodes.get(ids);
+        
+            if (clickedNodes.length >= 1) {
+                var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
+                var public_key: string = JSON.stringify(n.title);
+                func(public_key);
+            }
         });
     }
 
