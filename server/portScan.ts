@@ -1,13 +1,16 @@
 import * as schedule from "node-schedule";
-import * as exec from "child_process";
-import * as xml2js from "xml2js";
+import NmapInterface from "./nmapInterface";
+
 import * as dbCon from "./db_connection/db_helper";
 import {
     NodePorts,
     NodePortsProtocols,
     NodePortsNull,
 } from "./db_connection/models/node";
-var parser = new xml2js.Parser();
+
+
+
+
 const data: NodePorts[] = [
     { ip: "194.35.86.10", public_key: "pk", ports: "404" },
     { ip: "209.195.2.50", public_key: "pk", ports: "42,23" },
@@ -46,6 +49,14 @@ const TIMEOUT_SHORT_SCAN: string = "10m";
 //When do we timeout on a long scan
 const TIMEOUT_LONG_SCAN: string = "24h";
 
+//For the short scan we check the top N ports (defined by this variable)
+const TOP_PORTS = 2000;
+
+//Do or do not long scans... There is no try.
+const DO_LONG_SCAN = false;
+
+const VERBOSE_LEVEL = 0;
+
 interface ProtocolPortid {
     protocol: string;
     portid: string;
@@ -59,12 +70,15 @@ interface Node {
 
 class PortScan {
     shortScanList: NodePorts[];
+    nmapInterface: NmapInterface;
     constructor() {
+        this.nmapInterface = new NmapInterface();
         this.shortScanList = [];
     }
 
     /**
      * getRandomDate is used to schedule the next batch of scans in a pseudo random manner for the next day
+     * @param increaseInDays how many days from now should the returned date be
      * @returns Date object with incremented day by x and random hour and minutes
      */
     getRandomDate(increaseInDays: number) {
@@ -80,9 +94,15 @@ class PortScan {
     scheduleAShortScan() {
         const job = schedule.scheduleJob(this.getRandomDate(2), () => {
             console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
-            dbCon.getNodesNonNullPort((result) => {
-                this.shortScan(result).then(() => this.scheduleAShortScan());
-            });
+            if(DO_LONG_SCAN){
+                dbCon.getNodesNonNullPort((result) => {
+                    this.shortScan(result).then(() => this.scheduleAShortScan());
+                });
+            }else{
+                dbCon.getAllNodesForPortScan((result) => {
+                    this.shortScan(result).then(() => this.scheduleAShortScan());
+                });
+            }
         });
     }
 
@@ -92,10 +112,17 @@ class PortScan {
     scheduleAShortScanver2() {
         const job = schedule.scheduleJob(this.getRandomDate(2), () => {
             console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
-            dbCon.getNodesNonNullPort((result) => {
-                this.shortScanList = result;
-                this.shortScanver2(0);
-            });
+            if(DO_LONG_SCAN){
+                dbCon.getNodesNonNullPort((result) => {
+                    this.shortScanList = result;
+                    this.shortScanver2(0);
+                });
+            }else{
+                dbCon.getAllNodesForPortScan((result) => {
+                    this.shortScanList = result;
+                    this.shortScanver2(0);
+                });
+            }
         });
     }
 
@@ -149,7 +176,7 @@ class PortScan {
                 n++;
             }
 
-            var out: Node[] | null = await this.checkBulk(listOfIpS, true);
+            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, true, T_LEVEL_LONG, TIMEOUT_LONG_SCAN);
             if (out != null) {
                 for (var node in out) {
                     if (out[node].up) {
@@ -197,7 +224,7 @@ class PortScan {
                 n++;
             }
 
-            var out: Node[] | null = await this.checkBulk(listOfIpS, false);
+            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, false, T_LEVEL_LONG, TIMEOUT_LONG_SCAN);
             console.log(out);
             if (out != null) {
                 for (var node in out) {
@@ -250,10 +277,15 @@ class PortScan {
             var flag = 0;
             var success1 = false;
             var success2 = false;
-
-            let out1: Node | null = await this.checkSpecificports(
+            var portsToCheck="51325, 51326"
+            if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
+                portsToCheck+=listOfNodes[ip].ports;
+            }
+            let out1: Node | null = await this.nmapInterface.checkSpecificports(
                 listOfNodes[ip].ip,
-                listOfNodes[ip].ports
+                T_LEVEL_SHORT,
+                TIMEOUT_SHORT_SCAN,
+                portsToCheck
             );
             if (out1 != null && out1 && out1.up) {
                 var i: number = 0;
@@ -281,7 +313,7 @@ class PortScan {
 
             //console.log("Second scan")
 
-            var out2 = await this.defScanOfIp(listOfNodes[ip].ip);
+            var out2 = await this.nmapInterface.topPortsScan(listOfNodes[ip].ip, TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
             //console.log("done " + out2);
             if (out2 != null && out2 && out2.up) {
                 var i: number = 0;
@@ -348,6 +380,7 @@ class PortScan {
             this.shortScanver2(ip);
         });
     }
+    
     /** this is the older version of the short scan that does each scan sequentially. Much slower as it has high idle time
      * Given a list of IPs will detect any open ports for them and put relevant information in database
      * @param listOfNodes the list of nodes which we are scanning
@@ -362,10 +395,15 @@ class PortScan {
             var flag = 0;
             var success1 = false;
             var success2 = false;
-
-            let out1: Node | null = await this.checkSpecificports(
+            var portsToCheck="51325, 51326"
+            if(listOfNodes[index].ports && listOfNodes[index].ports!=null && listOfNodes[index].ports!=""){
+                portsToCheck+=listOfNodes[index].ports;
+            }
+            let out1: Node | null = await this.nmapInterface.checkSpecificports(
                 listOfNodes[index].ip,
-                listOfNodes[index].ports
+                T_LEVEL_SHORT,
+                TIMEOUT_SHORT_SCAN,
+                portsToCheck
             );
             if (out1 !== null && out1 && out1.up) {
                 var i: number = 0;
@@ -393,7 +431,7 @@ class PortScan {
 
             //console.log("Second scan")
 
-            var out2 = await this.defScanOfIp(listOfNodes[index].ip);
+            var out2 = await this.nmapInterface.topPortsScan(listOfNodes[index].ip, TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
             //console.log("done " + out2);
             if (out2 !== null && out2 && out2.up) {
                 var i: number = 0;
@@ -432,244 +470,26 @@ class PortScan {
         }
     }
 
-    /**
-     * Interpets the XML output from NMAP
-     * @param error parameter used in case of an error
-     * @param stdout standard out (for successful output) will be in XML
-     * @param stderr standard error stream
-     * @param resolve function used to resolve the promise
-     * @returns void, however will resolve to either null or a Node object (ip, open ports, is it up)
-     */
-    interpretNmapReturn(
-        error: exec.ExecException | null,
-        stdout: string,
-        stderr: string,
-        resolve: (value: Node | PromiseLike<Node | null> | null) => void
-    ) {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            resolve(null);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            resolve(null);
-            return;
-        }
-        var out = stdout;
-        parser.parseString(out, function (err: any, result: any) {
-            if (
-                !result.nmaprun.host[0].status[0].$.state &&
-                !result.nmaprun.host[0].status[0].$.state.includes("up")
-            ) {
-                var returnVal: Node = {
-                    ip: result.nmaprun.host[0].address[0].$.addr,
-                    openPorts: [],
-                    up: false,
-                };
-                resolve(returnVal);
-                return;
-            }
-            var openPorts = result.nmaprun.host[0].ports[0].port;
-            var outOpenPorts = Array();
-            if (openPorts) {
-                for (var port in openPorts) {
-                    if (
-                        openPorts[port].state[0].$.state &&
-                        openPorts[port].state[0].$.state === "open"
-                    ) {
-                        //console.log({ protocol: buff[port].service[0].$.name, portid: buff[port].$.portid })
-                        outOpenPorts.push({
-                            protocol: openPorts[port].service[0].$.name,
-                            portid: openPorts[port].$.portid,
-                        });
-                    }
-                }
-                let returnVal: Node = {
-                    ip: result.nmaprun.host[0].address[0].$.addr,
-                    openPorts: outOpenPorts,
-                    up: true,
-                };
-                resolve(returnVal);
-                return;
-            }
-            resolve(null);
-            return;
-        });
-    }
-
-    /**
-     * runs the default NMAP scan (1000 most used tcp ports) with T level {@link T_LEVEL_SHORT}
-     * @param IP the ip for which the scan is ran
-     * @returns Promise that resolves to either null or a Node object (ip, open ports, is it up)
-     */
-    defScanOfIp(IP: string) {
-        return new Promise<Node | null>((resolve) => {
-            var arg_ip_version = "-4";
-            if (IP.includes(":")) {
-                arg_ip_version = "-6";
-            }
-            exec.exec(
-                "nmap " +
-                    IP +
-                    " -Pn -T" +
-                    T_LEVEL_SHORT +
-                    " " +
-                    arg_ip_version +
-                    " -oX - --host-timeout " +
-                    TIMEOUT_SHORT_SCAN,
-                { maxBuffer: Infinity },
-                (error, stdout, stderr) => {
-                    this.interpretNmapReturn(error, stdout, stderr, resolve);
-                }
-            );
-        });
-    }
-
-    /**
-     * checks whether specific ports of a given IP are open with T level {@link T_LEVEL_SHORT}
-     * @param IP the ip for which the scan is ran
-     * @param portList list of ports to check whether they are open
-     * @returns Promise that resolves to either null or a Node object (ip, open ports, is it up)
-     */
-    checkSpecificports(IP: string, portList?: string | null) {
-        return new Promise<Node | null>((resolve) => {
-            if (portList === null || portList === "") {
-                resolve(null);
-                return;
-            }
-            var arg_ip_version = "-4";
-            if (IP.includes(":")) {
-                arg_ip_version = "-6";
-            }
-            exec.exec(
-                "nmap " +
-                    IP +
-                    " -Pn -T" +
-                    T_LEVEL_SHORT +
-                    " " +
-                    arg_ip_version +
-                    " -oX - --host-timeout " +
-                    TIMEOUT_SHORT_SCAN +
-                    " -p " +
-                    portList,
-                { maxBuffer: Infinity },
-                (error, stdout, stderr) => {
-                    this.interpretNmapReturn(error, stdout, stderr, resolve);
-                }
-            );
-        });
-    }
-
-    /**
-     * Interpets the XML output from NMAP bulk scan (more than 1 IP)
-     * @param error parameter used in case of an error
-     * @param stdout standard out (for successful output) will be in XML
-     * @param stderr standard error stream
-     * @param resolve function used to resolve the promise
-     * @returns void, however will resolve to either null or array of Node object (ip, open ports, is it up)
-     */
-    interpretNmapReturnBulk(
-        error: exec.ExecException | null,
-        stdout: string,
-        stderr: string,
-        resolve: (value: Node[] | PromiseLike<Node[] | null> | null) => void
-    ) {
-        if (error) {
-            console.log(`error: ${error.message}`);
-            resolve(null);
-            return;
-        }
-        if (stderr) {
-            console.log(`stderr: ${stderr}`);
-            resolve(null);
-            return;
-        }
-        var out = stdout;
-        parser.parseString(out, function (err: any, result: any) {
-            var returnVal: Node[] = [];
-            for (var host in result.nmaprun.host) {
-                var currentHost = result.nmaprun.host[host];
-                if (
-                    !currentHost.status[0].$.state &&
-                    !currentHost.status[0].$.state.includes("up")
-                ) {
-                    returnVal.push({
-                        ip: currentHost.address[0].$.addr,
-                        openPorts: [],
-                        up: false,
-                    });
-                    continue;
-                }
-                var curHostPorts = currentHost.ports[0].port;
-                var outOpenPorts = Array();
-                if (curHostPorts) {
-                    for (var port in curHostPorts) {
-                        if (
-                          curHostPorts[port].state[0].$.state &&
-                          curHostPorts[port].state[0].$.state === "open"
-                        ) {
-                          outOpenPorts.push({
-                                protocol: curHostPorts[port].service[0].$.name,
-                                portid: curHostPorts[port].$.portid,
-                            });
-                        }
-                    }
-                    returnVal.push({
-                        ip: currentHost.address[0].$.addr,
-                        openPorts: outOpenPorts,
-                        up: true,
-                    });
-                }
-            }
-            resolve(returnVal);
-            return;
-        });
-    }
-
-    /**
-     * Checks a {@link MAX_LONG_SCANS} number of ips, starting from port 0 to port 65535 with T level {@link T_LEVEL_LONG}
-     * @param IPList list of Ips, separated by space
-     * @param IPv4 specifies whether the list is in IPv4 or IPv6 format (mix of both will fail)
-     * @returns Promise object which will resolve to an array of nodes or null
-     */
-    checkBulk(IPList: string, isIPv4: boolean) {
-        var arg_ip_version = " -4";
-        if (!isIPv4) arg_ip_version = " -6";
-        console.log(" checking bulk  " + IPList);
-        return new Promise<Node[] | null>((resolve) => {
-            exec.exec(
-                "nmap " +
-                    IPList +
-                    arg_ip_version +
-                    " -Pn -T" +
-                    T_LEVEL_LONG +
-                    " -oX - -p 0-65535 --host-timeout " +
-                    TIMEOUT_LONG_SCAN,
-                { maxBuffer: Infinity },
-                (error, stdout, stderr) => {
-                    this.interpretNmapReturnBulk(
-                        error,
-                        stdout,
-                        stderr,
-                        resolve
-                    );
-                }
-            );
-        });
-    }
+    
 
     start() {
         // dbCon.getNodesNonNullPort((result)=>{
         //   this.shortScan(result).then(()=>this.scheduleAShortScan())
         // });
-        dbCon.getNodesNonNullPort((result) => {
-            this.shortScanList = result;
-            this.shortScanver2(0);
-        });
-        dbCon.getNullPortNodes((result) => {
-            this.longScan(result).then(() => this.scheduleALongScan());
-        });
+        if(DO_LONG_SCAN){
+            dbCon.getNodesNonNullPort((result) => {
+                this.shortScanList = result;
+                this.shortScanver2(0);
+            });
+            dbCon.getNullPortNodes((result) => {
+                this.longScan(result).then(() => this.scheduleALongScan());
+            });
+        }else{
+            dbCon.getAllNodesForPortScan((result) => {
+                this.shortScanList = result;
+                this.shortScanver2(0);
+            });
+        }
         //this.longScan(data2).then(() => this.scheduleALongScan());
         // this.shortScanList = data;
         // this.shortScanver2(0);

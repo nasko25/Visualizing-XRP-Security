@@ -129,6 +129,21 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
     });
 
 }
+
+export function getAllNodesForPortScan(callback: (res: NodePorts[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
+
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePorts[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
 export function getNullPortNodes(callback: (res: NodePortsNull[]) => void):void  {
     var get_nodes_non_null = 'SELECT public_key, ip FROM node WHERE ports IS NULL;';
     connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
