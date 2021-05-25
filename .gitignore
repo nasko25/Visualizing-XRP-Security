@@ -4,5 +4,6 @@ node_modules/
 .idea/
 
 server/**/*.js
+!server/jest.config.js
 
 db/mysql/storage
