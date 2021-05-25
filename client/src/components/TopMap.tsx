@@ -1,29 +1,52 @@
 import React from "react";
-import {latLng} from "leaflet";
-import {Circle, MapContainer, Popup, TileLayer, useMapEvents} from "react-leaflet";
+import { LatLng, latLng } from "leaflet";
+import { Circle, MapContainer, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
 import Button from 'react-bootstrap/Button'
 
+// TODO Define props.data type
+// Replace JSX.Element
 
-function MyComponent(props: any) {
+function MyComponent(props: { that: TopMap }) {
     useMapEvents({
         zoomend: () => {
             console.log("Mitko");
             var popup = null;
-            props.that.setState({popup});
+            props.that.setState({ popup });
         }
     });
     return null;
 }
 
+type Point = {
+    IP: string,
+    latitude: number,
+    longtitude: number,
+    ports: [string],
+    protocols: [string],
+    public_key: string,
+    rippled_version: string,
+    timestamp: string,
+    uptime: number
+}
+
 type Props = {
-    data: any,
+    data: Point[],
     handleChange: (pub_key: string) => void
 }
 
-class TopMap extends React.Component<Props> {
-    state = {
+type TopMapState = {
+    latlng: LatLng,
+    addressPoints: {
+        points: Point[],
+    },
+    popup: JSX.Element | null
+}
+
+class TopMap extends React.Component<Props, TopMapState> {
+
+    state: TopMapState = {
         latlng: latLng(50.680797, 6.37207),
         addressPoints: {
             points: [],
@@ -31,7 +54,7 @@ class TopMap extends React.Component<Props> {
         popup: null
     };
 
-    constructor(props : any) {
+    constructor(props: Props) {
         super(props);
         this.state.addressPoints.points = props.data;
         this.selectNode = this.selectNode.bind(this);
@@ -41,18 +64,19 @@ class TopMap extends React.Component<Props> {
         this.props.handleChange(pub_key);
     }
 
+    onClusterClick = (a: any) => {
+        console.log(a);
 
-    onClusterClick = (a : any) => {
-            var children = a.layer.getAllChildMarkers();
-            var lis = [];
+        var children = a.layer.getAllChildMarkers();
+        var lis = [];
 
-            for (var child in children) {
-                lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
-            }
-            var contentForCluster = <ul>{lis}</ul>
+        for (var child in children) {
+            lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+        }
+        var contentForCluster = <ul>{lis}</ul>
 
-            // Create the new popup
-        var popup = null
+        // Create the new popup
+        var popup = null;
         this.setState({ popup });
         popup = this.createNewPopup(a, contentForCluster);
 
@@ -62,13 +86,13 @@ class TopMap extends React.Component<Props> {
     }
 
     // Create a popup with position and content
-    createNewPopup = (a: any, content : any) => {
+    createNewPopup = (a: { latlng: LatLng }, content: JSX.Element) => {
         return <Popup position={a.latlng}>{content}</Popup>
     }
 
     // Create a new map with the provided popup 
-    createNewMap = (popup : any) => {
-        return <MapContainer className ='map' center={this.state.latlng} zoom={3}>
+    createNewMap = (popup: JSX.Element | null) => {
+        return <MapContainer className='map' center={this.state.latlng} zoom={3}>
             {/* Layers */}
             <TileLayer
                 // attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
@@ -79,7 +103,7 @@ class TopMap extends React.Component<Props> {
             {/* Cluster Markers */}
             {this.createMarkerGroup()}
             {popup}
-            <MyComponent that={this}/>
+            <MyComponent that={this} />
         </MapContainer>
     }
 
@@ -87,7 +111,7 @@ class TopMap extends React.Component<Props> {
         let markers = [];
 
         for (var i = 0; i < this.props.data.length; i++) {
-            var a : any = this.props.data[i];
+            var a: Point = this.props.data[i];
             // var title  = a.title;
             var title = "Title";
             var colour = "green";
@@ -102,16 +126,16 @@ class TopMap extends React.Component<Props> {
             let marker = (
                 <Circle key={"circle_" + i}
 
-                        center={[a.longtitude, a.latitude]}
-                        color={colour}
-                        fillColor={colour}
-                        fillOpacity={0.5}
-                        radius={size}
-                        eventHandlers={{
-                            click: () => {
-                                this.selectNode(a.public_key);
-                            }
-                        }}
+                    center={[a.longtitude, a.latitude]}
+                    color={colour}
+                    fillColor={colour}
+                    fillOpacity={0.5}
+                    radius={size}
+                    eventHandlers={{
+                        click: () => {
+                            this.selectNode(a.public_key);
+                        }
+                    }}
                 >
                     <Popup>
                         {title}
