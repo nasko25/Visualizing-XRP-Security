@@ -18,7 +18,8 @@ function MyComponent(props: any) {
 }
 
 type Props = {
-    data: any
+    data: any,
+    handleChange: (pub_key: string) => void
 }
 
 class TopMap extends React.Component<Props> {
@@ -33,11 +34,15 @@ class TopMap extends React.Component<Props> {
     constructor(props : any) {
         super(props);
         this.state.addressPoints.points = props.data;
+        this.selectNode = this.selectNode.bind(this);
+    }
+
+    selectNode(pub_key: string) {
+        this.props.handleChange(pub_key);
     }
 
 
     onClusterClick = (a : any) => {
-
             var children = a.layer.getAllChildMarkers();
             var lis = [];
 
@@ -102,6 +107,11 @@ class TopMap extends React.Component<Props> {
                         fillColor={colour}
                         fillOpacity={0.5}
                         radius={size}
+                        eventHandlers={{
+                            click: () => {
+                                this.selectNode(a.public_key);
+                            }
+                        }}
                 >
                     <Popup>
                         {title}

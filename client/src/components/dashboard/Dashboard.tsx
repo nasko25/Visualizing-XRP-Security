@@ -9,17 +9,25 @@ let dataJson = require("../../nodes.json");
 export default class Dashboard extends Component {
     // Hardcoded data for example purposes for the midterm presentaion
     // Will be removed when website is fully functional
+
+    // list needs to check whether selected is null
+    // dashboard will have a function that will be passed down to topmap
+    // said function will update the state when an onclick event is triggered
+    // state is updated to have the public key of the node clicked on
+
     data = dataJson.data;
     timer = undefined;
     state = {
-        nodes: []
+        nodes: [],
+        selected: ""
     }
 
     constructor(props : any) {
         super(props);
-        this.state = { nodes: [] };
+        this.state = { nodes: [], selected: "" };
 
         this.update_state = this.update_state.bind(this);
+        this.selectNode = this.selectNode.bind(this);
     }
 
     componentDidMount() {
@@ -28,6 +36,11 @@ export default class Dashboard extends Component {
 
     componentWillUnmount() {
         clearInterval(this.timer);
+    }
+
+    selectNode(pub_key: string) {
+        this.setState({selected: pub_key});
+        console.log("PUB KEY UPDATED : " + this.state.selected);
     }
 
     getData() {
@@ -63,8 +76,8 @@ export default class Dashboard extends Component {
                 <DashboardNavbar />
                 </div>
                 <div className='dashboard_body'>
-                    <TopMap data={this.state.nodes}/>
-                    <DashboardList arrNodesData = {this.state.nodes}/>
+                    <TopMap data={this.state.nodes} handleChange={this.selectNode} />
+                    <DashboardList arrNodesData = {this.state.nodes} selected={this.state.selected} />
                 </div>
             </div>
         );

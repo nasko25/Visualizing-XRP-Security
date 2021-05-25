@@ -7,10 +7,11 @@ import { Link } from "react-router-dom";
 
 export type DashboardListProps = {
     arrNodesData: Array<any>,
+    selected: string
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
-
+    
     render() {
 
         return (
@@ -18,35 +19,35 @@ export default class DashboardList extends Component<DashboardListProps> {
             <div className='table-group'>
                 <Grommet style={{color: 'white', maxHeight: '80%', maxWidth: '100%'}}>
                     <Box style={{}}>
-                    <DataTable
-                        columns={[
-                            {
-                                property: 'public_key',
-                                header: <Text>Public Key</Text>,
-                                size: '50%'
-                            },
-                            {
-                                property: 'rippled_version',
-                                header: <Text>Version</Text>,
-                                size: '15%'
-                            },
-                            {
-                                property: 'uptime',
-                                header: <Text>Uptime</Text>,
-                                size: '10%',
-                                align: 'start'
-                            },
-                            {
-                                property: 'trustScore',
-                                header: <Text>Trust Score</Text>,
-                                size: '10%',
-                                align: 'start'
-                            }
-                        ]}
-                        data={this.props.arrNodesData}
-                        step={10}
-                        size='large'
-                    />
+                        <DataTable
+                            columns={[
+                                {
+                                    property: 'public_key',
+                                    header: <Text>Public Key</Text>,
+                                    size: '50%'
+                                },
+                                {
+                                    property: 'rippled_version',
+                                    header: <Text>Version</Text>,
+                                    size: '15%'
+                                },
+                                {
+                                    property: 'uptime',
+                                    header: <Text>Uptime</Text>,
+                                    size: '10%',
+                                    align: 'start'
+                                },
+                                {
+                                    property: 'trustScore',
+                                    header: <Text>Trust Score</Text>,
+                                    size: '10%',
+                                    align: 'start'
+                                }
+                            ]}
+                            data={this.props.arrNodesData}
+                            step={10}
+                            size='large'
+                        />
                     </Box>
                 </Grommet>
                 <div className='buttons'>
