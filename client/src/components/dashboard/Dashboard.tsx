@@ -6,7 +6,11 @@ import axios from 'axios';
 
 let dataJson = require("../../nodes.json");
 
-export default class Dashboard extends Component {
+export type DashboardProps = {
+    history: any
+}
+
+export default class Dashboard extends Component<DashboardProps> {
     // Hardcoded data for example purposes for the midterm presentaion
     // Will be removed when website is fully functional
 
@@ -45,7 +49,7 @@ export default class Dashboard extends Component {
 
     getData() {
         return axios.get("http://localhost:8080/node/get-all-nodes");
-      }
+    }
 
     update_state() {
         this.getData().then(response => {
@@ -77,7 +81,7 @@ export default class Dashboard extends Component {
                 </div>
                 <div className='dashboard_body'>
                     <TopMap data={this.state.nodes} handleChange={this.selectNode} />
-                    <DashboardList arrNodesData = {this.state.nodes} selected={this.state.selected} />
+                    <DashboardList arrNodesData = {this.state.nodes} selected={this.state.selected} history={this.props.history}/>
                 </div>
             </div>
         );

@@ -4,14 +4,14 @@ import { Grommet, DataTable, Text, Box} from "grommet";
 import Button from 'react-bootstrap/Button'
 import { Link } from "react-router-dom";
 
-
 export type DashboardListProps = {
     arrNodesData: Array<any>,
-    selected: string
+    selected: string,
+    history: any
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
-    
+
     render() {
 
         return (
@@ -24,7 +24,8 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 {
                                     property: 'public_key',
                                     header: <Text>Public Key</Text>,
-                                    size: '50%'
+                                    size: '50%',
+                                    search: true
                                 },
                                 {
                                     property: 'rippled_version',
@@ -44,9 +45,22 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     align: 'start'
                                 }
                             ]}
-                            data={this.props.arrNodesData}
+                            data={this.props.arrNodesData.filter(node => {
+                                if (this.props.selected == "") {
+                                    return node;
+                                } else {
+                                    if (node.public_key == this.props.selected) {
+                                        return node;
+                                    }
+                                }
+                            })}
                             step={10}
                             size='large'
+                            // onSearch={this.highlightInList}
+                            onClickRow={({datum}) => {
+                                console.log(datum.public_key);
+                                this.props.history.push("/node");
+                            }}
                         />
                     </Box>
                 </Grommet>
@@ -61,7 +75,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                     </div>
                     <div className='button-go-to'>
                         <Link to="/node">
-                        <Button variant="dark" size='lg'>Go To Node Page</Button>
+                            <Button variant="dark" size='lg'>Go To Node Page</Button>
                         </Link>
                     </div>
                 </div>

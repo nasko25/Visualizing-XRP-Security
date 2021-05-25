@@ -65,8 +65,6 @@ class TopMap extends React.Component<Props, TopMapState> {
     }
 
     onClusterClick = (a: any) => {
-        console.log(a);
-
         var children = a.layer.getAllChildMarkers();
         var lis = [];
 
@@ -111,9 +109,9 @@ class TopMap extends React.Component<Props, TopMapState> {
         let markers = [];
 
         for (var i = 0; i < this.props.data.length; i++) {
-            var a: Point = this.props.data[i];
+            let a: Point = this.props.data[i];
             // var title  = a.title;
-            var title = "Title";
+            var title = a.public_key;
             var colour = "green";
 
             // Nodes still don't have trust score
