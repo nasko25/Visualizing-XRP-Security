@@ -47,7 +47,7 @@ class NmapInterface{
         var out = stdout;
         parser.parseString(out, function (err: any, result: any) {
             if (
-                !result.nmaprun.host[0].status[0].$.state &&
+                !result.nmaprun.host[0].status[0].$.state ||
                 !result.nmaprun.host[0].status[0].$.state.includes("up")
             ) {
                 var returnVal: Node = {
@@ -171,10 +171,11 @@ class NmapInterface{
         var out = stdout;
         parser.parseString(out, function (err: any, result: any) {
             var returnVal: Node[] = [];
+        
             for (var host in result.nmaprun.host) {
                 var currentHost = result.nmaprun.host[host];
                 if (
-                    !currentHost.status[0].$.state &&
+                    !currentHost.status[0].$.state ||
                     !currentHost.status[0].$.state.includes("up")
                 ) {
                     returnVal.push({
