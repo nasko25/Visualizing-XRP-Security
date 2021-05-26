@@ -13,7 +13,7 @@ import {
 
 const data: NodePorts[] = [
     { ip: "194.35.86.10", public_key: "pk", ports: "404" },
-    { ip: "209.195.2.50", public_key: "pk", ports: "42,23" },
+    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23" },
     { ip: "91.12.98.74", public_key: "pk", ports: "42,23" },
     { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "" },
 ];
@@ -32,7 +32,7 @@ const T_LEVEL_SHORT: number = 3;
 const T_LEVEL_LONG: number = 4;
 
 //Affects how many short scans are ran at the same time
-const MAX_SHORT_SCANS: number = 4;
+const MAX_SHORT_SCANS: number = 2;
 
 //Affects how many ip addresses are fed to NMAP for the long scan
 const MAX_LONG_SCANS: number = 4;
@@ -201,7 +201,7 @@ class PortScan {
                             ports: stringForDBports,
                             protocols: stringForDBprotocols,
                         };
-                        //dbCon.insertPorts(putin);
+                        dbCon.insertPorts(putin);
                         console.log(putin);
                     }
                 }
@@ -251,7 +251,7 @@ class PortScan {
                             protocols: stringForDBprotocols,
                         };
                         console.log(putin);
-                        //dbCon.insertPorts(putin);
+                        dbCon.insertPorts(putin);
                     }
                 }
             }
@@ -277,7 +277,8 @@ class PortScan {
             var flag = 0;
             var success1 = false;
             var success2 = false;
-            var portsToCheck="51325, 51326"
+            var portsToCheck="51325,51326"
+            //var portsToCheck = "";
             if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
                 portsToCheck+=","+listOfNodes[ip].ports;
             }
@@ -311,7 +312,7 @@ class PortScan {
                 success1 = true;
             }
 
-            //console.log("Second scan")
+            console.log("Second scan")
 
             var out2 = await this.nmapInterface.topPortsScan(listOfNodes[ip].ip, TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
             //console.log("done " + out2);
@@ -344,7 +345,7 @@ class PortScan {
                     ports: outPorts,
                     protocols: outProtocols,
                 };
-                //dbCon.insertPorts(putin);
+                dbCon.insertPorts(putin);
                 resolve(true);
                 return;
                 // listOfIPs[ip].openPorts = out;
@@ -489,6 +490,8 @@ class PortScan {
                 this.shortScanList = result;
                 this.shortScanver2(0);
             });
+            // this.shortScanList = data;
+            // this.shortScanver2(0);
         }
         //this.longScan(data2).then(() => this.scheduleALongScan());
         // this.shortScanList = data;

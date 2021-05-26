@@ -115,7 +115,7 @@ class NmapInterface{
      * @param portList list of ports to check whether they are open
      * @returns Promise that resolves to either null or a Node object (ip, open ports, is it up)
      */
-    checkSpecificports(IP: string, T_LEVEL: number, timeout: string, portList?: string | null) {
+    checkSpecificports(IP: string, T_LEVEL: number, timeout: string, portList: string | null) {
         return new Promise<Node | null>((resolve) => {
             if (portList === null || portList === "") {
                 resolve(null);
