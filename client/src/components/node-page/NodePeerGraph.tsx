@@ -29,6 +29,14 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         this.createNetwork = this.createNetwork.bind(this);
     }
 
+    componentDidMount(){
+        this.createNetwork();
+    }
+
+    componentDidUpdate(){
+        this.createNetwork();
+    }
+    
     /**
      * Creates the vis.js network
      * The only connections are from our Node to its peers
@@ -63,7 +71,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                             : "rgba(" + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 255, 0, 0.7)",
                     border: "white",
                 },
-                title: "Public key: " + curr.public_key + "\nScore: " + curr.score.toFixed(2),
+                title: curr.public_key,
             });
             edgesArr.push({
                 from: 1,
@@ -100,7 +108,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         
             if (clickedNodes.length >= 1) {
                 var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
-                var public_key: string = JSON.stringify(n.title);
+                var public_key: string = JSON.stringify(n.title).slice(1, -1);
                 func(public_key);
             }
         });

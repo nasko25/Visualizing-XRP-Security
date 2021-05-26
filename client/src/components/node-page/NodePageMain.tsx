@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
 import { Peer, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
+import axios from 'axios';
 
 
 /**
@@ -21,7 +22,7 @@ var SETUP = {
 
 var COLORS = {
     main: "#383838",
-    button: "#212529;"
+    button: "#212529"
 }
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
@@ -31,7 +32,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
         // The state
         this.state = {
-            public_key: "",
+            public_key: "n9KtoXy89a6F5ZopaR9SMGx9MT8RprFwehQ7aiL59VdK6oUer8XB",
             node_info: this.props.node_info ? this.props.node_info : {
                 public_key: "",
                 IP: "",
@@ -51,15 +52,38 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.preparePortList = this.preparePortList.bind(this);
         this.createDataChart = this.createDataChart.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
+        this.queryAPI = this.queryAPI.bind(this);
     }
 
     componentDidMount() {
-        this.getNodeInfo();
+        this.getNodeInfo(this.state.public_key);
+    }
+
+    queryAPI(public_key: string) {
+        return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
+            console.log(res.data);
+            var peers: Peer[] = [];
+            for (var i = 0; i < res.data.length; i++) {
+                peers.push({ public_key: res.data[i].end_node, score: parseFloat(Math.random().toFixed(3)) })
+            }
+            this.setState(
+                {
+                    node_info: {
+                        IP: this.state.node_info.IP,
+                        history: this.state.node_info.history,
+                        ports: this.state.node_info.ports,
+                        public_key: this.state.node_info.public_key,
+                        trust_score: this.state.node_info.trust_score,
+                        peers: peers,
+                        rippled_version: this.state.node_info.rippled_version,
+                    }
+                });
+        });
     }
 
     // Just for testing
     // Should actually send a request to server if props is empty
-    getNodeInfo() {
+    getNodeInfo(public_key: string) {
         var peers: Peer[] = [];
         var history: HistoricalScore[] = [];
         for (var i = 0; i < 40; i++) {
@@ -72,7 +96,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             return (b.score - a.score);
         });
         var info = {
-            public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
+            public_key: public_key,
             IP: "34.221.161.114",
             peers: peers,
             trust_score: 1,
@@ -81,8 +105,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             rippled_version: "1.7.0",
             history: history
         };
-
-        this.setState({ public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD", node_info: info });
+        this.setState({ public_key: public_key, node_info: info });
+        this.queryAPI(this.state.public_key);
         return info;
     }
 
@@ -134,23 +158,25 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 { name: 'IP', value: this.state.node_info.IP },
                 { name: 'rippled_version', value: this.state.node_info.rippled_version },
                 { name: 'ports', value: this.preparePortList() },
+                { name: 'peer count', value: this.state.node_info.peers.length}
             ]}
         />
     }
 
     createPeerList() {
         return <List
-            style={{ width: "70%", alignSelf: "center" }}
+            style={{ alignSelf: "center" }}
             primaryKey="public_key"
             secondaryKey="score"
             data={this.state.node_info.peers}
             border={false}
+            alignSelf="center"
         />
     }
 
     nodeOnClick(public_key: string) {
         this.setState({ public_key: public_key });
-        this.getNodeInfo();
+        this.getNodeInfo(public_key);
     }
 
     render() {
@@ -180,8 +206,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             justify="center"
                             alignSelf="center"
                             margin="2%">
-                            <Button 
-                                variant="dark" 
+                            <Button
+                                variant="dark"
                                 // onClick={() => this.setState({ displayButton: true })}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
@@ -195,11 +221,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             justify="center"
                             background={COLORS.button}
                             margin="2%">
-                            <TextInput 
+                            <TextInput
                                 onKeyPress={this.onKeyPressSearch}
                                 textAlign="center"
                                 placeholder="Search Public Key"
-                                />
+                            />
                             {/* {this.state.displayButton === false ? null : this.state.displayGreen === false ?
                                 <Button style={{ width: "10%", alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
                                 :
@@ -219,24 +245,24 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="5%" margin="2%" gridArea="map" background={COLORS.main}>
+                        <Box round="10%" margin="2%" gridArea="map" background={COLORS.main}>
                             <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
                         <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
-                            {this.createNodeInformationList()}
+                                {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
-                            <Box 
+                            <Box
                                 className="scrollbar-hidden"
-                                overflow="auto" 
-                                style={{ height: "40%" }} 
-                                margin="2%" 
-                                round="20px" 
+                                overflow="auto"
+                                style={{ height: "40%" }}
+                                margin="2%"
+                                round="20px"
                                 background={COLORS.button}>
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box pad={{ left: "5%", right: "5%" }} justify="center" round="5%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box pad={{ left: "5%", right: "5%" }} justify="center" round="10%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
                             {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
                             </Box> */}

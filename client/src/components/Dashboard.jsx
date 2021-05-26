@@ -30,7 +30,7 @@ export default class Dashboard extends Component {
 
     getData() {
         return axios.get("http://localhost:8080/node/get-all-nodes");
-      }
+    }
 
     update_state() {
         this.getData().then(response => {
