@@ -131,7 +131,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     // Event Handler for the Search Bar
     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
-        this.setState({ displayGreen: !this.state.displayGreen });
+        // this.setState({ displayGreen: !this.state.displayGreen });
         // TODO send request to check for the key
         // If key exists and information is obtained, render a green button to lead to the page
         // If not, render a red box with message
@@ -220,7 +220,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             direction="row"
                             justify="center"
                             background={COLORS.button}
-                            margin="2%">
+                            margin={{left: "1%", right: "2%"}}>
                             <TextInput
                                 onKeyPress={this.onKeyPressSearch}
                                 textAlign="center"
@@ -241,28 +241,28 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         rows={["1/2", "1/2"]}
                         columns={["1/2", "1/2"]}
                         areas={[
-                            { name: 'map', start: [1, 0], end: [1, 0] },
+                            { name: 'peers_network', start: [1, 0], end: [1, 0] },
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="10%" margin="2%" gridArea="map" background={COLORS.main}>
+                        <Box round="1%" margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} gridArea="peers_network" background={COLORS.main}>
                             <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
                         </Box>
-                        <Box round="5%" margin="2%" gridArea="stats" background={COLORS.main}>
+                        <Box round="1%" margin={{top: "2%", left: "2%", right: "1%", bottom: "2%"}} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
                                 {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box
                                 className="scrollbar-hidden"
                                 overflow="auto"
-                                style={{ height: "40%" }}
+                                style={{ height: "50%" }}
                                 margin="2%"
-                                round="20px"
+                                round="1%"
                                 background={COLORS.button}>
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box pad={{ left: "5%", right: "5%" }} justify="center" round="10%" margin="2%" gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{top: "1%", left: "1%", right: "2%", bottom: "2%"}} gridArea="info" background={COLORS.main} color="hd_bgnd">
                             {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
                             </Box> */}
