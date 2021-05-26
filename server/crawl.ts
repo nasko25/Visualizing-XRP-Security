@@ -49,7 +49,7 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
-        // TODO save all valid servers and use the first that responds when starting the crawl
+        // save all valid servers and use the first that responds when starting the crawl
 
         // Try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
