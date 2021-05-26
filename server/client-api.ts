@@ -4,11 +4,15 @@ import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
 import { getAllNodes, getHistoricalData, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
-
+import {Node} from "./db_connection/models/node";
+import { Connection } from './db_connection/models/connection';
 
 export var LAST_CRAWL: number = Date.now();
 export var LAST_SEC_SCAN: number = Date.now();
 export var LAST_TRUST_SCAN: number = Date.now();
+
+//Controls when does the cache expire:
+const MINUTES_BEFORE_CACHE_EXPIRES: number = 10;
 
 /*
     This file exports a function which takes an Express object
@@ -16,9 +20,14 @@ and adds a couple of endpoints to it. These are the endpoints
 meant for use by the Web Client of the application.
 
 */
-
+interface PeerList{
+    peers: Connection[];
+    timestamp: Date;
+}
 export default function setupClientAPIEndpoints(app: Express) {
-
+    var cacheExpiry: Date = new Date();
+    var nodeCache: Node[] = [{IP: "4242", rippled_version: "22", public_key: "242", uptime: 42}];
+    var peerCache: Map<string, PeerList>;
     app.get('/last-modifications', (req, res) => {
 
         Logger.info("Received request for checking the last modification timestamps.");
@@ -32,9 +41,22 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     app.get('/node/get-all-nodes', (req, res) => {
         Logger.info("Received request for all nodes' geographic coordinates and basic data.");
-        var nodes = getAllNodes(function (result): void {
-            res.send(JSON.stringify(result));
-        });
+        if(cacheExpiry<new Date()){
+            Logger.info("Cache expired, updating");
+            cacheExpiry = new Date();
+            cacheExpiry.setMinutes(cacheExpiry.getMinutes() + MINUTES_BEFORE_CACHE_EXPIRES);
+            
+            getAllNodes(function (result): void {
+                nodeCache = result;
+                res.send(JSON.stringify(nodeCache));
+            });
+            // nodeCache = [{IP: "4242", rippled_version: "22", public_key: "aa", uptime: cacheExpiry.getMinutes()}];
+            // res.send(JSON.stringify(nodeCache));
+        }else{
+
+            res.send(JSON.stringify(nodeCache));
+        }
+      
     });
     
     app.get('/node/score-peers', (req, res) => {
@@ -55,13 +77,13 @@ export default function setupClientAPIEndpoints(app: Express) {
         let public_key: string = String(req.query.public_key);
         if (public_key === null) {
             Logger.error(ERROR_KEY_NOT_FOUND);
-            res.status(400).send(ERROR_KEY_NOT_FOUND);
+            res.status(404).send(ERROR_KEY_NOT_FOUND);
         } else {
             getNodeOutgoingPeers(public_key, (err, results) => {
                 if (err) {
                     let error_string: string = `${ERROR_DATABASE_QUERY} : ${err.message}`;
                     Logger.error(error_string);
-                    res.status(400).send(error_string);
+                    res.status(404).send(error_string);
                 }
                 else res.send(JSON.stringify(results));
             });
