@@ -279,7 +279,7 @@ class PortScan {
             var success2 = false;
             var portsToCheck="51325, 51326"
             if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
-                portsToCheck+=listOfNodes[ip].ports;
+                portsToCheck+=","+listOfNodes[ip].ports;
             }
             let out1: Node | null = await this.nmapInterface.checkSpecificports(
                 listOfNodes[ip].ip,
