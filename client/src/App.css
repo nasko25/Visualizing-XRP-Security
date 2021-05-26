@@ -116,10 +116,6 @@
   margin-top: 8px;
 }
 
-.navbar {
-  background-color: white;
-}
-
 .el {
   display: inline-block;
   margin: 10px;
@@ -164,8 +160,8 @@ div.list-group-item {
 }
 
 .navbar {
-  background-color: #222;
-  color: white;
+  background-color: #C3C3C3;
+  color: #000000;
 }
 
 .table {
@@ -197,7 +193,7 @@ tbody {
 
 .table-group {
   height: 100%;
-  width: 40%;
+  width: 90%;
 }
 
 .buttons {
@@ -205,9 +201,10 @@ tbody {
 }
 
 .button-duo {
-  float: left;
+  justify-content: center;
   display: flex;
   flex-wrap: nowrap;
+  margin-top: 2%;
 }
 
 .button-stock {
@@ -219,14 +216,13 @@ tbody {
 }
 
 .map-group {
-  width: 40%;
-  height: 100%;
-  top: 50px;
+  width: 90%;
+  height: 90%;
 }
 
 .button-show-peers {
-  margin-top: 50px;
-  float: left;
+  margin-top: 5%;
+  justify-content: center;
 }
 
 .map-outer {
