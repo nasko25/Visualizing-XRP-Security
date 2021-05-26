@@ -13,11 +13,20 @@ export type DashboardListProps = {
 export default class DashboardList extends Component<DashboardListProps> {
 
     render() {
+        let nodes = this.props.arrNodesData;
+        if (this.props.selected != "") {
+            let temp = [this.props.arrNodesData.find(node => node.public_key == this.props.selected)]
+            nodes = temp.concat(nodes.filter(n => {
+                if (n.public_key != temp[0].public_key) {
+                    return n;
+                }
+            }))
+        }
 
         return (
 
             <div className='table-group'>
-                <Grommet style={{color: 'white', maxHeight: '80%', maxWidth: '100%'}}>
+                <Grommet style={{color: 'white', maxHeight: '100%', maxWidth: '100%'}}>
                     <Box style={{}}>
                         <DataTable
                             columns={[
@@ -45,15 +54,16 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     align: 'start'
                                 }
                             ]}
-                            data={this.props.arrNodesData.filter(node => {
-                                if (this.props.selected == "") {
-                                    return node;
-                                } else {
-                                    if (node.public_key == this.props.selected) {
-                                        return node;
-                                    }
-                                }
-                            })}
+                            // data={this.props.arrNodesData.filter(node => {
+                            //     if (this.props.selected == "") {
+                            //         return node;
+                            //     } else {
+                            //         if (node.public_key == this.props.selected) {
+                            //             return node;
+                            //         }
+                            //     }
+                            // })}
+                            data={nodes}
                             step={10}
                             size='large'
                             // onSearch={this.highlightInList}
@@ -72,11 +82,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                         <div className='button-validtor'>
                             <Button variant="dark" size='lg'>Validator Nodes</Button>
                         </div>
-                    </div>
-                    <div className='button-go-to'>
-                        <Link to="/node">
-                            <Button variant="dark" size='lg'>Go To Node Page</Button>
-                        </Link>
                     </div>
                 </div>
             </div>
