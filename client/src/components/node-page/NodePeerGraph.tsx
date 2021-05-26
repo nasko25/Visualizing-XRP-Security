@@ -68,7 +68,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                     background:
                         curr.score < 0.5
                             ? "rgba(200, 0, 0, 0.7)"
-                            : "rgba(" + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 255, 0, 0.7)",
+                            : curr.score >= 0.95 ? "green" : "rgba(255," + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 0, 0.7)",
                     border: "white",
                 },
                 title: curr.public_key,

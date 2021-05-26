@@ -3,7 +3,7 @@ import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput }
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Peer, NodePageState, NodePageProps, HistoricalScore } from "./NodePageTypes";
+import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 
 
@@ -40,7 +40,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 trust_score: 0,
                 rippled_version: "",
                 ports: [],
-                history: []
+                history: [],
+                uptime: 0
             },
             speed: 3,
             displayButton: false,
@@ -53,6 +54,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.createDataChart = this.createDataChart.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
         this.queryAPI = this.queryAPI.bind(this);
+        this.queryAPI_node = this.queryAPI_node.bind(this);
     }
 
     componentDidMount() {
@@ -64,7 +66,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             console.log(res.data);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
-                peers.push({ public_key: res.data[i].end_node, score: parseFloat(Math.random().toFixed(3)) })
+                peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
             }
             this.setState(
                 {
@@ -76,38 +78,60 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         trust_score: this.state.node_info.trust_score,
                         peers: peers,
                         rippled_version: this.state.node_info.rippled_version,
+                        uptime: this.state.node_info.uptime
                     }
                 });
         });
     }
 
-    // Just for testing
-    // Should actually send a request to server if props is empty
-    getNodeInfo(public_key: string) {
-        var peers: Peer[] = [];
-        var history: HistoricalScore[] = [];
-        for (var i = 0; i < 40; i++) {
-            peers.push({ public_key: Math.random().toString(36).substring(7), score: parseFloat(Math.random().toFixed(3)) });
-        }
-        for (var i = 1; i <= 30; i++) {
-            history.push({ date: "2020-08-" + i, score: parseFloat(Math.random().toFixed(3)) });
-        }
-        peers.sort((a: Peer, b: Peer) => {
-            return (b.score - a.score);
+    queryAPI_node(public_key: string) {
+        return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
+            console.log(res.data);
+            var info: NodeInfoDB = res.data[0];
+            console.log(info);
+
+            var ports: Port[] = [];
+            if (info.ports){
+                for (var i = 0; i < info.ports.length; i++){
+                    ports.push({port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet"})
+                }
+            }
+            
+            this.setState(
+                {
+                    node_info: {
+                        IP: info.IP,
+                        history: this.state.node_info.history,
+                        ports: ports,
+                        public_key: this.state.node_info.public_key,
+                        trust_score: this.state.node_info.trust_score,
+                        peers: this.state.node_info.peers,
+                        rippled_version: info.rippled_version,
+                        uptime: info.uptime
+                    }
+                });
         });
+    }
+
+    getNodeInfo(public_key: string) {
+        var history: HistoricalScore[] = [];
+        for (var i = 1; i <= 30; i++) {
+            history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
+        }
+
         var info = {
             public_key: public_key,
-            IP: "34.221.161.114",
-            peers: peers,
-            trust_score: 1,
-            ports: [{ port_number: 22, service: "SSH", version: "12.3" },
-            { port_number: 80, service: "HTTP", version: "N/a" }],
-            rippled_version: "1.7.0",
-            history: history
+            IP: this.state.node_info.IP,
+            peers: this.state.node_info.peers,
+            trust_score: 0,
+            ports: this.state.node_info.ports,
+            rippled_version: this.state.node_info.rippled_version,
+            history: history,
+            uptime: this.state.node_info.uptime
         };
         this.setState({ public_key: public_key, node_info: info });
         this.queryAPI(this.state.public_key);
-        return info;
+        this.queryAPI_node(this.state.public_key);
     }
 
     createDataChart() {
@@ -158,7 +182,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 { name: 'IP', value: this.state.node_info.IP },
                 { name: 'rippled_version', value: this.state.node_info.rippled_version },
                 { name: 'ports', value: this.preparePortList() },
-                { name: 'peer count', value: this.state.node_info.peers.length}
+                { name: 'peer count', value: this.state.node_info.peers.length },
+                { name: 'uptime', value: this.state.node_info.uptime }
             ]}
         />
     }
@@ -168,7 +193,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             style={{ alignSelf: "center" }}
             primaryKey="public_key"
             secondaryKey="score"
-            data={this.state.node_info.peers}
+            data={this.state.node_info.peers.sort((a, b) => {
+                return b.score - a.score;
+            })}
             border={false}
             alignSelf="center"
         />

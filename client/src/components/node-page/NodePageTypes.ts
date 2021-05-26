@@ -21,7 +21,20 @@ export type NodeInfo = {
     IP: string,
     rippled_version: string,
     ports: Port[],
-    history: HistoricalScore[]
+    history: HistoricalScore[],
+    uptime: number
+}
+
+export type NodeInfoDB = {
+    public_key: string,
+    IP: string,
+    rippled_version: string,
+    uptime: number,
+    ports: number[],
+    protocols: string[],
+    longtitude: number,
+    latitude: number,
+    timestamp: string
 }
 
 export type Port = {
