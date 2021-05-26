@@ -2,7 +2,7 @@
 import { Express, Response } from 'express'
 import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
 
 
@@ -113,6 +113,19 @@ export default function setupClientAPIEndpoints(app: Express) {
             const duration: number = req.query.duration ? Number(req.query.duration) : 30;
 
             getValidatorHistoricalData(public_key, duration, (err, results) => {
+                if(!is_error_present(err, res)) {
+                    res.send(JSON.stringify(results));
+                }
+            });
+        }
+    });
+
+    app.get('/node/info', (req, res) => {
+        Logger.info('Received request for information of a node.');
+
+        const public_key: string = String(req.query.public_key);
+        if (!is_key_present(public_key, res)) {
+            getNode(public_key, (err, results) => {
                 if(!is_error_present(err, res)) {
                     res.send(JSON.stringify(results));
                 }

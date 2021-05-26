@@ -60,13 +60,6 @@ export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode)
     var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
-
-    // connection.query(insert_connection_query, function (err: Error, results: any, fields: JSON) {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    // });
     connection.query(insert_connection_query, voidCallback);
 }
 
@@ -81,40 +74,16 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
 
 export function getAllNodes(callback: (err: Error, res: Node[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM node;';
-    // connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    //     var res = JSON.parse(JSON.stringify(results));
-    //     return callback(res);
-    // });
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
 export function getAllConnections(callback: (err: Error, res: Connection[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM connection;';
-    // connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    //     var res = JSON.parse(JSON.stringify(results));
-    //     return callback(res);
-    // });
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
 export function getAllSecurityAssessments(callback: (err: Error, res: Node[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM security_assessment;';
-    // connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-    //     if (err) {
-    //         console.log(err);
-    //         throw err;
-    //     }
-    //     var res = JSON.parse(JSON.stringify(results));
-    //     return callback(res);
-    // });
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
  
@@ -165,6 +134,11 @@ export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, 
 export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
     const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
     connection.query(get_validator_history, create_query_callback(callback)); 
+}
+
+export function getNode(public_key: string, callback: (err: Error, res: Node[]) => void): void {
+    const get_node = `SELECT * FROM node WHERE public_key=\'` + public_key + `\';`;
+    connection.query(get_node, create_query_callback(callback));
 }
 
 function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (err: Error, results: JSON[], fields: JSON) => void {
