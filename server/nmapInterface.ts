@@ -100,7 +100,7 @@ class NmapInterface{
             exec.exec(
                 "nmap " + IP + " -Pn -T" + T_LEVEL +
                     " " + arg_ip_version + " -oX - --host-timeout " + timeout +
-                    "--top-ports "+topPorts,
+                    " --top-ports "+topPorts,
                 { maxBuffer: Infinity },
                 (error, stdout, stderr) => {
                     this.interpretNmapReturn(error, stdout, stderr, resolve);
