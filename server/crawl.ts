@@ -155,7 +155,10 @@ class Crawler {
 
                                     if (n !== undefined) {
                                         // insert a connection between n and peer in the database
-                                        insertConnection(n, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
+                                        // the connection is now bidirectional
+                                        var node_to_add: Node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        insertConnection(n, node_to_add);
+                                        insertConnection(node_to_add, n);
                                     }
                                 }
                             })
