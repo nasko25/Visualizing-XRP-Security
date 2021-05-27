@@ -26,8 +26,8 @@ export default class DashboardList extends Component<DashboardListProps> {
         return (
 
             <div className='table-group'>
-                <Grommet style={{color: 'white', maxHeight: '100%', maxWidth: '100%'}}>
-                    <Box style={{}}>
+                <Grommet style={{color: 'white', height: '80%', maxWidth: '100%'}}>
+                    <Box style={{height: '100%', width: '100%'}}>
                         <DataTable
                             columns={[
                                 {
@@ -71,6 +71,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 console.log(datum.public_key);
                                 this.props.history.push("/node");
                             }}
+                            style={{scrollbarWidth: 'none', height: '100%'}}
                         />
                     </Box>
                 </Grommet>

@@ -3,7 +3,7 @@ import DashboardNavbar from "./DashboardNavbar";
 import DashboardList from "./DashboardList";
 import TopMap from "../TopMap";
 import axios from 'axios';
-import { Box, Grid, Grommet, Header, Heading } from 'grommet';
+import { Box, Grid, Grommet, Header, Heading, List } from 'grommet';
 
 let dataJson = require("../../nodes.json");
 
@@ -12,7 +12,7 @@ export type DashboardProps = {
 }
 
 var SETUP = {
-    header_height: 10,
+    header_height: 7.5,
     hd_bgnd: '#C3C3C3',
 }
 
@@ -84,18 +84,32 @@ export default class Dashboard extends Component<DashboardProps> {
         }
     }
 
+    createGenInfo() {
+        return <List
+            style={{ width: "70%", height: "70%", alignSelf: "center" }}
+
+            primaryKey="name"
+            secondaryKey="value"
+
+            data={[
+                { name: 'Nodes', value: this.state.nodes.length},
+
+            ]}
+        />
+    }
+
     render() {
         return (
             // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
-                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: SETUP.hd_bgnd}}>
+                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.main}}>
                     <DashboardNavbar />
                 </Header>
                 <div className='DashboardMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
                     <Grid
                         rows={["2/3", "1/3"]}
                         columns={["1/2", "1/2"]}
-                        gap={"small"}
+                        // gap={"small"}
                         areas={[
                             { name: "map", start: [0, 0], end: [0, 0.5] },
                             { name: "info", start: [0, 1], end: [0, 1] },
@@ -103,14 +117,15 @@ export default class Dashboard extends Component<DashboardProps> {
                         ]}
                         style={{width: '100%', height: '100%'}}
                     >
-                        <Box gridArea="map" margin='2%' round='5%' background={COLORS.main} justify='center' align='center'>
+                        <Box gridArea="map" margin={{top: "2%", left: "2%", right: "1%", bottom: "1%"}} round='1%' background={COLORS.main} justify='center' align='center'>
                             <TopMap data={this.state.nodes} handleChange={this.selectNode} />
                         </Box>
-                        <Box gridArea="table" background={COLORS.main} margin='2%' round='5%' justify='center' align='center'>
+                        <Box gridArea="table" background={COLORS.main} margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} round='1%' justify='center' align='center'>
                             <DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />
                         </Box>
-                        <Box gridArea="info" background={COLORS.main} margin='2%' round='5%' justify='center' align='center'>
+                        <Box gridArea="info" background={COLORS.main} margin={{top: "1%", left: "2%", right: "1%", bottom: "1%"}} round='1%' justify='center' align='center'>
                             <Heading size="100%" margin="2%"> General Information </Heading>
+                            {this.createGenInfo()}
                         </Box>
                     </Grid>
                 </div>
