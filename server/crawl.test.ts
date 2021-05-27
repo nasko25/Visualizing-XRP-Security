@@ -1,8 +1,13 @@
 import Crawler, { normalizePublicKey } from "./crawl";
+import axios from 'axios';
 
 // save console.error and console.log to restore them after mocking them in some tests
 const console_error = console.error;
 const console_log = console.log;
+// prepare axios for mocking
+jest.mock("axios");
+const axiosMock = axios as jest.Mocked<typeof axios>
+
 test("test crawler constructor with empty array as parameter", () => {
     console.error = jest.fn();
     expect(() => new Crawler([])).toThrow("EmptyArrayException");
@@ -63,4 +68,30 @@ test("test normalizePublicKey function", () => {
     expect(normalizePublicKey("A1MSLePc0/1jj/AdsdJe/Fu/0U1X9rXNzvMBCKziKgM4")).toBe("n9MfFzw4mgmo34htc61b6uaafXrU5g1yLw185qtWqmpGimhxHCGH");
     expect(normalizePublicKey("AgnV1yX5xJby8OUZgaHySNUJTmifn+a2IUUbQTpdVuXj")).toBe("n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE");
     expect(normalizePublicKey("A2Q+a2yWtSieQ5ioBgFinhimoWHI0PUz77lp35rPrtEM")).toBe("n9MEPeN8cn5ipaXRcwiHL7vAVzdGMLRsTpJJALJvdqx7g6ZeRPDt");
+});
+
+test("test crawl() with only unresponsive starting servers", async () => {
+    // reject all axios.get() requests
+    axiosMock.get.mockRejectedValue(new Error("Server not responding"));
+
+    // mock console.log which will be called if no starting servers respond
+    console.log = jest.fn();
+
+    // initialize a new crawler with 3 test IPs that will be mocked
+    const crawler = new Crawler(["1.2.3.4", "12.13.14.15", "1.2.33.3"]);
+    const spy = jest.spyOn(crawler, "crawl");
+
+    // wait for the Promises that axios returns
+    await crawler.crawl();
+
+    // crawler.crawl() should have been called 4 times (3 for each of the IP addresses
+    // and 1 time with an empty list of IPs before throwing an exception)
+    expect(spy).toHaveBeenCalledTimes(4);
+
+    // console.log will only be called at the end when no starting servers respond with the "NoValidRippleServer" exception
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith("NoValidRippleServer");
+
+    spy.mockRestore();
+    console.log = console_log;
 });

@@ -71,7 +71,7 @@ class Crawler {
 
     }
 
-    crawl() {
+    crawl(): Promise<any> {
         // Start from first node, which is chosen from the config/ripple_servers.list
         // Perform a BFS by getting peers from each node
 
@@ -90,8 +90,8 @@ class Crawler {
         }
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
-        // Get the peers of the initial stock node
-        axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
+        // Get the peers of the initial stock node and return the promise from axios
+        return axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
             .then( async function ( response )  {
 
                 // Keep track of already visited nodes (with a list of their IPs)
