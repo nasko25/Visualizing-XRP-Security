@@ -153,13 +153,8 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     render = () => {
         return (
-            <div className='map-group'>
-                <div className='map-outer'>
-                    {this.createNewMap(this.state.popup)}
-                </div>
-                <div className='button-show-peers'>
-                    <Button variant="dark" size='lg'>Show Peers</Button>
-                </div>
+            <div className='map-outer'>
+                {this.createNewMap(this.state.popup)}
             </div>
         );
     }

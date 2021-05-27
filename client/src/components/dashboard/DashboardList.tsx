@@ -25,8 +25,8 @@ export default class DashboardList extends Component<DashboardListProps> {
 
         return (
 
-            <div className='table-group'>
-                <Grommet style={{color: 'white', height: '80%', maxWidth: '100%'}}>
+            <div className='table-outer'>
+                <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
                     <Box style={{height: '100%', width: '100%'}}>
                         <DataTable
                             columns={[
@@ -75,16 +75,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                         />
                     </Box>
                 </Grommet>
-                <div className='buttons'>
-                    <div className='button-duo'>
-                        <div className='button-stock'>
-                            <Button variant="dark" size='lg'>Stock Nodes</Button>
-                        </div>
-                        <div className='button-validtor'>
-                            <Button variant="dark" size='lg'>Validator Nodes</Button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
         )
