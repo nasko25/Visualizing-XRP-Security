@@ -6,7 +6,7 @@ export type NodePageProps = {
 
 // How the state should look like
 export type NodePageState = {
-    key: string,
+    public_key: string,
     node_info: NodeInfo,
     speed: number,
     displayButton: boolean,
@@ -21,12 +21,26 @@ export type NodeInfo = {
     IP: string,
     rippled_version: string,
     ports: Port[],
-    history: HistoricalScore[]
+    history: HistoricalScore[],
+    uptime: number
+}
+
+export type NodeInfoDB = {
+    public_key: string,
+    IP: string,
+    rippled_version: string,
+    uptime: number,
+    ports: number[],
+    protocols: string[],
+    longtitude: number,
+    latitude: number,
+    timestamp: string
 }
 
 export type Port = {
     port_number: number,
-    service: string
+    service: string,
+    version: string
 }
 
 export type Peer = {
