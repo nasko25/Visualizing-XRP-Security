@@ -17,22 +17,20 @@ meant for use by the Web Client of the application.
 
 */
 
+/**
+ * Checks whether a public_key has been passed as a parameter
+ * If not, sends an error over the response and returns false
+ * Otherwise, returns true
+ * @param key - the public_key obtained from the request
+ * @param res - the response over which to send in case key is not present
+ * @returns - boolean
+ */
 function is_key_present(key: String, res: Response): boolean {
-    if(key === null){
-        Logger.error(ERROR_KEY_NOT_FOUND);
-        res.status(400).send(ERROR_KEY_NOT_FOUND);
+    if (key) {
         return true;
     }
-    return false;
-}
-
-function is_error_present(err: Error, res: Response): boolean {
-    if (err) {
-        let error_string: string = `${ERROR_DATABASE_QUERY} : ${err.message}`;
-        Logger.error(error_string);
-        res.status(400).send(error_string);
-        return true;
-    }
+    Logger.error(ERROR_KEY_NOT_FOUND);
+    res.status(400).send(ERROR_KEY_NOT_FOUND);
     return false;
 }
 
@@ -51,10 +49,11 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     app.get('/node/get-all-nodes', (req, res) => {
         Logger.info("Received request for all nodes' geographic coordinates and basic data.");
-        var nodes = getAllNodes(function (err, result): void {
-            if(!is_error_present(err, res)){
-                res.send(JSON.stringify(result));
-            }
+        getAllNodes().then((nodes) => {
+            res.send(JSON.stringify(nodes));
+        }).catch((err: Error) => {
+            Logger.error(err.message);
+            res.status(400).send(err.message);
         });
     });
 
@@ -66,13 +65,14 @@ export default function setupClientAPIEndpoints(app: Express) {
         Logger.info("Received request for the security assessment score of a node.");
 
         let public_key: String = String(req.query.public_key);
-        if (!is_key_present(public_key, res)) {
-            getHistoricalData(function (err, result): void {
-                if(!is_error_present(err, res)) {
-                    res.send(calculateSMA(result) + " " + calculateEMA(result));
-                }
-            }, public_key, 30);
-        } 
+        if (is_key_present(public_key, res)) {
+            getHistoricalData(public_key, 30).then((result) => {
+                res.send(calculateSMA(result) + " " + calculateEMA(result));
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
+            });
+        }
     });
 
     app.get('/node/peers', (req, res) => {
@@ -80,11 +80,12 @@ export default function setupClientAPIEndpoints(app: Express) {
 
         let public_key: string = String(req.query.public_key);
 
-        if (!is_key_present(public_key, res)) {
-            getNodeOutgoingPeers(public_key, (err, results) => {
-                if(!is_error_present(err, res)) {
-                    res.send(JSON.stringify(results));
-                }
+        if (is_key_present(public_key, res)) {
+            getNodeOutgoingPeers(public_key).then((results) => {
+                res.send(JSON.stringify(results));
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
             });
         }
     });
@@ -93,14 +94,15 @@ export default function setupClientAPIEndpoints(app: Express) {
         Logger.info('Received request for the history of security analysis of a node.');
 
         const public_key: String = String(req.query.public_key);
-        if (!is_key_present(public_key, res)) {
+        if (is_key_present(public_key, res)) {
             const duration: number = req.query.duration ? Number(req.query.duration) : 30;
 
-            getHistoricalData(function (err, result): void {
-                if(!is_error_present(err, res)) {
-                    res.send(JSON.stringify(result));
-                }
-            }, public_key, duration);
+            getHistoricalData(public_key, duration).then((result) => {
+                res.send(JSON.stringify(result));
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
+            });
         }
 
     });
@@ -109,13 +111,14 @@ export default function setupClientAPIEndpoints(app: Express) {
         Logger.info('Received request for the history of trust analysis of a validator.');
 
         const public_key: string = String(req.query.public_key);
-        if (!is_key_present(public_key, res)) {
+        if (is_key_present(public_key, res)) {
             const duration: number = req.query.duration ? Number(req.query.duration) : 30;
 
-            getValidatorHistoricalData(public_key, duration, (err, results) => {
-                if(!is_error_present(err, res)) {
-                    res.send(JSON.stringify(results));
-                }
+            getValidatorHistoricalData(public_key, duration).then((results) => {
+                res.send(JSON.stringify(results));
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
             });
         }
     });
@@ -124,11 +127,12 @@ export default function setupClientAPIEndpoints(app: Express) {
         Logger.info('Received request for information of a node.');
 
         const public_key: string = String(req.query.public_key);
-        if (!is_key_present(public_key, res)) {
-            getNode(public_key, (err, results) => {
-                if(!is_error_present(err, res)) {
-                    res.send(JSON.stringify(results));
-                }
+        if (is_key_present(public_key, res)) {
+            getNode(public_key).then((results) => {
+                res.send(JSON.stringify(results));
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
             });
         }
     });

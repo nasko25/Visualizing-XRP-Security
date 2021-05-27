@@ -4,9 +4,7 @@ import Crawler from './crawl'
 import PortScanner from './portScan'
 import { promises as fs } from 'fs';
 import { Node as CrawlerNode } from './crawl';
-import { SecurityAssessment } from './db_connection/models/security_assessment'
 import GeoLocate from './geoLocate';
-import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 
 // Logger
 import Logger from "./logger";

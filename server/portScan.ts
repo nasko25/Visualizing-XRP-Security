@@ -7,6 +7,7 @@ import {
     NodePortsProtocols,
     NodePortsNull,
 } from "./db_connection/models/node";
+import Logger from "./logger";
 
 
 //How aggressive is our Short Scan
@@ -82,14 +83,18 @@ class PortScan {
         const job = schedule.scheduleJob(this.getRandomDate(2), () => {
             console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
             if(DO_LONG_SCAN){
-                dbCon.getNodesNonNullPort((result) => {
+                dbCon.getNodesNonNullPort().then((result) => {
                     this.shortScanList = result;
                     this.shortScanver2(0);
+                }).catch((err: Error) => {
+                    Logger.error(err.message);
                 });
             }else{
-                dbCon.getAllNodesForPortScan((result) => {
+                dbCon.getAllNodesForPortScan().then((result) => {
                     this.shortScanList = result;
                     this.shortScanver2(0);
+                }).catch((err: Error) => {
+                    Logger.error(err.message);
                 });
             }
         });
@@ -101,8 +106,10 @@ class PortScan {
     scheduleALongScan() {
         const job = schedule.scheduleJob(this.getRandomDate(2), () => {
             console.log("- - - BEGINNING  LONG  PORT  SCAN - - -");
-            dbCon.getNullPortNodes((result) => {
+            dbCon.getNullPortNodes().then((result) => {
                 this.longScan(result).then(() => this.scheduleALongScan());
+            }).catch((err: Error) => {
+                Logger.error(err.message);
             });
         });
     }
@@ -156,7 +163,9 @@ class PortScan {
                             ports: stringForDBports,
                             protocols: stringForDBprotocols,
                         };
-                        dbCon.insertPorts(putin);
+                        dbCon.insertPorts(putin).catch((err: Error) => {
+                            Logger.error(err.message);
+                        });
                         console.log(putin);
                     }
                 }
@@ -206,7 +215,9 @@ class PortScan {
                             protocols: stringForDBprotocols,
                         };
                         console.log(putin);
-                        dbCon.insertPorts(putin);
+                        dbCon.insertPorts(putin).catch((err: Error) => {
+                            Logger.error(err.message);
+                        });
                     }
                 }
             }
@@ -300,7 +311,9 @@ class PortScan {
                     ports: outPorts,
                     protocols: outProtocols,
                 };
-                dbCon.insertPorts(putin);
+                dbCon.insertPorts(putin).catch((err: Error) => {
+                    Logger.error(err.message);
+                });
                 resolve(true);
                 return;
                 // listOfIPs[ip].openPorts = out;
@@ -345,17 +358,23 @@ class PortScan {
         //   this.shortScan(result).then(()=>this.scheduleAShortScan())
         // });
         if(DO_LONG_SCAN){
-            dbCon.getNodesNonNullPort((result) => {
+            dbCon.getNodesNonNullPort().then((result) => {
                 this.shortScanList = result;
                 this.shortScanver2(0);
+            }).catch((err: Error) => {
+                Logger.error(err.message);
             });
-            dbCon.getNullPortNodes((result) => {
+            dbCon.getNullPortNodes().then((result) => {
                 this.longScan(result).then(() => this.scheduleALongScan());
+            }).catch((err: Error) => {
+                Logger.error(err.message);
             });
         }else{
-            dbCon.getAllNodesForPortScan((result) => {
+            dbCon.getAllNodesForPortScan().then(( result) => {
                 this.shortScanList = result;
                 this.shortScanver2(0);
+            }).catch((err: Error) => {
+                Logger.error(err.message);
             });
             // this.shortScanList = data;
             // this.shortScanver2(0);
