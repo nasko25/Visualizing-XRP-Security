@@ -3,6 +3,7 @@ import {latLng} from "leaflet";
 import {Circle, MapContainer, Popup, TileLayer, useMapEvents} from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
+import Button from 'react-bootstrap/Button'
 
 
 function MyComponent(props) {
@@ -112,7 +113,14 @@ class TopMap extends React.Component {
 
     render = () => {
         return (
-            this.createNewMap(this.state.popup)
+            <div className='map-group'>
+                <div className='map-outer'>
+                    {this.createNewMap(this.state.popup)}
+                </div>
+                <div className='button-show-peers'>
+                    <Button variant="dark" size='lg'>Show Peers</Button>
+                </div>
+            </div>
         );
     }
 
