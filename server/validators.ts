@@ -1,6 +1,9 @@
 import axios, { AxiosResponse } from "axios";
 import Logger from "./logger";
 import {decode} from 'js-base64'
+import { getIpAddresses } from "./db_connection/db_helper";
+import { NodeIpKey } from "./db_connection/models/node";
+import https from 'https'
 
 interface Validator_List_Result {
     manifest: string,
@@ -21,21 +24,72 @@ interface Validator {
     manifest: string,
 }
 
-function get_validator_list(ip: string, publisher_key: string) {
+const agent = new https.Agent({
+    rejectUnauthorized: false,
+});
 
-    const url = `https://${ip}:51235/vl/${publisher_key}`;
+export default class ValidatorIdentifier {
 
-    axios.get(url).then((result: AxiosResponse<Validator_List_Result>) => {
-    
-        let decodedBlob_validators : Validator_Data = JSON.parse(decode(result.data.blob));
+    get_validator_list(ip: string, publisher_key: string) {
+        return axios.get<any, AxiosResponse<Validator_List_Result>>(`https://[${ip}]:51235/vl/ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734`, { httpsAgent : agent , timeout: 3000});
+    }
+
+    run() {
+
+        getIpAddresses((err, nodes) => {
+
+            if (err) {
+                Logger.error(`Could not stat identification of validators : ${err.message}!`);
+            } else {
+
+                Logger.info("Database queried ...");
+                
+                let curStartIndex = 0;
+
+                this.identify_validators_for_batch(nodes);
+                
+            }
+
+        });
+
+    }
+
+    identify_validators_for_batch(nodes: NodeIpKey[]) {
+
+        Logger.info("Entered the function");
+
+        if (nodes.length == 0) {
+            console.log("Finished");
+            return;
+        }
         
-        console.log(decodedBlob_validators.validators.map((val) => val.validation_public_key));
+        let batch = nodes.splice(0, 1);
 
-    }).catch((err : Error) => {
-        Logger.info(err.message);
-    });
+        Promise.all(batch.map(node => this.get_validator_list(node.IP, node.public_key))).then(axios.spread((...responses) => {
+            
+            responses.forEach(res => {
+                let decoded : Validator_Data = JSON.parse(decode(res.data.blob));
+                decoded.validators.forEach(val => console.log(val.validation_public_key));
+                
+                // TODO place in database
+            });
+            
+            this.identify_validators_for_batch(nodes);
+
+        })).catch((error) => {
+            Logger.error(error.message);
+
+            this.identify_validators_for_batch(nodes)
+
+            
+        });
+
+    }
+
 
 
 }
 
-get_validator_list("s1.ripple.com", "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734");
+
+let valIden = new ValidatorIdentifier();
+valIden.run();
