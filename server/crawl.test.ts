@@ -1,4 +1,4 @@
-import Crawler from "./crawl";
+import Crawler, { normalizePublicKey } from "./crawl";
 
 // save console.error and console.log to restore them after mocking them in some tests
 const console_error = console.error;
@@ -50,4 +50,17 @@ test("test crawler constructor with multiple valid IP addresses", () => {
 
     // restore the original console.log after mocking it
     console.log = console_log;
+});
+
+test("test normalizePublicKey function", () => {
+    // test already normalized key
+    expect(normalizePublicKey("n9MUnfGt2CSPGZNmzCxUvCucHSYvp9GHKaydfbZANKgEc14NXFHH")).toBe("n9MUnfGt2CSPGZNmzCxUvCucHSYvp9GHKaydfbZANKgEc14NXFHH");
+
+    // test key that is too short
+    expect(() => normalizePublicKey("nn")).toThrow();
+
+    // test normalizePublicKey() with valid non-normalized keys
+    expect(normalizePublicKey("A1MSLePc0/1jj/AdsdJe/Fu/0U1X9rXNzvMBCKziKgM4")).toBe("n9MfFzw4mgmo34htc61b6uaafXrU5g1yLw185qtWqmpGimhxHCGH");
+    expect(normalizePublicKey("AgnV1yX5xJby8OUZgaHySNUJTmifn+a2IUUbQTpdVuXj")).toBe("n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE");
+    expect(normalizePublicKey("A2Q+a2yWtSieQ5ioBgFinhimoWHI0PUz77lp35rPrtEM")).toBe("n9MEPeN8cn5ipaXRcwiHL7vAVzdGMLRsTpJJALJvdqx7g6ZeRPDt");
 });

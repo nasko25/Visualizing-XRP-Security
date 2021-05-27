@@ -194,4 +194,4 @@ class Crawler {
 
 
 export default Crawler;
-export { Node };
+export { Node, normalizePublicKey };
