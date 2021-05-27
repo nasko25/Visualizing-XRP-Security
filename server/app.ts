@@ -5,6 +5,7 @@ import PortScanner from './portScan'
 import { promises as fs } from 'fs';
 import { Node as CrawlerNode } from './crawl';
 import { SecurityAssessment } from './db_connection/models/security_assessment'
+import GeoLocate from './geoLocate';
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 
 // Logger
@@ -36,7 +37,6 @@ async function startCrawler() {
 
 async function startPortScanner() {
 
-    
     let portScanner = new PortScanner();
     portScanner.start()
 }
@@ -50,6 +50,9 @@ function repeated_crawl() {
     startCrawler().catch((e) => {
         console.log(`Crawler exited with the exception: ${e}.`);
     });
+
+    // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
+    setTimeout(() => new GeoLocate().locate(), 30 * 1000);
     setTimeout(repeated_crawl, 300000);
 }
 

@@ -1,4 +1,4 @@
-import { Node } from './models/node'
+import { Node, NodePortsNull } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
@@ -34,13 +34,13 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-    var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
-        node.ip + '\', \'' +
+    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+        node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
 
-    connection.query(insert_node_query, voidCallback);
+    connection.query(insert_query, voidCallback);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): void {
@@ -49,6 +49,27 @@ export function insertNodes(nodes: CrawlerNode[]): void {
     var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime]);
 
     connection.query(query, [vals], (err: Error, result: object, fields: JSON) => {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+    });
+}
+
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertLocation(loc: number[], ip: string) {
+    const query = 'UPDATE node SET longtitude = ?, latitude = ? where IP = ?;'
+    const vals = loc.map(coordinate => {
+        // if the location is not known, save it as null
+        // otherwise, convert it to a string (because longitude and latitude are numbers)
+        if (coordinate === null)
+            return null;
+        else
+            return String(coordinate)
+    }).concat(ip);
+
+    connection.query(query, vals, (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
@@ -77,6 +98,21 @@ export function getAllNodes(callback: (err: Error, res: Node[]) => void): void {
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
+// this function will return the IPs of nodes that do not have geolocation yet
+// it will ignore NULL IPs
+export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => void): void {
+    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE IP IS NOT NULL AND (longtitude IS NULL OR latitude IS NULL);';
+    connection.query(get_all_nodes_without_location_query, function (err: Error, results: JSON[], fields: JSON) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+
+        var res = JSON.parse(JSON.stringify(results));
+        return callback(res);
+    });
+}
+
 export function getAllConnections(callback: (err: Error, res: Connection[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM connection;';
     connection.query(get_all_nodes_query, create_query_callback(callback));
@@ -86,7 +122,7 @@ export function getAllSecurityAssessments(callback: (err: Error, res: Node[]) =>
     var get_all_nodes_query = 'SELECT * FROM security_assessment;';
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
- 
+
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
     var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
@@ -103,14 +139,42 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
 
 }
 
-export function insertPorts(node: NodePortsProtocols): void {
-    var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
-        node.ip + '\', \'' +
-        node.public_key + '\', \'' +
-        node.ports + '\', \'' +
-        node.protocols + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, public_key=new.public_key, ports=new.ports, protocols=new.protocols;';
+export function getAllNodesForPortScan(callback: (res: NodePorts[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePorts[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
+export function getNullPortNodes(callback: (res: NodePortsNull[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip FROM node WHERE ports IS NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
+
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePortsNull[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
+
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertPorts(node: NodePortsProtocols) {
+    const query = 'UPDATE node SET ports = '+node.ports+', protocols = '+node.protocols+' where public_key = '+node.public_key+';'
+   
+
+    connection.query(query, (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
