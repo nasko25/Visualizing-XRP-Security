@@ -34,13 +34,8 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-<<<<<<< HEAD
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
-        node.ip + '\', \'undefined\'), \'' +
-=======
     var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (\'' +
         node.ip + '\', \'' +
->>>>>>> node-page
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
@@ -103,26 +98,7 @@ export function getAllNodes(callback: (err: Error, res: Node[]) => void): void {
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
-<<<<<<< HEAD
-// this function will return the IPs of nodes that do not have geolocation yet
-// it will ignore NULL IPs
-export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => void): void {
-    var get_all_nodes_without_location_query = 'SELECT IP FROM node WHERE IP IS NOT NULL AND (longtitude IS NULL OR latitude IS NULL);';
-    connection.query(get_all_nodes_without_location_query, function (err: Error, results: JSON[], fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-
-        var res = JSON.parse(JSON.stringify(results));
-        return callback(res);
-    });
-}
-
-export function getAllConnections(callback: (res: Connection[]) => void): void {
-=======
 export function getAllConnections(callback: (err: Error, res: Connection[]) => void): void {
->>>>>>> node-page
     var get_all_nodes_query = 'SELECT * FROM connection;';
     connection.query(get_all_nodes_query, create_query_callback(callback));
 }
@@ -195,18 +171,3 @@ function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (er
        return callback(err, res);
     };
 }
-<<<<<<< HEAD
-
-export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, res: Connection[]) => void): void {
-   const get_node_outgoing_peers = "SELECT end_node FROM connection WHERE start_node=\"" + public_key + "\";";
-   connection.query(get_node_outgoing_peers, create_query_callback(callback));
-
-}
-
-
-export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
-    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
-    connection.query(get_validator_history, create_query_callback(callback)); 
-}
-=======
->>>>>>> node-page
