@@ -1,6 +1,6 @@
 import React from "react";
 import { LatLng, latLng } from "leaflet";
-import { Circle, MapContainer, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { Circle, CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
 import Button from 'react-bootstrap/Button'
@@ -117,12 +117,12 @@ class TopMap extends React.Component<Props, TopMapState> {
             // Nodes still don't have trust score
             // Uncomment when trust score is implemented
             // if (a.trustScore === 0) colour = "red";
-            var size = 1000;
+            var size = 10;
             if (a.latitude == null || a.longtitude == null) {
                 continue;
             }
             let marker = (
-                <Circle key={"circle_" + i}
+                <CircleMarker key={"circle_" + i}
 
                     center={[a.longtitude, a.latitude]}
                     color={colour}
@@ -138,7 +138,7 @@ class TopMap extends React.Component<Props, TopMapState> {
                     <Popup>
                         {title}
                     </Popup>
-                </Circle>
+                </CircleMarker>
 
             );
 
@@ -146,7 +146,7 @@ class TopMap extends React.Component<Props, TopMapState> {
 
         }
 
-        return <MarkerClusterGroup zoomToBoundsOnClick={false} maxClusterRadius={20} onClick={this.onClusterClick}>
+        return <MarkerClusterGroup zoomToBoundsOnClick={false} maxClusterRadius={28} onClick={this.onClusterClick}>
             {markers}
         </MarkerClusterGroup>
     };
