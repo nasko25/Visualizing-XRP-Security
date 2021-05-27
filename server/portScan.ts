@@ -9,24 +9,8 @@ import {
 } from "./db_connection/models/node";
 
 
-
-
-const data: NodePorts[] = [
-    { ip: "194.35.86.10", public_key: "pk", ports: "404" },
-    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23" },
-    { ip: "91.12.98.74", public_key: "pk", ports: "42,23" },
-    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "" },
-];
-const data2: NodePortsNull[] = [
-    { ip: "::ffff:35.184.126.128", public_key: "pk" },
-    { ip: "209.195.2.50", public_key: "pk" },
-    { ip: "91.12.98.74", public_key: "pk" },
-    { ip: "127.0.0.1", public_key: "pk" },
-    { ip: "::ffff:93.115.27.128", public_key: "" },
-];
-
 //How aggressive is our Short Scan
-const T_LEVEL_SHORT: number = 3;
+const T_LEVEL_SHORT: number = 2;
 
 //How aggressive is our Long Scan
 const T_LEVEL_LONG: number = 4;
@@ -44,7 +28,7 @@ const DAYS_BETWEEN_SHORT_SCANS: number = 2;
 const MINUTES_BETWEEN_LONG_SCANS: number = 10;
 
 //When do we timeout on a short scan
-const TIMEOUT_SHORT_SCAN: string = "10m";
+const TIMEOUT_SHORT_SCAN: string = "20m";
 
 //When do we timeout on a long scan
 const TIMEOUT_LONG_SCAN: string = "24h";
@@ -91,21 +75,6 @@ class PortScan {
         return datetime;
     }
 
-    scheduleAShortScan() {
-        const job = schedule.scheduleJob(this.getRandomDate(2), () => {
-            console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
-            if(DO_LONG_SCAN){
-                dbCon.getNodesNonNullPort((result) => {
-                    this.shortScan(result).then(() => this.scheduleAShortScan());
-                });
-            }else{
-                dbCon.getAllNodesForPortScan((result) => {
-                    this.shortScan(result).then(() => this.scheduleAShortScan());
-                });
-            }
-        });
-    }
-
     /**
      * Schedules a short scan of the second kind (where several scans run together)
      */
@@ -138,20 +107,6 @@ class PortScan {
         });
     }
 
-    /** NOT USED ANYMORE
-     * Given list of ProtocolPortid objects, makes their portids into a comma separated list (was used for the nmap)
-     * @param arryOfPortObjects array of objects of {protocol, portid}
-     * @returns comma separated list of prots (for example: 22,34,245,5133)
-     */
-    stringListMaker(arryOfPortObjects: ProtocolPortid[]) {
-        if (arryOfPortObjects.length == 0) return null;
-        var out = "";
-        for (var i = 0; i < arryOfPortObjects.length - 1; i++) {
-            out += arryOfPortObjects[i].portid + ",";
-        }
-        out += arryOfPortObjects[arryOfPortObjects.length - 1].portid;
-        return out;
-    }
 
     /**
      * The actual long scan
@@ -382,94 +337,6 @@ class PortScan {
         });
     }
     
-    /** this is the older version of the short scan that does each scan sequentially. Much slower as it has high idle time
-     * Given a list of IPs will detect any open ports for them and put relevant information in database
-     * @param listOfNodes the list of nodes which we are scanning
-     */
-    async shortScan(listOfNodes: NodePorts[]): Promise<void> {
-        for (var index in listOfNodes) {
-            var mapUnique = new Map();
-            if (listOfNodes[index].ports === null) continue;
-            var outPorts: string = "";
-            var outProtocols: string = "";
-            //console.log("First Scan")
-            var flag = 0;
-            var success1 = false;
-            var success2 = false;
-            var portsToCheck="51325,51326"
-            if(listOfNodes[index].ports && listOfNodes[index].ports!=null && listOfNodes[index].ports!=""){
-                portsToCheck+=","+listOfNodes[index].ports;
-            }
-            let out1: Node | null = await this.nmapInterface.checkSpecificports(
-                listOfNodes[index].ip,
-                T_LEVEL_SHORT,
-                TIMEOUT_SHORT_SCAN,
-                portsToCheck
-            );
-            if (out1 !== null && out1 && out1.up) {
-                var i: number = 0;
-                if (out1.openPorts.length > 0) {
-                    mapUnique.set(
-                        out1.openPorts[i].portid,
-                        out1.openPorts[i].portid
-                    );
-                    outPorts = out1.openPorts[i].portid;
-                    outProtocols = out1.openPorts[i].protocol;
-                    i++;
-                    flag = 1;
-                }
-                while (i < out1.openPorts.length) {
-                    mapUnique.set(
-                        out1.openPorts[i].portid,
-                        out1.openPorts[i].portid
-                    );
-                    outPorts += "," + out1.openPorts[i].portid;
-                    outProtocols += "," + out1.openPorts[i].protocol;
-                    i++;
-                }
-                success1 = true;
-            }
-
-            //console.log("Second scan")
-
-            var out2 = await this.nmapInterface.topPortsScan(listOfNodes[index].ip, TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
-            //console.log("done " + out2);
-            if (out2 !== null && out2 && out2.up) {
-                var i: number = 0;
-                if (flag == 0) {
-                    outPorts = out2.openPorts[i].portid;
-                    outProtocols = out2.openPorts[i].protocol;
-                    i++;
-                }
-
-                while (i < out2.openPorts.length) {
-                    if (mapUnique.has(out2.openPorts[i].portid)) {
-                        console.log("Duplicate " + out2.openPorts[i].portid);
-                    } else {
-                        outPorts += "," + out2.openPorts[i].portid;
-                        outProtocols += "," + out2.openPorts[i].protocol;
-                    }
-                    i++;
-                }
-                success2 = true;
-            }
-
-            if (success2 || success1) {
-                console.log(listOfNodes[index].ip + " " + outPorts);
-                var putin: NodePortsProtocols = {
-                    ip: listOfNodes[index].ip,
-                    public_key: listOfNodes[index].public_key,
-                    ports: outPorts,
-                    protocols: outProtocols,
-                };
-                dbCon.insertPorts(putin);
-
-                // listOfIPs[ip].openPorts = out;
-            } else {
-                console.log("Host may be down");
-            }
-        }
-    }
 
     
 
@@ -507,3 +374,21 @@ export default PortScan;
  New Node added - FULL SCAN (~ 4 hours)
  Open Ports - Most common + any open ports we found
 */
+
+
+
+//DEBUG DATA:
+
+const data: NodePorts[] = [
+    { ip: "194.35.86.10", public_key: "pk", ports: "404" },
+    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23" },
+    { ip: "91.12.98.74", public_key: "pk", ports: "42,23" },
+    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "" },
+];
+const data2: NodePortsNull[] = [
+    { ip: "::ffff:35.184.126.128", public_key: "pk" },
+    { ip: "209.195.2.50", public_key: "pk" },
+    { ip: "91.12.98.74", public_key: "pk" },
+    { ip: "127.0.0.1", public_key: "pk" },
+    { ip: "::ffff:93.115.27.128", public_key: "" },
+];

@@ -47,6 +47,8 @@ class NmapInterface{
         var out = stdout;
         parser.parseString(out, function (err: any, result: any) {
             if (
+                !result.nmaprun.host ||
+                !result.nmaprun.host[0].status ||
                 !result.nmaprun.host[0].status[0].$.state ||
                 !result.nmaprun.host[0].status[0].$.state.includes("up")
             ) {
@@ -63,6 +65,7 @@ class NmapInterface{
             if (openPorts) {
                 for (var port in openPorts) {
                     if (
+                        openPorts[port].state &&
                         openPorts[port].state[0].$.state &&
                         openPorts[port].state[0].$.state === "open"
                     ) {
@@ -175,6 +178,7 @@ class NmapInterface{
             for (var host in result.nmaprun.host) {
                 var currentHost = result.nmaprun.host[host];
                 if (
+                    !currentHost.status ||
                     !currentHost.status[0].$.state ||
                     !currentHost.status[0].$.state.includes("up")
                 ) {
@@ -190,6 +194,7 @@ class NmapInterface{
                 if (curHostPorts) {
                     for (var port in curHostPorts) {
                         if (
+                          curHostPorts[port].state &&
                           curHostPorts[port].state[0].$.state &&
                           curHostPorts[port].state[0].$.state === "open"
                         ) {

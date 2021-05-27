@@ -158,20 +158,21 @@ export function getNullPortNodes(callback: (res: NodePortsNull[]) => void):void 
     });
 
 }
-export function insertPorts(node: NodePortsProtocols): void {
-    var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
-        node.ip + '\', \'' +
-        node.public_key + '\', \'' +
-        node.ports + '\', \'' +
-        node.protocols + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, public_key=new.public_key, ports=new.ports, protocols=new.protocols;';
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertPorts(node: NodePortsProtocols) {
+    const query = 'UPDATE node SET ports = '+node.ports+', protocols = '+node.protocols+' where public_key = '+node.public_key+';'
+   
+
+    connection.query(query, (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
         }
     });
 }
+
 
 export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String, duration: Number): void {
     var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' +
