@@ -1,8 +1,8 @@
 
-import {Express} from 'express'
+import { Express, Response } from 'express'
 import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
 import {Node} from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -25,6 +25,24 @@ interface PeerList{
     timestamp: Date;
 }
 
+function is_key_present(key: String, res: Response): boolean {
+    if(key === null){
+        Logger.error(ERROR_KEY_NOT_FOUND);
+        res.status(400).send(ERROR_KEY_NOT_FOUND);
+        return true;
+    }
+    return false;
+}
+
+function is_error_present(err: Error, res: Response): boolean {
+    if (err) {
+        let error_string: string = `${ERROR_DATABASE_QUERY} : ${err.message}`;
+        Logger.error(error_string);
+        res.status(400).send(error_string);
+        return true;
+    }
+    return false;
+}
 
 export default function setupClientAPIEndpoints(app: Express) {
     const mutex = new Mutex();
@@ -39,12 +57,13 @@ export default function setupClientAPIEndpoints(app: Express) {
     cacheUpdater();
     setInterval(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES*60*1000);
 
+    // A function called to update the function periodically
     async function updateCache(){
         return new Promise(resolve =>{
             Logger.info("Cache expired, updating");
             cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2*MINUTES_BEFORE_CACHE_EXPIRES);
             
-            getAllNodes(function (result): void {
+            getAllNodes(function (err, result): void {
                 nodeCacheAll = result;
                 var interm = new Map<string, Node>();
                 
@@ -122,6 +141,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     //TODO: SHOULD WE STORE THE JSON DIRECTLY OF THE PEER LIST?
     app.get('/node/peers', (req, res) => {
         Logger.info('Received request for the peer connections of a node.');
+
         let public_key: string = String(req.query.public_key);
         if (public_key === null) {
             Logger.error(ERROR_KEY_NOT_FOUND);
@@ -203,4 +223,16 @@ export default function setupClientAPIEndpoints(app: Express) {
     // });
     
 
+    app.get('/node/info', (req, res) => {
+        Logger.info('Received request for information of a node.');
+
+        const public_key: string = String(req.query.public_key);
+        if (!is_key_present(public_key, res)) {
+            getNode(public_key, (err, results) => {
+                if(!is_error_present(err, res)) {
+                    res.send(JSON.stringify(results));
+                }
+            });
+        }
+    });
 }

@@ -1,9 +1,10 @@
-import { Node } from './models/node'
+import { Node, NodePortsNull } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import { ValidatorAssessment } from './models/validator_assessment';
+import Logger from '../logger'
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -22,7 +23,6 @@ function voidCallback(err: Error, results:any, fields: JSON) {
 }
 
 function selectCallback(callback : (res: NodePorts[]) => void ):any  {
-    
     return function(err: Error, results: any, fields: JSON) {
         if (err) { 
             console.log(err);
@@ -78,37 +78,24 @@ export function insertLocation(loc: number[], ip: string) {
 }
 
 export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): void {
-    var insert_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
+    var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
-
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-    });
+    connection.query(insert_connection_query, voidCallback);
 }
 
 export function insertSecurityAssessment(security_assessment: SecurityAssessment): void {
-    var insert_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES (\'' +
+    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES (\'' +
         security_assessment.public_key + '\', \'' +
         security_assessment.metric_version + '\', \'' +
         security_assessment.score + '\');';
 
-    connection.query(insert_query, voidCallback);
+    connection.query(insert_sa_query, voidCallback);
 }
 
-export function getAllNodes(callback: (res: Node[]) => void): void {
+export function getAllNodes(callback: (err: Error, res: Node[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM node;';
-    connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        var res = JSON.parse(JSON.stringify(results));
-        return callback(res);
-    });
+    connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
 // this function will return the IPs of nodes that do not have geolocation yet
@@ -126,28 +113,14 @@ export function getAllNodesWithoutLocation(callback: (res: { IP: string }[]) => 
     });
 }
 
-export function getAllConnections(callback: (res: Connection[]) => void): void {
+export function getAllConnections(callback: (err: Error, res: Connection[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM connection;';
-    connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        var res = JSON.parse(JSON.stringify(results));
-        return callback(res);
-    });
+    connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
-export function getAllSecurityAssessments(callback: (res: Node[]) => void): void {
+export function getAllSecurityAssessments(callback: (err: Error, res: Node[]) => void): void {
     var get_all_nodes_query = 'SELECT * FROM security_assessment;';
-    connection.query(get_all_nodes_query, function (err: Error, results: JSON[], fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        var res = JSON.parse(JSON.stringify(results));
-        return callback(res);
-    });
+    connection.query(get_all_nodes_query, create_query_callback(callback));
 }
 
 // [ "port:protocol", "port:protocol" ] 
@@ -166,14 +139,42 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
 
 }
 
-export function insertPorts(node: NodePortsProtocols): void {
-    var insert_query: string = 'INSERT INTO node (IP, public_key, ports, protocols) VALUES (\'' +
-        node.ip + '\', \'' +
-        node.public_key + '\', \'' +
-        node.ports + '\', \'' +
-        node.protocols + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, public_key=new.public_key, ports=new.ports, protocols=new.protocols;';
+export function getAllNodesForPortScan(callback: (res: NodePorts[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
-    connection.query(insert_query, function (err: Error, results: any, fields: JSON) {
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePorts[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
+export function getNullPortNodes(callback: (res: NodePortsNull[]) => void):void  {
+    var get_nodes_non_null = 'SELECT public_key, ip FROM node WHERE ports IS NULL;';
+    connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
+
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        var res: NodePortsNull[] = JSON.parse(JSON.stringify(results));
+        return callback(res);
+
+    });
+
+}
+
+// insert longitude and latitude for a given ip address
+// the function expects a tuple of longitude and latitude
+export function insertPorts(node: NodePortsProtocols) {
+    const query = 'UPDATE node SET ports = '+node.ports+', protocols = '+node.protocols+' where public_key = '+node.public_key+';'
+   
+
+    connection.query(query, (err: Error, result: object, fields: JSON) => {
         if (err) {
             console.log(err);
             throw err;
@@ -181,18 +182,27 @@ export function insertPorts(node: NodePortsProtocols): void {
     });
 }
 
-export function getHistoricalData(callback: (res: SecurityAssessment[]) => void, public_key: String, duration: Number): void {
+export function getHistoricalData(callback: (err: Error, res: SecurityAssessment[]) => void, public_key: String, duration: Number): void {
     var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' +
         public_key +
         `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
-    connection.query(get_historical_data, function (err: Error, results: JSON[], fields: JSON) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        var res = JSON.parse(JSON.stringify(results));
-        return callback(res);
-    })
+    Logger.info(get_historical_data);
+    connection.query(get_historical_data, create_query_callback(callback));
+}
+
+export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, res: Connection[]) => void): void {
+   const get_node_outgoing_peers = "SELECT end_node FROM connection WHERE start_node=\"" + public_key + "\";";
+   connection.query(get_node_outgoing_peers, create_query_callback(callback));
+}
+
+export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
+    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
+    connection.query(get_validator_history, create_query_callback(callback)); 
+}
+
+export function getNode(public_key: string, callback: (err: Error, res: Node[]) => void): void {
+    const get_node = `SELECT * FROM node WHERE public_key=\'` + public_key + `\';`;
+    connection.query(get_node, create_query_callback(callback));
 }
 
 function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (err: Error, results: JSON[], fields: JSON) => void {
@@ -203,16 +213,4 @@ function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (er
        let res: T[] = JSON.parse(JSON.stringify(results));
        return callback(err, res);
     };
-}
-
-export function getNodeOutgoingPeers(public_key: string, callback: (err: Error, res: Connection[]) => void): void {
-   const get_node_outgoing_peers = "SELECT end_node FROM connection WHERE start_node=\"" + public_key + "\";";
-   connection.query(get_node_outgoing_peers, create_query_callback(callback));
-
-}
-
-
-export function getValidatorHistoricalData(public_key: string, duration: number, callback: (err: Error, res: ValidatorAssessment[]) => void): void {
-    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
-    connection.query(get_validator_history, create_query_callback(callback)); 
 }
