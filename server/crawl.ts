@@ -96,13 +96,14 @@ class Crawler {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
-                console.log(response.request.connection.getPeerCertificate());
+                // get the ssl certificate for the server
+                // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
 
                 // Initialize initial node
                 let node: Node = {
                                     ip: rippleStartingServerIP,
-                                    port: DEFAULT_PEER_PORT, 
+                                    port: DEFAULT_PEER_PORT,
                                     version: "rippled-" + response.data.server.build_version,
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
                                     uptime: response.data.server.uptime

@@ -8,6 +8,12 @@ const console_log = console.log;
 jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>
 
+// mock the db helper
+import { insertNode, insertConnection } from './db_connection/db_helper';
+jest.mock('./db_connection/db_helper');
+
+const DEFAULT_PEER_PORT = 51235;
+
 test("test crawler constructor with empty array as parameter", () => {
     console.error = jest.fn();
     expect(() => new Crawler([])).toThrow("EmptyArrayException");
@@ -94,4 +100,46 @@ test("test crawl() with only unresponsive starting servers", async () => {
 
     spy.mockRestore();
     console.log = console_log;
+});
+
+test("test crawl() with 1 responsive starting server that has no peers", async () => {
+    // build the mocked axios responce for the starting server
+    const response = {
+        data: {
+            server: {
+                build_version: "1.7.0",
+                pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
+                uptime: 1234567
+            }
+        }
+    };
+
+    const peersResponse = {
+        data: {
+            overlay: {
+                active: []
+            }
+        }
+    };
+
+    const startingServerIP = "1.2.3.4";
+
+    // resolve the first axios request with the mocked response object
+    // and the the second axios request that gets the starting server's peers
+    axiosMock.get.mockResolvedValueOnce(response).mockResolvedValueOnce(peersResponse);
+
+    await new Crawler([startingServerIP]).crawl();
+
+    // assert that insertNode() was called with the expected Node object
+    const insertedNode = {
+        ip: startingServerIP,
+        port: DEFAULT_PEER_PORT,
+        version: "rippled-1.7.0",
+        pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
+        uptime: 1234567
+    };
+    expect(insertNode).toHaveBeenCalledTimes(1);
+    expect(insertNode).toHaveBeenCalledWith(insertedNode);
+
+    expect(insertConnection).toHaveBeenCalledTimes(0);
 });
