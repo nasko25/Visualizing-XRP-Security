@@ -106,7 +106,14 @@ class PortScan {
             });
         });
     }
-
+    
+    //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
+    normaliseIP(ip: string){
+        if(ip.startsWith("::ffff:")){
+            ip.slice(7);
+        }
+        return ip;
+    }
 
     /**
      * The actual long scan
@@ -120,11 +127,11 @@ class PortScan {
             var listOfIpS = "";
             var mp = new Map();
             while (n < listOfNodes.length && i < MAX_LONG_SCANS) {
-                if (listOfNodes[n].ip.includes(":")) {
+                if (this.normaliseIP(listOfNodes[n].ip).includes(":")) {
                     indexArrayForIPv6.push(n);
                 } else {
-                    listOfIpS += listOfNodes[n].ip + " ";
-                    mp.set(listOfNodes[n].ip, listOfNodes[n].public_key);
+                    listOfIpS += this.normaliseIP(listOfNodes[n].ip) + " ";
+                    mp.set(this.normaliseIP(listOfNodes[n].ip), listOfNodes[n].public_key);
                     i++;
                 }
 
@@ -232,13 +239,13 @@ class PortScan {
             var flag = 0;
             var success1 = false;
             var success2 = false;
-            var portsToCheck="51325,51326"
+            var portsToCheck=listOfNodes[ip].portRunningOn;
             //var portsToCheck = "";
             if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
                 portsToCheck+=","+listOfNodes[ip].ports;
             }
             let out1: Node | null = await this.nmapInterface.checkSpecificports(
-                listOfNodes[ip].ip,
+                this.normaliseIP(listOfNodes[ip].ip),
                 T_LEVEL_SHORT,
                 TIMEOUT_SHORT_SCAN,
                 portsToCheck
@@ -269,7 +276,7 @@ class PortScan {
 
             console.log("Second scan")
 
-            var out2 = await this.nmapInterface.topPortsScan(listOfNodes[ip].ip, TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
+            var out2 = await this.nmapInterface.topPortsScan(this.normaliseIP(listOfNodes[ip].ip), TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
             //console.log("done " + out2);
             if (out2 != null && out2 && out2.up) {
                 var i: number = 0;
@@ -380,10 +387,10 @@ export default PortScan;
 //DEBUG DATA:
 
 const data: NodePorts[] = [
-    { ip: "194.35.86.10", public_key: "pk", ports: "404" },
-    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23" },
-    { ip: "91.12.98.74", public_key: "pk", ports: "42,23" },
-    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "" },
+    { ip: "194.35.86.10", public_key: "pk", ports: "404", portRunningOn: "51235" },
+    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23", portRunningOn: "51325" },
+    { ip: "91.12.98.74", public_key: "pk", ports: "42,23", portRunningOn: "51235" },
+    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "", portRunningOn: "51325" },
 ];
 const data2: NodePortsNull[] = [
     { ip: "::ffff:35.184.126.128", public_key: "pk" },

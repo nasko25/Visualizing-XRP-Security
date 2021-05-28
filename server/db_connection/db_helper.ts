@@ -34,11 +34,13 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, portRunningOn, uptime) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
-        node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
+        node.port + '\', \'' +
+        node.uptime + 
+        '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, portRunningOn=new.portRunningOn, uptime=new.uptime;';
 
     connection.query(insert_query, voidCallback);
 }
@@ -125,7 +127,7 @@ export function getAllSecurityAssessments(callback: (err: Error, res: Node[]) =>
 
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  {
-    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ports IS NOT NULL;';
     connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
         if (err) {
@@ -140,7 +142,7 @@ export function getNodesNonNullPort(callback: (res: NodePorts[]) => void):void  
 }
 
 export function getAllNodesForPortScan(callback: (res: NodePorts[]) => void):void  {
-    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ip IS NOT NULL;';
     connection.query(get_nodes_non_null, function(err: Error, results: JSON[], fields: JSON) {
 
         if (err) {
