@@ -1,6 +1,6 @@
 import * as schedule from "node-schedule";
 import NmapInterface from "./nmapInterface";
-
+import Logger from "./logger";
 import * as dbCon from "./db_connection/db_helper";
 import {
     NodePorts,
@@ -348,6 +348,7 @@ class PortScan {
     
 
     start() {
+        Logger.info("PORT SCANNER STARTED")
         // dbCon.getNodesNonNullPort((result)=>{
         //   this.shortScan(result).then(()=>this.scheduleAShortScan())
         // });
