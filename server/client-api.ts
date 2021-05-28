@@ -45,24 +45,35 @@ function is_error_present(err: Error, res: Response): boolean {
 }
 
 export default function setupClientAPIEndpoints(app: Express) {
+
+    // A mutex used when the cache is being updated
     const mutex = new Mutex();
+
+    // A timestamp to track when the cache has to be updated if its information is requested
     var cacheExpiry: Date = new Date();
+
+    // The cache objects: For requests for all nodes | peers of a node | information about a node
     var nodeCacheAll: Node[] = [{IP: "4242", rippled_version: "22", public_key: "242", uptime: 42}];
     var peerCache: Map<string, Connection[]> = new Map();
     var nodeCache: Map<string, Node> = new Map();
 
+    // A function that independently updates the cache periodically once per a longer period
     async function cacheUpdater(){
         updateCache().then();
     }
-    cacheUpdater();
     setInterval(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES*60*1000);
+    
+    // Initialization of the cache
+    cacheUpdater();
 
-    // A function called to update the function periodically
+    // A function called to update the cache periodically by the aforewritten one or during requests
     async function updateCache(){
         return new Promise(resolve =>{
             Logger.info("Cache expired, updating");
+            // update the expiration timestamp
             cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2*MINUTES_BEFORE_CACHE_EXPIRES);
             
+            // Get all nodes from the database and update the cache o
             getAllNodes(function (err, result): void {
                 nodeCacheAll = result;
                 var interm = new Map<string, Node>();
@@ -70,6 +81,8 @@ export default function setupClientAPIEndpoints(app: Express) {
                 for(var index in result){
                     interm.set(result[index].public_key, result[index]);
                 }
+
+                // Because of poor garbage collection
                 nodeCache.clear();
                 nodeCache = interm;
                 resolve(nodeCacheAll);
@@ -90,6 +103,7 @@ export default function setupClientAPIEndpoints(app: Express) {
         
     }
 
+    // A function called when during a request the cache is expired
     function changeCache(res: any){
         //THIS CODE HERE NEEDS TO BE EXAMINED
         // mutex.acquire().then(async (release)=>{
