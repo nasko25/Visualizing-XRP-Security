@@ -48,7 +48,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     const mutex = new Mutex();
     var cacheExpiry: Date = new Date();
     var nodeCacheAll: Node[] = [{IP: "4242", rippled_version: "22", public_key: "242", uptime: 42}];
-    var peerCache: Map<string, Connection[]>;
+    var peerCache: Map<string, Connection[]> = new Map();
     var nodeCache: Map<string, Node> = new Map();
 
     async function cacheUpdater(){
