@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `node` (
   `uptime` INT NULL,
   `ports` VARCHAR(3000) NULL,
   `protocols` VARCHAR(3000) NULL,
+  `publisher` VARCHAR(80) NOT NULL,
   `longtitude` DOUBLE NULL,
   `latitude` DOUBLE NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -24,6 +25,16 @@ CREATE TABLE IF NOT EXISTS `node` (
 
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `validator`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `validator` (
+  `public_key` VARCHAR(80) NOT NULL,
+  PRIMARY KEY (`public_key`),
+  UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)
+
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `connection`
@@ -44,6 +55,27 @@ PRIMARY KEY (`start_node`, `end_node`),
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `node-validator`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `node-validator` (
+  `node_key` VARCHAR(80) NOT NULL,
+  `validator_key` VARCHAR(80) NOT NULL,
+
+  FOREIGN KEY (`node_key`)
+    REFERENCES `node` (`public_key`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  FOREIGN KEY (`validator_key`)
+    REFERENCES `validator` (`public_key`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+ENGINE = InnoDB;
+
+
 
 -- -----------------------------------------------------
 -- Table `securty_assessment`
