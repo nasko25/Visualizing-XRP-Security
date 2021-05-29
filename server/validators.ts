@@ -31,7 +31,7 @@ const agent = new https.Agent({
 export default class ValidatorIdentifier {
 
     get_validator_list(ip: string, publisher_key: string) {
-        return axios.get<any, AxiosResponse<Validator_List_Result>>(`https://[${ip}]:51235/vl/ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734`, { httpsAgent : agent , timeout: 3000});
+        return axios.get<any, AxiosResponse<Validator_List_Result>>(`https://[${ip}]:51235/vl/${publisher_key}`, { httpsAgent : agent , timeout: 3000});
     }
 
     run() {
@@ -40,6 +40,7 @@ export default class ValidatorIdentifier {
 
                 Logger.info("Database queried ...");
 
+                // Start the process with the DB fetched data
                 this.identify_validators_for_batch(nodes);
 
         }).catch(err => Logger.error(`Could not stat identification of validators : ${err.message}!`));
@@ -57,7 +58,7 @@ export default class ValidatorIdentifier {
         
         let batch = nodes.splice(0, 1);
 
-        Promise.all(batch.map(node => this.get_validator_list(node.IP, node.public_key))).then(axios.spread((...responses) => {
+        Promise.all(batch.map(node => this.get_validator_list(node.IP, node.publisher))).then(axios.spread((...responses) => {
             
             responses.forEach(res => {
                 let decoded : Validator_Data = JSON.parse(decode(res.data.blob));
