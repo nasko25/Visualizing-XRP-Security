@@ -75,12 +75,11 @@ export default class ValidatorIdentifier {
             Logger.info("Finished idetifying validators. Inserting into database ...");
         }
 
-        let batch = nodes.splice(0, 1);
+        let node: NodeIpKeyPublisher = nodes[0];
+        nodes.pop();
 
-        Promise.all(
-            batch.map((node) =>
-                this.get_validator_list(node.IP, node.publisher)
-            )
+        Promise.all([
+                this.get_validator_list(node.IP, node.publisher)]
         )
             .then(
                 axios.spread((...responses) => {
