@@ -116,6 +116,10 @@ export default class ValidatorIdentifier {
             });
     }
 
+    promiseWrapper(ip: string, publisher: string) {
+        return new Promise((resolve) => this.get_validator_list(ip, publisher).then(res => resolve(res)).catch(() => resolve([])));
+    }
+
     // A method to extract the validator keys from a response JSON object
     extractValidatorKeys(valData: Validator_List_Result) {
         // decode base64 encoded blob data
