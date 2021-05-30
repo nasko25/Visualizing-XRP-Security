@@ -33,7 +33,7 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
     };
 }
 
-export function insertNode(node: CrawlerNode): void {
+export const insertNode (node: CrawlerNode): void => {
     var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
@@ -77,7 +77,7 @@ export function insertLocation(loc: number[], ip: string) {
     });
 }
 
-export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): void {
+export const insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): void => {
     var insert_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
