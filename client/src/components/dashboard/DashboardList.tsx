@@ -11,7 +11,9 @@ export type DashboardListProps = {
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
+    test(){
 
+    }
     render() {
         let nodes = this.props.arrNodesData;
         if (this.props.selected != "") {
@@ -28,7 +30,7 @@ export default class DashboardList extends Component<DashboardListProps> {
             <div className='table-outer'>
                 <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
                     <Box style={{height: '100%', width: '100%'}}>
-                        <DataTable 
+                        <DataTable
                             columns={[
                                 {
                                     property: 'public_key',

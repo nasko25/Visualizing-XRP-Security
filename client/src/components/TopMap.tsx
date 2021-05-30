@@ -85,7 +85,7 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     // Create a popup with position and content
     createNewPopup = (a: { latlng: LatLng }, content: JSX.Element) => {
-        return <Popup position={a.latlng}>{content}</Popup>
+        return <Popup position={a.latlng} maxHeight={100}>{content}</Popup>
     }
 
     // Create a new map with the provided popup 
