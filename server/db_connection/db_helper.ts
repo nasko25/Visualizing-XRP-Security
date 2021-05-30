@@ -40,7 +40,7 @@ export function insertNode(node: CrawlerNode): void {
         node.pubkey + '\', \'' +
         node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
 
-    connection.query(insert_query, voidCallback);
+    connection.query(insert_node_query, voidCallback);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): void {
