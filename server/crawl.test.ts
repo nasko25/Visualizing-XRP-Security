@@ -155,7 +155,7 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     console.log = console_log;
 });
 
-test("test crawl() with 1 starting server that has 1 peer with 1 peer", async () => {
+test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic connection)", async () => {
     const startingServerIP = "1.2.3.4";
     const startingServerResponse = {
         data: {
