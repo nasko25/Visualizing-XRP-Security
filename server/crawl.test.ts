@@ -6,13 +6,17 @@ const console_error = console.error;
 const console_log = console.log;
 // prepare axios for mocking
 jest.mock("axios");
-const axiosMock = axios as jest.Mocked<typeof axios>
+const axiosMock = axios as jest.Mocked<typeof axios>;
 
 // mock the db helper
 import { insertNode, insertConnection } from './db_connection/db_helper';
 jest.mock('./db_connection/db_helper');
 
 const DEFAULT_PEER_PORT = 51235;
+
+afterEach(() => {
+      jest.clearAllMocks();
+});
 
 test("test crawler constructor with empty array as parameter", () => {
     console.error = jest.fn();
@@ -130,8 +134,6 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     // and the the second axios request that gets the starting server's peers
     axiosMock.get.mockResolvedValueOnce(response).mockResolvedValueOnce(peersResponse);
 
-    insertNode.mockRestore();
-    insertConnection.mockRestore();
     await new Crawler([startingServerIP]).crawl();
 
     // assert that insertNode() was called with the expected Node object
@@ -208,10 +210,6 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     // mock console.log to assert it prints extected results
     // (that only 2 nodes have been visited)
     console.log = jest.fn();
-
-    // restore the insertNode and insertConnection mocks
-    insertNode.mockRestore();
-    insertConnection.mockRestore();
 
     // call the actual code from "crawl.ts"
     await crawler.crawl();
