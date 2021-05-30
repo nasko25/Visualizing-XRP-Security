@@ -3,6 +3,7 @@ import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput }
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
+import { Link } from "react-router-dom";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 
@@ -237,7 +238,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 variant="dark"
                                 // onClick={() => this.setState({ displayButton: true })}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
+                                <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
+                                    <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
+                                </Link>
                             </Button>
                         </Box>
 
