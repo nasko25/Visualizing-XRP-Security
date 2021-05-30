@@ -103,6 +103,8 @@ test("test crawl() with only unresponsive starting servers", async () => {
 });
 
 test("test crawl() with 1 responsive starting server that has no peers", async () => {
+    console.log = jest.fn();
+
     // build the mocked axios responce for the starting server
     const response = {
         data: {
@@ -142,4 +144,11 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     expect(insertNode).toHaveBeenCalledWith(insertedNode);
 
     expect(insertConnection).toHaveBeenCalledTimes(0);
+
+    expect(console.log).toHaveBeenCalledTimes(2);
+    // only 1 node should have been visited, because it does not have any neighbors
+    expect(console.log).toHaveBeenCalledWith("How many nodes we have visited: 1\nHow many UNIQUE IPs we have visited: 1");
+    expect(console.log).toHaveBeenCalledWith("How many nodes we have saved: 1");
+
+    console.log = console_log;
 });
