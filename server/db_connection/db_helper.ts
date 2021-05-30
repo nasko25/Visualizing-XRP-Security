@@ -34,7 +34,7 @@ function selectCallback(callback : (res: NodePorts[]) => void ):any  {
 }
 
 export function insertNode(node: CrawlerNode): void {
-    var insert_query: string = 'INSERT INTO node (IP, rippled_version, public_key, portRunningOn, uptime) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, portRunningOn, uptime) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
