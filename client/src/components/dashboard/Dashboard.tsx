@@ -102,7 +102,7 @@ export default class Dashboard extends Component<DashboardProps> {
         return (
             // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
-                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.main}}>
+                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: "#1a1a1a"}}>
                     <DashboardNavbar />
                 </Header>
                 <div className='DashboardMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>

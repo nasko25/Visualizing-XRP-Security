@@ -28,28 +28,28 @@ export default class DashboardList extends Component<DashboardListProps> {
             <div className='table-outer'>
                 <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
                     <Box style={{height: '100%', width: '100%'}}>
-                        <DataTable
+                        <DataTable 
                             columns={[
                                 {
                                     property: 'public_key',
-                                    header: <Text>Public Key</Text>,
+                                    header: <Text><b>Public Key</b></Text>,
                                     size: '50%',
                                     search: true
                                 },
                                 {
                                     property: 'rippled_version',
-                                    header: <Text>Version</Text>,
+                                    header: <Text><b>Version</b></Text>,
                                     size: '15%'
                                 },
                                 {
                                     property: 'uptime',
-                                    header: <Text>Uptime</Text>,
+                                    header: <Text><b>Uptime</b></Text>,
                                     size: '10%',
                                     align: 'start'
                                 },
                                 {
                                     property: 'trustScore',
-                                    header: <Text>Trust Score</Text>,
+                                    header: <Text><b>Trust Score</b></Text>,
                                     size: '10%',
                                     align: 'start'
                                 }
@@ -63,6 +63,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                             //         }
                             //     }
                             // })}
+                        
                             data={nodes}
                             step={10}
                             size='large'
@@ -71,7 +72,15 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 console.log(datum.public_key);
                                 this.props.history.push("/node");
                             }}
+                            pad= {{
+                                horizontal: "medium",
+                                vertical: "xsmall"
+                            }}
                             style={{scrollbarWidth: 'none', height: '100%'}}
+                            background={{
+                                "body": ["#333333", "#3f3f3f"]
+                                }
+                              }
                         />
                     </Box>
                 </Grommet>

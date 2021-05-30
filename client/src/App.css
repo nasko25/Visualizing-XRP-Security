@@ -149,7 +149,9 @@ div.list-group-item {
 .item_lighter > div.list-group-item {
   background-color: #333;
 }
-
+.child2 {
+  background-color: #333;
+}
 @keyframes spin {
   from {transform:rotate(0deg);}
   to {transform:rotate(360deg);}
@@ -183,8 +185,14 @@ tbody {
 }
 
 .table-outer {
-  height: 90%;
-  width: 90%;
+  height: 100%;
+  width: 100%;
+  padding: 0%;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 .buttons {
