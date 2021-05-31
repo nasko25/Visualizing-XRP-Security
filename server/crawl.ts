@@ -19,6 +19,7 @@ interface Node {
     version: string;
     pubkey: string;
     uptime: Number;
+    publisher: string
 }
 
 // Wait for at most 3 seconds when making an HTTP request to obtain a node's peers
@@ -106,7 +107,8 @@ class Crawler {
                                     port: DEFAULT_PEER_PORT, 
                                     version: "rippled-" + response.data.server.build_version,
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
-                                    uptime: response.data.server.uptime
+                                    uptime: response.data.server.uptime,
+                                    publisher: response.data.unl.publisher_lists[0].pubkey_publisher
                                  };
 
                 // insert the initial node that was given in config/ripple_servers.list

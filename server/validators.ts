@@ -73,14 +73,13 @@ export default class ValidatorIdentifier {
 
         if (nodes.length == 0) {
             Logger.info("Finished idetifying validators. Inserting into database ...");
+            return;
         }
 
         let node: NodeIpKeyPublisher = nodes[0];
         nodes.pop();
 
-        Promise.all([
-                this.get_validator_list(node.IP, node.publisher)]
-        )
+        Promise.all([this.get_validator_list(node.IP, node.publisher)])
             .then(
                 axios.spread((...responses) => {
                     responses.forEach((res) => {
@@ -128,6 +127,3 @@ export default class ValidatorIdentifier {
         );
     }
 }
-
-let valIden = new ValidatorIdentifier();
-valIden.run();

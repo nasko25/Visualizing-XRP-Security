@@ -9,6 +9,7 @@ import GeoLocate from './geoLocate';
 // Logger
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
+import ValidatorIdentifier from './validators';
 
 const app = express();
 app.use(cors());

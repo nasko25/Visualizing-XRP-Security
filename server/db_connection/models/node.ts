@@ -6,7 +6,8 @@ export interface Node {
     public_key: string,
     uptime: number,
     longtitude?: number,
-    latitude?: number
+    latitude?: number,
+    publisher: string
 }
 
 export interface NodePorts {
