@@ -22,15 +22,15 @@ export function insertNode(node: CrawlerNode): Promise<void> {
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\', \'' +
-        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
+        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;';
 
     return send_insert_request(insert_node_query);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
-    var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime]);
+    var insert_nodes_query = "INSERT INTO node (IP, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
+    var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime, node.publisher]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
     return send_insert_request(insert_nodes_query);
