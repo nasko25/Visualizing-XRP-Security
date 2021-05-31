@@ -11,18 +11,26 @@ export type DashboardListProps = {
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
+    highligth = {};
+
     test(){
 
     }
     render() {
         let nodes = this.props.arrNodesData;
-        if (this.props.selected != "") {
-            let temp = [this.props.arrNodesData.find(node => node.public_key == this.props.selected)]
+        let selected: string = this.props.selected;
+
+        var jsonVariable: any = {};
+        jsonVariable[selected] = {background: 'white'}
+        this.highligth = jsonVariable;
+
+        if (selected != "") {
+            let temp = [this.props.arrNodesData.find(node => node.public_key == selected)]
             nodes = temp.concat(nodes.filter(n => {
                 if (n.public_key != temp[0].public_key) {
                     return n;
                 }
-            }))
+            }));
         }
 
         return (
@@ -36,7 +44,8 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     property: 'public_key',
                                     header: <Text><b>Public Key</b></Text>,
                                     size: '50%',
-                                    search: true
+                                    search: true,
+                                    primary: true
                                 },
                                 {
                                     property: 'rippled_version',
@@ -80,11 +89,12 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 vertical: "xsmall"
                             }}
                             style={{scrollbarWidth: 'none', height: '100%'}}
-                            background={{
-                                "body": ["#333333", "#3f3f3f"]
-                                }
-                              }
-                            sort={({property: 'uptime', direction: 'desc'})}
+                            // background={{
+                            //     "body": ["#383838", "rgb(38,38,38)"]
+                            //     }
+                            //   }
+                            // sort={({property: 'uptime', direction: 'desc'})}
+                            rowProps= { this.highligth }
                         />
                     </Box>
                 </Grommet>

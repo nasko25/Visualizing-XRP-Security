@@ -226,6 +226,7 @@ tbody {
 
 ::-webkit-scrollbar {
   color: #222;
+  width: 0%;
 }
 
 ::-webkit-scrollbar-thumb {
