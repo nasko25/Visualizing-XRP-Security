@@ -109,20 +109,38 @@ export default class ValidatorIdentifier {
                     );
 
                     // Put in database
-                    insertValidators(this.validators).then(() => {
-                        Logger.info("VI: Validators inserted successfully!");
-                        insertNodeValidatorConnections(
-                            this.node_validators
-                        ).then(() => {
+                    insertValidators(this.validators)
+                        .then(() => {
                             Logger.info(
-                                "VI: Node - Validators connections inserted successfully!"
+                                "VI: Validators inserted successfully!"
+                            );
+                            insertNodeValidatorConnections(this.node_validators)
+                                .then(() => {
+                                    Logger.info(
+                                        "VI: Node - Validators connections inserted successfully!"
+                                    );
+                                })
+                                .catch((mes: Error) => {
+                                    Logger.error(
+                                        "VI: Could not insert node-validator connections into database: " +
+                                            mes.message
+                                    );
+                                })
+                                .finally(() => {
+                                    this.validators.clear();
+                                    this.node_validators.clear();
+                                    this.identify_validators_for_batch(nodes);
+                                });
+                        })
+                        .catch((err: Error) => {
+                            Logger.error(
+                                "VI: Could not insert validators into database: " +
+                                    err.message
                             );
                             this.validators.clear();
                             this.node_validators.clear();
-
                             this.identify_validators_for_batch(nodes);
                         });
-                    });
                 })
             )
             .catch((error: Error) => {

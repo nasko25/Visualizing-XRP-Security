@@ -196,6 +196,11 @@ export function getIpAddresses() {
 export function insertValidators(keys: Map<string, null>) {
     let query = "INSERT IGNORE INTO validator VALUES ";
     let count = keys.size;
+
+    if (count === 0) {
+        return new Promise((res, rej) => rej(new Error("validator list was empty")));
+    }
+
     let currentCount = 0;
     keys.forEach((val, key) => {
         query = query + `("${key}")` ;
@@ -216,6 +221,11 @@ export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
     cons.forEach(vals => {
         nEntries += vals.length;
     });
+
+    if (nEntries === 0) {
+        return new Promise((res, rej) => rej(new Error("node-validator list was empty")));
+    }
+
     cons.forEach((vals, node) => {
         for (let valKey of vals) {
             query += `("${node}", "${valKey}")`;
