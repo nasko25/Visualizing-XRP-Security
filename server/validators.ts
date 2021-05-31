@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Logger from "./logger";
 import {decode} from 'js-base64'
 import { getIpAddresses } from "./db_connection/db_helper";
-import { NodeIpKey } from "./db_connection/models/node";
+import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from 'https'
 
 interface Validator_List_Result {
@@ -36,25 +36,17 @@ export default class ValidatorIdentifier {
 
     run() {
 
-        getIpAddresses((err, nodes) => {
-
-            if (err) {
-                Logger.error(`Could not stat identification of validators : ${err.message}!`);
-            } else {
+        getIpAddresses().then((nodes : NodeIpKeyPublisher[]) => {
 
                 Logger.info("Database queried ...");
-                
-                let curStartIndex = 0;
 
                 this.identify_validators_for_batch(nodes);
-                
-            }
 
-        });
+        }).catch(err => Logger.error(`Could not stat identification of validators : ${err.message}!`));
 
     }
 
-    identify_validators_for_batch(nodes: NodeIpKey[]) {
+    identify_validators_for_batch(nodes: NodeIpKeyPublisher[]) {
 
         Logger.info("Entered the function");
 
@@ -85,9 +77,6 @@ export default class ValidatorIdentifier {
         });
 
     }
-
-
-
 }
 
 

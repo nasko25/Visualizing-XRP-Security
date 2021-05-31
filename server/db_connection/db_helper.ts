@@ -1,4 +1,4 @@
-import { Node, NodePortsNull, NodeIpKey } from './models/node'
+import { Node, NodePortsNull, NodeIpKeyPublisher } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
@@ -173,5 +173,5 @@ function send_insert_request(request: string): Promise<void> {
 export function getIpAddresses() {
     const get_ip_addresses = 'SELECT IP, public_key FROM node WHERE IP is not null and public_key is not null and IP <> "undefined"';
 
-    return send_select_request(get_ip_addresses);
+    return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
