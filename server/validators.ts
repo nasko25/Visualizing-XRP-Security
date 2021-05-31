@@ -161,7 +161,7 @@ export default class ValidatorIdentifier {
     get_validator_list(ip: string, publisher_key: string) {
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
-            { httpsAgent: agent, timeout: 3000 }
+            { httpsAgent: agent, timeout: 6000 }
         );
     }
 
