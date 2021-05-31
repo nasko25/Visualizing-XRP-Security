@@ -47,7 +47,8 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     property: 'uptime',
                                     header: <Text><b>Uptime</b></Text>,
                                     size: '10%',
-                                    align: 'start'
+                                    align: 'start',
+                                    sortable: true
                                 },
                                 {
                                     property: 'trustScore',
@@ -83,6 +84,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 "body": ["#333333", "#3f3f3f"]
                                 }
                               }
+                            sort={({property: 'uptime', direction: 'desc'})}
                         />
                     </Box>
                 </Grommet>
