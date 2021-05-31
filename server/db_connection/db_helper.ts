@@ -189,7 +189,7 @@ function send_insert_request_vals(request: string, vals: any): Promise<void> {
 }
 
 export function getIpAddresses() {
-    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined" and IP NOT LIKE "::%"';
+    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
