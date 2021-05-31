@@ -235,8 +235,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456
-        },
-        {}
+        }
     ];
     expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
@@ -307,8 +306,7 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP", async (
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456
-        },
-        {}
+        }
     ];
 
     // insertNode() should have been called twice; once for each inserted node
@@ -322,6 +320,88 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP", async (
 
     expect(console.log).toHaveBeenCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 1\nHow many UNIQUE IPs we have visited: 1"); // only 1 node should have been "visited" (the other has an undefined IP)
+    expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 2"); // both nodes should have been saved
+
+    console.log = console_log;
+});
+
+test("test crawl() should not overwrite a known IP address to undefined", async () => {
+    const startingServerIP = "1.2.3.4";
+    const startingServerPublicKey = "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16";
+    const startingServerResponse = {
+        data: {
+            server: {
+                build_version: "1.7.0",
+                pubkey_node: startingServerPublicKey,
+                uptime: 1234567
+            }
+        }
+    };
+
+    const startingServerPeersResponse = {
+        data: {
+            overlay: {
+                active: [{
+                    ip: "1.1.0.0",
+                    port: 51234,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+                    uptime: 123456
+                },
+                {
+                    ip: undefined,      // this node does not know the IP of the initial node, but the IP of the initial node should be known
+                    // by the crawler and should not be overwritten
+                    port: DEFAULT_PEER_PORT,
+                    version: "rippled-1.6.0",       // the version information that this node has is also outdated, and should not be overwritten in the crawler!
+                    public_key: startingServerPublicKey,
+                    uptime: 1234989
+                }
+                ]
+            }
+        }
+    };
+
+    // resolve the first axios request with the mocked startingServerResponse object,
+    // and the second axios request gets the starting server's peer
+    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse);
+
+    // mock console.log to assert it prints extected results
+    // (that only 2 nodes have been visited, and both nodes have been saved)
+    // the initial node should not have its IP overwritten to undefined
+    console.log = jest.fn();
+
+    await new Crawler([startingServerIP]).crawl();
+
+    const insertedNodes = [
+        // the initial node
+        {
+            ip: startingServerIP,
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.7.0",
+            pubkey: startingServerPublicKey,
+            uptime: 1234567
+        },
+        // the initial node's peer
+        {
+            ip: "1.1.0.0",
+            port: 51234,
+            version: "rippled-1.6.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+            uptime: 123456
+        }
+    ];
+
+    // insertNode() should have been called twice; once for each inserted node
+    expect(insertNode).toHaveBeenCalledTimes(2);
+    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // a connection between the two nodes should be inserted in the database
+    expect(insertConnection).toHaveBeenCalledTimes(1);
+    expect(insertConnection).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+
+    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 2\nHow many UNIQUE IPs we have visited: 2"); // only 1 node should have been "visited" (the other has an undefined IP)
     expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 2"); // both nodes should have been saved
 
     console.log = console_log;
