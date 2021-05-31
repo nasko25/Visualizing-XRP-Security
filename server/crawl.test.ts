@@ -254,7 +254,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     console.log = console_log;
 });
 
-test("test crawl() with 1 starting server and 1 peer with undefined IP", async () => {
+test("test crawl() with 1 starting server and 1 peer with undefined IP and port", async () => {
     const startingServerIP = "1.2.3.4";
     const startingServerResponse = {
         data: {
@@ -271,7 +271,7 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP", async (
             overlay: {
                 active: [{
                     ip: undefined,
-                    port: 51235,
+                    port: undefined,
                     version: "rippled-1.6.0",
                     public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
                     uptime: 123456
@@ -302,7 +302,7 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP", async (
         // the initial node's peer
         {
             ip: undefined,
-            port: 51235,
+            port: DEFAULT_PEER_PORT,        // the undefined peer port should be substituted with the default peer port
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456
@@ -401,8 +401,198 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     expect(insertConnection).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
 
     expect(console.log).toHaveBeenCalledTimes(2);
-    expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 2\nHow many UNIQUE IPs we have visited: 2"); // only 1 node should have been "visited" (the other has an undefined IP)
-    expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 2"); // both nodes should have been saved
+    expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 2\nHow many UNIQUE IPs we have visited: 2");
+    expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 2");
+
+    console.log = console_log;
+});
+
+
+test("test crawl() for nodes with many peers", async () => {
+    const startingServerIP = "1.2.3.4";
+    const startingServerPublicKey = "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16";
+    const startingServerResponse = {
+        data: {
+            server: {
+                build_version: "1.7.0",
+                pubkey_node: startingServerPublicKey,
+                uptime: 1234567
+            }
+        }
+    };
+
+    const startingServerPeersResponse = {
+        data: {
+            overlay: {
+                active: [{
+                    ip: "1.1.0.0",
+                    port: 51234,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+                    uptime: 123456
+                },
+                {
+                    ip: undefined,
+                    port: DEFAULT_PEER_PORT,
+                    version: "rippled-1.6.0",
+                    public_key: startingServerPublicKey,
+                    uptime: 1234989
+                },
+                {
+                    ip: "1.0.0.0",
+                    port: 51234,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdf",
+                    uptime: 124458
+                },
+                {
+                    ip: undefined,
+                    port: DEFAULT_PEER_PORT,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdr",
+                    uptime: 1234989
+                }
+                ]
+            }
+        }
+    };
+
+    const startingServerPeersResponse2 = {
+        data: {
+            overlay: {
+                active: [{
+                    ip: "2.2.2.2",
+                    port: 51236,
+                    version: "rippled-1.6.1",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzq",
+                    uptime: 123456
+                },
+                {
+                    ip: "1.2.2.2",
+                    port: DEFAULT_PEER_PORT,
+                    version: "rippled-1.6.4",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd3",
+                    uptime: 1234984
+                },
+                {
+                    ip: "1.0.0.0",
+                    port: 51234,
+                    version: "rippled-1.7.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdf",
+                    uptime: 124458
+                },
+                {
+                    ip: "2.3.4.7",
+                    port: undefined,
+                    version: "rippled-1.4.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd6",
+                    uptime: 123
+                },
+                {
+                    ip: undefined,
+                    port: undefined,
+                    version: "rippled-1.5.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzm",
+                    uptime: 99998
+                }
+                ]
+            }
+        }
+    };
+
+
+    // simulate a network with many interconnected nodes
+    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse).mockResolvedValueOnce(startingServerPeersResponse2).mockRejectedValue(new Error("Server not responding"));
+
+    // mock console.log to assert it prints extected results
+    console.log = jest.fn();
+
+    await new Crawler([startingServerIP]).crawl();
+
+    const insertedNodes = [
+        // the initial node
+        {
+            ip: startingServerIP,
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.7.0",
+            pubkey: startingServerPublicKey,
+            uptime: 1234567
+        },
+        // the initial node's peer
+        {
+            ip: "1.1.0.0",
+            port: 51234,
+            version: "rippled-1.6.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+            uptime: 123456
+        },
+        {
+            ip: "1.0.0.0",
+            port: 51234,
+            version: "rippled-1.6.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdf",
+            uptime: 124458
+        },
+        {
+            ip: undefined,
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.6.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdr",
+            uptime: 1234989
+        },
+        {
+            ip: "2.2.2.2",
+            port: 51236,
+            version: "rippled-1.6.1",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzq",
+            uptime: 123456
+        },
+        {
+            ip: "1.2.2.2",
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.6.4",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd3",
+            uptime: 1234984
+        },
+        {
+            ip: "2.3.4.7",
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.4.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd6",
+            uptime: 123
+        },
+        {
+            ip: undefined,
+            port: DEFAULT_PEER_PORT,
+            version: "rippled-1.5.0",
+            pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzm",
+            uptime: 99998
+        }
+    ];
+
+    expect(insertNode).toHaveBeenCalledTimes(8);
+    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+    expect(insertNode).toHaveBeenNthCalledWith(3, insertedNodes[2]);
+    expect(insertNode).toHaveBeenNthCalledWith(4, insertedNodes[3]);
+    expect(insertNode).toHaveBeenNthCalledWith(5, insertedNodes[4]);
+    expect(insertNode).toHaveBeenNthCalledWith(6, insertedNodes[5]);
+    expect(insertNode).toHaveBeenNthCalledWith(7, insertedNodes[6]);
+    expect(insertNode).toHaveBeenNthCalledWith(8, insertedNodes[7]);
+
+    // a connection between the two nodes should be inserted in the database
+    expect(insertConnection).toHaveBeenCalledTimes(7);
+    expect(insertConnection).toHaveBeenNthCalledWith(1, insertedNodes[0], insertedNodes[1]);
+    expect(insertConnection).toHaveBeenNthCalledWith(2, insertedNodes[0], insertedNodes[2]);
+    expect(insertConnection).toHaveBeenNthCalledWith(3, insertedNodes[0], insertedNodes[3]);
+    expect(insertConnection).toHaveBeenNthCalledWith(4, insertedNodes[1], insertedNodes[4]);
+    expect(insertConnection).toHaveBeenNthCalledWith(5, insertedNodes[1], insertedNodes[5]);
+    expect(insertConnection).toHaveBeenNthCalledWith(6, insertedNodes[1], insertedNodes[6]);
+    expect(insertConnection).toHaveBeenNthCalledWith(7, insertedNodes[1], insertedNodes[7]);
+
+    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 6\nHow many UNIQUE IPs we have visited: 6");
+    expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 8");
 
     console.log = console_log;
 });
