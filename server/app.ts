@@ -56,6 +56,15 @@ function repeated_crawl() {
 
 repeated_crawl();
 
+
+let valIden: ValidatorIdentifier = new ValidatorIdentifier();
+function start_validator_identification() {
+    Logger.info("Starting validator identification")
+    valIden.run();
+}
+
+start_validator_identification();
+
 // startPortScanner().catch((e) => {
 //     console.log(`Crawler exited with the exception: ${e}.`);
 // });
