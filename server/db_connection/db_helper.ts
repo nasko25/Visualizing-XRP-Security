@@ -1,4 +1,4 @@
-import { Node, NodePortsNull } from './models/node'
+import { Node, NodePortsNull, NodeIpKey } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
@@ -140,22 +140,6 @@ export function getNode(public_key: string): Promise<Node[]> {
     return send_select_request<Node>(get_node);
 }
 
-// function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (err: Error, results: JSON[], fields: JSON) => void {
-//     return function query_callback(err: Error, results: JSON[], fields: JSON) {
-//         if (err) {
-//             return callback(err, []);
-//         }
-//         let res: T[] = JSON.parse(JSON.stringify(results));
-//         return callback(err, res);
-//     };
-// }
-
-// function create_query_callback_no_return(callback: (err: Error) => void): (err: Error, results: any, fields: any) => void {
-//     return function query_callback(err: Error, results: JSON[], fields: JSON) {
-//         return callback(err);
-//     };
-// }
-
 function send_select_request<T>(request: string): Promise<T[]> {
     return new Promise(function (resolve, reject) {
         connection.query(
@@ -184,4 +168,10 @@ function send_insert_request(request: string): Promise<void> {
             }
         )
     })
+}
+
+export function getIpAddresses() {
+    const get_ip_addresses = 'SELECT IP, public_key FROM node WHERE IP is not null and public_key is not null and IP <> "undefined"';
+
+    return send_select_request(get_ip_addresses);
 }

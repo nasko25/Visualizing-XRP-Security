@@ -19,6 +19,11 @@ export interface NodePortsNull {
     ip: string
 }
 
+export interface NodeIpKey {
+    public_key: string,
+    IP: string
+}
+
 export interface NodePortsProtocols {
     public_key: string,
     ip: string,
