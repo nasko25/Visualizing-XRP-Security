@@ -1,11 +1,13 @@
+import { History, LocationDescriptor } from 'history';
+
 // The properties that should be passed in JSX to this component
 export type NodePageProps = {
     node_info: NodeInfo,
-    key: string,
+    public_key: string,
     location: {
         search: string
     }
-    history: string[]
+    history: History
 }
 
 // How the state should look like
@@ -14,7 +16,8 @@ export type NodePageState = {
     node_info: NodeInfo,
     speed: number,
     displayButton: boolean,
-    displayGreen: boolean
+    displayGreen: boolean,
+    location: LocationDescriptor
 }
 
 // How the info should be passed around

@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network/standalone";
 import "./NodePage.css";
 import { NodeInfo, Peer } from "./NodePageTypes";
+import { History } from 'history';
 
 /**
  * Component that visualizes the peer connections of a Node
@@ -12,7 +13,7 @@ import { NodeInfo, Peer } from "./NodePageTypes";
 type NodePeerGraphProps = {
     node_info: NodeInfo,
     on_node_click: (public_key: string) => void,
-    history: string[]
+    history: History
 }
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
@@ -104,12 +105,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             },
             interaction: {
                 hover: true
-            },
-            // layout: {
-            //     improvedLayout: true,
-            //     clusterThreshold: 1000000
-            // }
-
+            }
         };
         var func = this.props.on_node_click;
 
@@ -135,9 +131,9 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                     style={{ width: "100%", height: "84%" }}
                     ref={this.networkRef} />
                 <Button
-                    style={{ width: "10%", height: "10%", alignSelf: "center", margin: "1%" }}
+                    style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
-                    onClick={this.createNetwork}>Peers</Button>
+                    onClick={this.createNetwork}>Reshuffle Peers</Button>
             </>
         );
     }

@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
 import { Link } from "react-router-dom";
+import { LocationDescriptor } from 'history';
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 
@@ -34,6 +35,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         // The state
         this.state = {
             public_key: this.parseURL(),
+            location: this.props.history.location,
             node_info: this.props.node_info ? this.props.node_info : {
                 public_key: "",
                 IP: "",
@@ -57,15 +59,22 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI = this.queryAPI.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
         this.parseURL = this.parseURL.bind(this);
+        this.goBack = this.goBack.bind(this);
+        this.historyListener = this.historyListener.bind(this);
     }
-
     componentDidMount() {
-        // console.log(this.props.location);
-        // console.log(this.parseURL());
-        this.getNodeInfo(this.parseURL());
+        this.getNodeInfo(this.state.public_key);
+        this.historyListener();
     }
 
-    parseURL(): string{
+    historyListener() {
+        this.props.history.listen((location) => {
+            this.getNodeInfo(this.parseURL());
+            this.setState({location: location});
+        });
+    }
+
+    parseURL(): string {
         return this.props.location.search.split("\?public_key=")[1];
     }
 
@@ -100,12 +109,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             // console.log(info);
 
             var ports: Port[] = [];
-            if (info.ports){
-                for (var i = 0; i < info.ports.length; i++){
-                    ports.push({port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet"})
+            if (info.ports) {
+                for (var i = 0; i < info.ports.length; i++) {
+                    ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
                 }
             }
-            
+
             this.setState(
                 {
                     node_info: {
@@ -191,10 +200,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             data={[
                 { name: 'Security score', value: this.state.node_info.trust_score },
                 { name: 'IP', value: this.state.node_info.IP },
-                { name: 'rippled_version', value: this.state.node_info.rippled_version },
-                { name: 'ports', value: this.preparePortList() },
-                { name: 'peer count', value: this.state.node_info.peers.length },
-                { name: 'uptime', value: this.state.node_info.uptime }
+                { name: 'Rippled version', value: this.state.node_info.rippled_version },
+                { name: 'Ports', value: this.preparePortList() },
+                { name: 'Uptime', value: this.state.node_info.uptime },
+                { name: 'Peer count', value: this.state.node_info.peers.length },
             ]}
         />
     }
@@ -212,10 +221,15 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         />
     }
 
+    goBack() {
+        // console.log(this.props.history);
+        this.props.history.goBack();
+    }
+
     nodeOnClick(public_key: string) {
+        this.props.history.push("/node?public_key=" + public_key);
         this.setState({ public_key: public_key });
         this.getNodeInfo(public_key);
-        this.props.history.push("/node?public_key=" + public_key);
     }
 
     render() {
@@ -247,11 +261,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             margin="2%">
                             <Button
                                 variant="dark"
-                                // onClick={() => this.setState({ displayButton: true })}
+                                onClick={this.goBack}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
+                                {/* <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
                                     <Text size="large" weight="bold">Back To Homepage</Text>
-                                </Link>
+                                </Link> */}
                             </Button>
                         </Box>
 
@@ -261,7 +275,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             direction="row"
                             justify="center"
                             background={COLORS.button}
-                            margin={{left: "1%", right: "2%"}}>
+                            margin={{ left: "1%", right: "2%" }}>
                             <TextInput
                                 onKeyPress={this.onKeyPressSearch}
                                 textAlign="center"
@@ -286,12 +300,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} gridArea="peers_network" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
                             <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info} history={this.props.history}></NodePeerGraph>
                         </Box>
-                        <Box round="1%" margin={{top: "2%", left: "2%", right: "1%", bottom: "2%"}} gridArea="stats" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
-                                {this.createNodeInformationList()}
+                            {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box
                                 className="scrollbar-hidden"
@@ -303,7 +317,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{top: "1%", left: "1%", right: "2%", bottom: "2%"}} gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
                             {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
                                 <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
                             </Box> */}
