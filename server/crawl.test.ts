@@ -11,6 +11,8 @@ const axiosMock = axios as jest.Mocked<typeof axios>;
 // mock the db helper
 import { insertNode, insertConnection } from './db_connection/db_helper';
 jest.mock('./db_connection/db_helper');
+const insertNodeMock = insertNode as jest.MockedFunction<typeof insertNode>;
+const insertConnectionMock = insertConnection as jest.MockedFunction<typeof insertConnection>;
 
 const DEFAULT_PEER_PORT = 51235;
 
@@ -134,6 +136,9 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     // and the the second axios request that gets the starting server's peers
     axiosMock.get.mockResolvedValueOnce(response).mockResolvedValueOnce(peersResponse);
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+
     await new Crawler([startingServerIP]).crawl();
 
     // assert that insertNode() was called with the expected Node object
@@ -144,10 +149,10 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
         pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
         uptime: 1234567
     };
-    expect(insertNode).toHaveBeenCalledTimes(1);
-    expect(insertNode).toHaveBeenCalledWith(insertedNode);
+    expect(insertNodeMock).toHaveBeenCalledTimes(1);
+    expect(insertNodeMock).toHaveBeenCalledWith(insertedNode);
 
-    expect(insertConnection).toHaveBeenCalledTimes(0);
+    expect(insertConnectionMock).toHaveBeenCalledTimes(0);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     // only 1 node should have been visited, because it does not have any neighbors
@@ -211,13 +216,16 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     // (that only 2 nodes have been visited)
     console.log = jest.fn();
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+
     // call the actual code from "crawl.ts"
     await crawler.crawl();
 
     // crawler.crawl() should have been called only once
     expect(spy).toHaveBeenCalledTimes(1);
     // insertNode() should have been called twice - once for each unique node
-    expect(insertNode).toHaveBeenCalledTimes(2);
+    expect(insertNodeMock).toHaveBeenCalledTimes(2);
 
     const insertedNodes = [
         // the initial node
@@ -237,12 +245,13 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             uptime: 123456
         }
     ];
-    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
-    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
 
     // there should be a connection between the initial node and its peer inserted in the database
-    expect(insertConnection).toHaveBeenCalledTimes(1);
-    expect(insertConnection).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledTimes(2);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[1], insertedNodes[0]);
 
     // the crawler should log that 2 nodes were visited and are saved in the database
     expect(console.log).toHaveBeenCalledTimes(2);
@@ -310,13 +319,14 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     ];
 
     // insertNode() should have been called twice; once for each inserted node
-    expect(insertNode).toHaveBeenCalledTimes(2);
-    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
-    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+    expect(insertNodeMock).toHaveBeenCalledTimes(2);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
 
     // a connection between the two nodes should be inserted in the database
-    expect(insertConnection).toHaveBeenCalledTimes(1);
-    expect(insertConnection).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledTimes(2);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[1], insertedNodes[0]);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 1\nHow many UNIQUE IPs we have visited: 1"); // only 1 node should have been "visited" (the other has an undefined IP)
@@ -370,6 +380,9 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     // the initial node should not have its IP overwritten to undefined
     console.log = jest.fn();
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+
     await new Crawler([startingServerIP]).crawl();
 
     const insertedNodes = [
@@ -392,13 +405,14 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     ];
 
     // insertNode() should have been called twice; once for each inserted node
-    expect(insertNode).toHaveBeenCalledTimes(2);
-    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
-    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+    expect(insertNodeMock).toHaveBeenCalledTimes(2);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
 
     // a connection between the two nodes should be inserted in the database
-    expect(insertConnection).toHaveBeenCalledTimes(1);
-    expect(insertConnection).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledTimes(2);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenCalledWith(insertedNodes[1], insertedNodes[0]);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 2\nHow many UNIQUE IPs we have visited: 2");
@@ -507,6 +521,9 @@ test("test crawl() for nodes with many peers", async () => {
     // mock console.log to assert it prints extected results
     console.log = jest.fn();
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+
     await new Crawler([startingServerIP]).crawl();
 
     const insertedNodes = [
@@ -570,25 +587,38 @@ test("test crawl() for nodes with many peers", async () => {
         }
     ];
 
-    expect(insertNode).toHaveBeenCalledTimes(8);
-    expect(insertNode).toHaveBeenNthCalledWith(1, insertedNodes[0]);
-    expect(insertNode).toHaveBeenNthCalledWith(2, insertedNodes[1]);
-    expect(insertNode).toHaveBeenNthCalledWith(3, insertedNodes[2]);
-    expect(insertNode).toHaveBeenNthCalledWith(4, insertedNodes[3]);
-    expect(insertNode).toHaveBeenNthCalledWith(5, insertedNodes[4]);
-    expect(insertNode).toHaveBeenNthCalledWith(6, insertedNodes[5]);
-    expect(insertNode).toHaveBeenNthCalledWith(7, insertedNodes[6]);
-    expect(insertNode).toHaveBeenNthCalledWith(8, insertedNodes[7]);
+    expect(insertNodeMock).toHaveBeenCalledTimes(8);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(3, insertedNodes[2]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(4, insertedNodes[3]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(5, insertedNodes[4]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(6, insertedNodes[5]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(7, insertedNodes[6]);
+    expect(insertNodeMock).toHaveBeenNthCalledWith(8, insertedNodes[7]);
 
     // a connection between the two nodes should be inserted in the database
-    expect(insertConnection).toHaveBeenCalledTimes(7);
-    expect(insertConnection).toHaveBeenNthCalledWith(1, insertedNodes[0], insertedNodes[1]);
-    expect(insertConnection).toHaveBeenNthCalledWith(2, insertedNodes[0], insertedNodes[2]);
-    expect(insertConnection).toHaveBeenNthCalledWith(3, insertedNodes[0], insertedNodes[3]);
-    expect(insertConnection).toHaveBeenNthCalledWith(4, insertedNodes[1], insertedNodes[4]);
-    expect(insertConnection).toHaveBeenNthCalledWith(5, insertedNodes[1], insertedNodes[5]);
-    expect(insertConnection).toHaveBeenNthCalledWith(6, insertedNodes[1], insertedNodes[6]);
-    expect(insertConnection).toHaveBeenNthCalledWith(7, insertedNodes[1], insertedNodes[7]);
+    expect(insertConnectionMock).toHaveBeenCalledTimes(14);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(1, insertedNodes[0], insertedNodes[1]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(2, insertedNodes[1], insertedNodes[0]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(3, insertedNodes[0], insertedNodes[2]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(4, insertedNodes[2], insertedNodes[0]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(5, insertedNodes[0], insertedNodes[3]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(6, insertedNodes[3], insertedNodes[0]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(7, insertedNodes[1], insertedNodes[4]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(8, insertedNodes[4], insertedNodes[1]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(9, insertedNodes[1], insertedNodes[5]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(10, insertedNodes[5], insertedNodes[1]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(11, insertedNodes[1], insertedNodes[6]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(12, insertedNodes[6], insertedNodes[1]);
+
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(13, insertedNodes[1], insertedNodes[7]);
+    expect(insertConnectionMock).toHaveBeenNthCalledWith(14, insertedNodes[7], insertedNodes[1]);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 6\nHow many UNIQUE IPs we have visited: 6");

@@ -4,9 +4,7 @@ import Crawler from './crawl'
 import PortScanner from './portScan'
 import { promises as fs } from 'fs';
 import { Node as CrawlerNode } from './crawl';
-import { SecurityAssessment } from './db_connection/models/security_assessment'
 import GeoLocate from './geoLocate';
-import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 
 // Logger
 import Logger from "./logger";
@@ -36,7 +34,6 @@ async function startCrawler() {
 }
 
 async function startPortScanner() {
-
     let portScanner = new PortScanner();
     portScanner.start()
 }
@@ -58,56 +55,9 @@ function repeated_crawl() {
 
 repeated_crawl();
 
-startPortScanner().catch((e) => {
-    console.log(`Crawler exited with the exception: ${e}.`);
-});
-
-app.get('/insert-node', (req, res) => {
-    var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
-    insertNode(n);
-    res.send("node inserted");
-});
-
-app.get("/insert-sas", (req, res) => {
-    var sa: SecurityAssessment = {
-        public_key: "pub_key_1",
-        metric_version: 0.1,
-        score: 1,
-    };
-    insertSecurityAssessment(sa);
-    res.send("Security assessment inserted.");
-});
-
-app.get("/insert-connection", (req, res) => {
-    var start_node: CrawlerNode = {
-        ip: "127.0.0.1",
-        port: 51235,
-        version: "1.7.0",
-        pubkey: "pk",
-        uptime: 10,
-    };
-    var end_node: CrawlerNode = {
-        ip: "127.0.0.1",
-        port: 51235,
-        version: "1.7.0",
-        pubkey: "pk",
-        uptime: 10,
-    };
-    insertConnection(start_node, end_node);
-    res.send("connection inserted");
-});
-
-app.get("/get-all-connections", (req, res) => {
-    var nodes = getAllConnections(function (result): void {
-        res.send(JSON.stringify(result));
-    });
-});
-
-app.get("/get-all-sas", (req, res) => {
-    var nodes = getAllSecurityAssessments(function (result): void {
-        res.send(JSON.stringify(result));
-    });
-});
+// startPortScanner().catch((e) => {
+//     console.log(`Crawler exited with the exception: ${e}.`);
+// });
 
 // Add the Client API Endpoints to the server
 setupClientAPIEndpoints(app);

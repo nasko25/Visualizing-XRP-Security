@@ -5,6 +5,7 @@ import https from 'https';
 import net from 'net';
 import { encodeNodePublic } from 'ripple-address-codec';
 import { insertNode, insertNodes, insertConnection } from './db_connection/db_helper'
+import Logger from './logger';
 
 // May need to be substituted with a better way of dealing with insecure request
 // In order to make https requests to servers given only their IPs, we need to ignore the SSL certificate
@@ -96,6 +97,7 @@ class Crawler {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
+
                 // get the ssl certificate for the server
                 // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
@@ -110,7 +112,9 @@ class Crawler {
                                  };
 
                 // insert the initial node that was given in config/ripple_servers.list
-                insertNode(node);
+                insertNode(node).then().catch((err: Error) => {
+                    Logger.error(err.message);
+                });
 
                 // The use of map instead of an array saves us the work we have to do later when filtering duplicate public keys
                 // Later nodes will be stored in the database
@@ -139,7 +143,9 @@ class Crawler {
                                         visited.push(peer.ip);
                                         let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
                                         ToBeVisited.push(node);
-                                        insertNode(node);
+                                        insertNode(node).catch((err: Error) => {
+                                            Logger.error(err.message);
+                                        });
                                     } else {
                                         // Push the node that does not have an ip to the map of nodes, as it will not be visited later
                                         let normalizedPublicKey = normalizePublicKey(peer.public_key);
@@ -149,14 +155,23 @@ class Crawler {
                                         } else {
                                             let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime};
                                             Nodes.set(normalizedPublicKey, node);
-                                            insertNode(node);
+                                            insertNode(node).catch((err: Error) => {
+                                                Logger.error(err.message);
+                                            });
                                         }
                                         //console.log("Peer ip is undefined: " + peer);
                                     }
 
                                     if (n !== undefined) {
                                         // insert a connection between n and peer in the database
-                                        insertConnection(n, <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime});
+                                        // the connection is now bidirectional
+                                        var node_to_add: Node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        insertConnection(n, node_to_add).catch((err: Error) => {
+                                            Logger.error(err.message);
+                                        });
+                                        insertConnection(node_to_add, n).catch((err: Error) => {
+                                            Logger.error(err.message);
+                                        });
                                     }
                                 }
                             })
