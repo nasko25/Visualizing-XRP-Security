@@ -262,11 +262,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             margin="2%">
                             <Button
                                 variant="dark"
-                                onClick={this.goBack}
+                                onClick={() => this.props.history.push('/')}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                {/* <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                                    <Text size="large" weight="bold">Back To Homepage</Text>
-                                </Link> */}
+                                <Text size="large" weight="bold">Back To Homepage</Text>
                             </Button>
                         </Box>
 
