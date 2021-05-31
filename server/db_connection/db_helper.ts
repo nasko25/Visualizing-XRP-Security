@@ -33,7 +33,7 @@ export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime, node.publisher]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
-    return send_insert_request(insert_nodes_query);
+    return send_insert_request_vals(insert_nodes_query, vals);
 }
 
 // insert longitude and latitude for a given ip address
@@ -50,7 +50,7 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
     }).concat(ip);
 
     // connection.query(query, vals, create_query_callback_no_return(callback));
-    return send_insert_request(insert_location_query);
+    return send_insert_request_vals(insert_location_query, vals);
 }
 
 export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> {
@@ -172,8 +172,24 @@ function send_insert_request(request: string): Promise<void> {
     })
 }
 
+function send_insert_request_vals(request: string, vals: any): Promise<void> {
+    return new Promise(function (resolve, reject) {
+        connection.query(
+            request,
+            vals,
+            function (err: Error, results: JSON[], fields: JSON) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            }
+        )
+    })
+}
+
 export function getIpAddresses() {
-    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
+    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined" and IP NOT LIKE "::%"';
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
@@ -194,7 +210,7 @@ export function insertValidators(keys: Map<string, null>) {
 
 
 export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
-    let query = "INSERT IGNORE INTO node-validator VALUES ";
+    let query = "INSERT IGNORE INTO node_validator VALUES ";
     let nEntries = 0;
     let count = 0;
     cons.forEach(vals => {

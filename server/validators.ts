@@ -50,6 +50,7 @@ export default class ValidatorIdentifier {
     currentCount: number = 0;
 
     get_validator_list(ip: string, publisher_key: string) {
+        Logger.info(ip);
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
             { httpsAgent: agent, timeout: 3000 }
@@ -57,67 +58,113 @@ export default class ValidatorIdentifier {
     }
 
     run() {
-
-        getIpAddresses().then((nodes : NodeIpKeyPublisher[]) => {
-
+        getIpAddresses()
+            .then((nodes: NodeIpKeyPublisher[]) => {
                 Logger.info("VI: Database queried ...");
 
                 // Start the process with the DB fetched data
                 this.identify_validators_for_batch(nodes);
-
-        }).catch(err => Logger.error(`VI: Could not stat identification of validators : ${err.message}!`));
-        
+            })
+            .catch((err) =>
+                Logger.error(
+                    `VI: Could not start identification of validators : ${err.message}!`
+                )
+            );
     }
 
     identify_validators_for_batch(nodes: NodeIpKeyPublisher[]) {
-        if (nodes.length == 0) {
+        if (nodes.length === 0) {
             Logger.info("VI: Finished idetifying validators.");
             return;
         }
 
+        let splice = nodes.splice(0, this.validatorBatchCount);
+
         Logger.info(
-            "VI: Checking batch from the remaining " + nodes.length + " nodes."
+            "VI: Checking batch from a total of " + nodes.length + " nodes ..."
         );
 
-        let node: NodeIpKeyPublisher = nodes[0];
-        nodes.pop();
+        axios
+            .all(
+                splice.map((node) =>
+                    this.promiseWrapper(
+                        node.IP,
+                        node.publisher,
+                        node.public_key
+                    )
+                )
+            )
+            .then(
+                axios.spread((...res) => {
+                    Logger.info("VI: Extracting validator keys ...");
 
-        this.get_validator_list(node.IP, node.publisher)
-            .then((res) => {
-                // Add the validator keys to the main Validators Map
-                // Add the validator keys to the Node -> Validators Map
-                let valKeys = this.extractValidatorKeys(res.data);
+                    // Add the validator keys to the main Validators Map
+                    // Add the validator keys to the Node -> Validators Map
 
-                this.node_validators.set(node.public_key, valKeys);
-                valKeys.forEach((valKey) => {
-                    this.validators.set(valKey, null);
-                });
+                    Logger.info("VI: Extracted validator keys.");
 
-                // Put in database if batch count reached
-                if (
-                    ++this.currentCount === this.validatorBatchCount ||
-                    nodes.length == 0
-                ) {
+                    res.forEach((tuple) => {
+                        let key: string = tuple[0];
+                        let vals: string[] = tuple[1];
+
+                        if (vals.length > 1)
+                            this.node_validators.set(key, vals);
+
+                        vals.forEach((valKey) => {
+                            this.validators.set(valKey, null);
+                        });
+                    });
+
+                    Logger.info("VI: Added to maps.");
+
                     // Put in database if batch count reached
-                            insertValidators(this.validators).then(() => {
-                                Logger.info("VI: Validators inserted successfully!");
-                                insertNodeValidatorConnections(this.node_validators).then(() => {
-                                    Logger.info("VI: Node - Validators connections inserted successfully!");
-                                    this.validators.clear();
-                                    this.node_validators.clear();
-                                });
+                    if (
+                        ++this.currentCount === this.validatorBatchCount ||
+                        nodes.length == 0
+                    ) {
+                        // Put in database if batch count reached
+                        insertValidators(this.validators).then(() => {
+                            Logger.info(
+                                "VI: Validators inserted successfully!"
+                            );
+                            insertNodeValidatorConnections(
+                                this.node_validators
+                            ).then(() => {
+                                Logger.info(
+                                    "VI: Node - Validators connections inserted successfully!"
+                                );
+                                this.validators.clear();
+                                this.node_validators.clear();
+
+                                this.currentCount = 0;
+                                this.identify_validators_for_batch(
+                                    nodes
+                                );
                             });
-                        this.currentCount = 0;
+                        });
+                    } else {
+                        this.identify_validators_for_batch(nodes);
                     }
                 })
+            )
             .catch((error: Error) => {
                 Logger.error("VI: Batch checking failed: " + error.message);
                 this.identify_validators_for_batch(nodes);
             });
     }
 
-    promiseWrapper(ip: string, publisher: string) {
-        return new Promise((resolve) => this.get_validator_list(ip, publisher).then(res => resolve(res)).catch(() => resolve([])));
+    promiseWrapper(
+        ip: string,
+        publisher: string,
+        public_key: string
+    ): Promise<[string, string[]]> {
+        return new Promise((resolve) =>
+            this.get_validator_list(ip, publisher)
+                .then((res) =>
+                    resolve([public_key, this.extractValidatorKeys(res.data)])
+                )
+                .catch(() => resolve([public_key, []]))
+        );
     }
 
     // A method to extract the validator keys from a response JSON object
