@@ -33,7 +33,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
         // The state
         this.state = {
-            public_key: "n9KtoXy89a6F5ZopaR9SMGx9MT8RprFwehQ7aiL59VdK6oUer8XB",
+            public_key: this.parseURL(),
             node_info: this.props.node_info ? this.props.node_info : {
                 public_key: "",
                 IP: "",
@@ -60,8 +60,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     componentDidMount() {
-        console.log(this.props.location);
-        console.log(this.parseURL());
+        // console.log(this.props.location);
+        // console.log(this.parseURL());
         this.getNodeInfo(this.parseURL());
     }
 
@@ -71,7 +71,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     queryAPI(public_key: string) {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
-            // console.log(res.data);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
@@ -89,6 +88,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         uptime: this.state.node_info.uptime
                     }
                 });
+        }).catch((e) => {
+            console.log(e.response);
         });
     }
 
@@ -118,6 +119,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         uptime: info.uptime
                     }
                 });
+        }).catch((error) => {
+            console.log(error.response);
         });
     }
 
@@ -247,7 +250,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 // onClick={() => this.setState({ displayButton: true })}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                                    <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
+                                    <Text size="large" weight="bold">Back To Homepage</Text>
                                 </Link>
                             </Button>
                         </Box>
