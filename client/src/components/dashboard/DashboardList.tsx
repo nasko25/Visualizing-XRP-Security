@@ -95,6 +95,11 @@ export default class DashboardList extends Component<DashboardListProps> {
                             //   }
                             // sort={({property: 'uptime', direction: 'desc'})}
                             rowProps= { this.highligth }
+                            border={{
+                                color: 'white',
+                                side: 'bottom',
+                                size: '1px',
+                            }}
                         />
                     </Box>
                 </Grommet>
