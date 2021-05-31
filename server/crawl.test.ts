@@ -14,6 +14,10 @@ jest.mock('./db_connection/db_helper');
 const insertNodeMock = insertNode as jest.MockedFunction<typeof insertNode>;
 const insertConnectionMock = insertConnection as jest.MockedFunction<typeof insertConnection>;
 
+// the logger should be mocked to test the promise rejection of insertNode() and insertConnection()
+import Logger from './logger';
+jest.mock('./logger');
+
 const DEFAULT_PEER_PORT = 51235;
 
 afterEach(() => {
@@ -624,5 +628,74 @@ test("test crawl() for nodes with many peers", async () => {
     expect(console.log).toHaveBeenNthCalledWith(1, "How many nodes we have visited: 6\nHow many UNIQUE IPs we have visited: 6");
     expect(console.log).toHaveBeenNthCalledWith(2, "How many nodes we have saved: 8");
 
+    console.log = console_log;
+});
+
+test("test crawl() if the database is unresponsive", async () => {
+    const startingServerIP = "1.2.3.4";
+    const startingServerResponse = {
+        data: {
+            server: {
+                build_version: "1.7.0",
+                pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
+                uptime: 1234567
+            }
+        }
+    };
+
+    const startingServerPeersResponse = {
+        data: {
+            overlay: {
+                active: [{
+                    ip: "1.1.1.1",
+                    port: 51235,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+                    uptime: 123456
+                },
+                {
+                    ip: undefined,
+                    port: 51235,
+                    version: "rippled-1.6.0",
+                    public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+                    uptime: 123456
+                }
+                ]
+            }
+        }
+    };
+
+    // reject all axios.get() requests
+    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValue(startingServerPeersResponse);
+
+    // mock console.log which will be called if no starting servers respond
+    console.log = jest.fn();
+    console.error = jest.fn();
+
+    // initialize a new crawler with 3 test IPs that will be mocked
+    const crawler = new Crawler([startingServerIP]);
+    const spy = jest.spyOn(crawler, "crawl");
+
+    insertNodeMock.mockRejectedValue(new Error("Database unresponsive."));
+    insertConnectionMock.mockRejectedValue(new Error("Database unresponsive."));
+    // wait for the Promises that axios returns
+    await crawler.crawl();
+
+    // crawler.crawl() should have been called 1 time (because the insertNode() and insertConnection() functions should catch their own exceptions)
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // console.log will still be called twice when the crawler returns, because the crawler is unaware that the database is unresponsive
+    expect(console.log).toHaveBeenCalledTimes(2);
+
+    // the 3 different instances on insertNode() should all have been called once
+    expect(insertNodeMock).toHaveBeenCalledTimes(3);
+
+    // the 2 instances of insertConnection() should each have been called twice
+    // (the initial node should have a bidirectional connection with each of its peers)
+    expect(insertConnectionMock).toHaveBeenCalledTimes(4);
+    // the logger should have been called 7 times (once for each rejected promise)
+    expect(Logger.error).toHaveBeenCalledTimes(7);
+
+    spy.mockRestore();
     console.log = console_log;
 });

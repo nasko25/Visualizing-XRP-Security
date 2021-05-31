@@ -112,7 +112,7 @@ class Crawler {
                                  };
 
                 // insert the initial node that was given in config/ripple_servers.list
-                insertNode(node).then().catch((err: Error) => {
+                insertNode(node).catch((err: Error) => {
                     Logger.error(err.message);
                 });
 
