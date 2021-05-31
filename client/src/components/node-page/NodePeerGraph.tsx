@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network/standalone";
 import "./NodePage.css";
 import { NodeInfo, Peer } from "./NodePageTypes";
+import { History } from 'history';
 
 /**
  * Component that visualizes the peer connections of a Node
@@ -11,12 +12,14 @@ import { NodeInfo, Peer } from "./NodePageTypes";
 
 type NodePeerGraphProps = {
     node_info: NodeInfo,
-    on_node_click: (public_key: string) => void
+    on_node_click: (public_key: string) => void,
+    history: History
 }
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
     networkRef: React.RefObject<HTMLDivElement>;
+    network: Network | null = null;
 
     state = {
         node_info: {},
@@ -29,19 +32,24 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         this.createNetwork = this.createNetwork.bind(this);
     }
 
-    componentDidMount(){
+    componentDidUpdate() {
         this.createNetwork();
     }
 
-    componentDidUpdate(){
-        this.createNetwork();
+    componentWillUnmount(){
+        if(this.network !== null){
+            this.network.destroy();
+        }
     }
-    
+
     /**
      * Creates the vis.js network
      * The only connections are from our Node to its peers
      */
     createNetwork() {
+        if(this.network !== null){
+            this.network.destroy();
+        }
         var nodesArr: Node[] = [];
         var edgesArr: Edge[] = [];
         // Add network node for our Node
@@ -92,7 +100,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         const options = {
             physics: {
                 hierarchicalRepulsion: {
-                    nodeDistance: 140
+                    nodeDistance: 1
                 }
             },
             interaction: {
@@ -100,18 +108,19 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             }
         };
         var func = this.props.on_node_click;
-        
+
         const network = new Network(container, data, options);
         network.on("click", function (properties) {
             var ids = properties.nodes;
             var clickedNodes: Object[] = nodes.get(ids);
-        
+
             if (clickedNodes.length >= 1) {
                 var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
                 var public_key: string = JSON.stringify(n.title).slice(1, -1);
                 func(public_key);
             }
         });
+        this.network = network;
     }
 
     render() {
@@ -122,9 +131,9 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                     style={{ width: "100%", height: "84%" }}
                     ref={this.networkRef} />
                 <Button
-                    style={{ width: "10%", height: "10%", alignSelf: "center", margin: "1%" }}
+                    style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
-                    onClick={this.createNetwork}>Peers</Button>
+                    onClick={this.createNetwork}>Reshuffle Peers</Button>
             </>
         );
     }
