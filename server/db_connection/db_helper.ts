@@ -21,7 +21,7 @@ export function insertNode(node: CrawlerNode): Promise<void> {
         node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
-        node.uptime + '\'' +
+        node.uptime + '\', \'' +
         node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
 
     return send_insert_request(insert_node_query);
@@ -173,8 +173,7 @@ function send_insert_request(request: string): Promise<void> {
 }
 
 export function getIpAddresses() {
-    const get_ip_addresses = 'SELECT IP, public_key FROM node WHERE IP is not null and public_key is not null and IP <> "undefined"';
-
+    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
@@ -182,14 +181,14 @@ export function insertValidators(keys: Map<string, null>) {
     let query = "INSERT IGNORE INTO validator VALUES ";
     let count = keys.size;
     let currentCount = 0;
-    for (let key in keys) {
+    keys.forEach((val, key) => {
         query = query + `("${key}")` ;
         currentCount++;
         if (currentCount !== count) {
             query += ",";
         }
         else query += ";";
-    }
+    });
     return send_insert_request(query);
 }
 
@@ -201,9 +200,9 @@ export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
     cons.forEach(vals => {
         nEntries += vals.length;
     });
-    for(let key in cons.keys()) {
-        for (let valKey in cons.get(key)) {
-            query += `("${key}", "${valKey}")`;
+    cons.forEach((vals, node) => {
+        for (let valKey of vals) {
+            query += `("${node}", "${valKey}")`;
             count++;
             if (nEntries === count) {
                 query += ";"
@@ -211,7 +210,7 @@ export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
                 query += ","
             }
         }
-    }
+    });
 
     return send_insert_request(query);
 }

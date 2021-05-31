@@ -60,7 +60,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `node-validator`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `node-validator` (
+CREATE TABLE IF NOT EXISTS `node_validator` (
   `node_key` VARCHAR(80) NOT NULL,
   `validator_key` VARCHAR(80) NOT NULL,
 
