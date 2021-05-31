@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from './config/config.json';
 import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
+import Logger from './logger';
 
 // only load the geoip-lite module if it will be used
 // (it can be configured in `config/config.json` by setting `useIPStack` to false)
@@ -34,9 +35,11 @@ class GeoLocate {
         // since requests to the database are asynchronous, we need to set a flag `DBRequestResolved` to false
         //  and then when the request is resolved set it to true
         this.DBRequestResolved = false;
-        getAllNodesWithoutLocation(nodes => {
+        getAllNodesWithoutLocation().then((nodes) => {
             this.IPList = nodes.map(node => node.IP);
             this.DBRequestResolved = true;
+        }).catch((err: Error) => {
+            Logger.error(err.message);
         });
         return [];
     }
@@ -88,7 +91,9 @@ class GeoLocate {
             // log the [latitude, longitude] tuple
             // console.log(res);
             // insert the longitude and latitude in the database
-            insertLocation(res, this.IPList[curr]);
+            insertLocation(res, this.IPList[curr]).catch((err: Error) => {
+                Logger.error(err.message);
+            });
 
             //Delay requests by 1 second, so to not get blocked by the API
             // (but only if using ipstack)
@@ -117,7 +122,7 @@ class GeoLocate {
         //     console.log(e);
         // }
 
-        getAllNodesWithoutLocation(nodes => {
+        getAllNodesWithoutLocation().then((nodes) => {
             this.IPList = nodes.map(node => node.IP);
             this.DBRequestResolved = true;
             if (this.IPList == null || this.IPList.length == 0) {
@@ -129,6 +134,8 @@ class GeoLocate {
             } catch (e) {
                 console.log(e);
             }
+        }).catch((err: Error) => {
+            Logger.error(err.message);
         });
     }
 
