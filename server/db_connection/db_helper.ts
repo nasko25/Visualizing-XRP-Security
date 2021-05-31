@@ -177,11 +177,14 @@ export function getIpAddresses() {
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
-export function insertValidators(keys: string[]) {
-    let query = "INSERT INTO validator VALUES ";
-    for (let index = 0; index < keys.length; index++) {
-        query = query + `("${keys[index]}")` ;
-        if (index !== keys.length - 1) {
+export function insertValidators(keys: Map<string, null>, callback: Function) {
+    let query = "INSERT IGNORE INTO validator VALUES ";
+    let count = keys.size;
+    let currentCount = 0;
+    for (let key in keys) {
+        query = query + `("${key}")` ;
+        currentCount++;
+        if (currentCount !== count) {
             query += ",";
         }
         else query += ";";
@@ -190,8 +193,8 @@ export function insertValidators(keys: string[]) {
 }
 
 
-export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
-    let query = "INSERT INTO node-validator VALUES ";
+export function insertNodeValidatorConnections(cons: Map<string, string[]>, callback: Function) {
+    let query = "INSERT IGNORE INTO node-validator VALUES ";
     let nEntries = 0;
     let count = 0;
     cons.forEach(vals => {
