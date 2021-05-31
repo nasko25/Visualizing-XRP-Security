@@ -1,7 +1,11 @@
 // The properties that should be passed in JSX to this component
 export type NodePageProps = {
     node_info: NodeInfo,
-    key: string
+    key: string,
+    location: {
+        search: string
+    }
+    history: string[]
 }
 
 // How the state should look like

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ReactPropTypes } from "react";
+import React from "react";
 import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet'
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
@@ -56,15 +56,22 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.nodeOnClick = this.nodeOnClick.bind(this);
         this.queryAPI = this.queryAPI.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
+        this.parseURL = this.parseURL.bind(this);
     }
 
     componentDidMount() {
-        this.getNodeInfo(this.state.public_key);
+        console.log(this.props.location);
+        console.log(this.parseURL());
+        this.getNodeInfo(this.parseURL());
+    }
+
+    parseURL(): string{
+        return this.props.location.search.split("\?public_key=")[1];
     }
 
     queryAPI(public_key: string) {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
-            console.log(res.data);
+            // console.log(res.data);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
@@ -87,9 +94,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     queryAPI_node(public_key: string) {
         return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
-            console.log(res.data);
+            // console.log(res.data);
             var info: NodeInfoDB = res.data[0];
-            console.log(info);
+            // console.log(info);
 
             var ports: Port[] = [];
             if (info.ports){
@@ -205,6 +212,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     nodeOnClick(public_key: string) {
         this.setState({ public_key: public_key });
         this.getNodeInfo(public_key);
+        this.props.history.push("/node?public_key=" + public_key);
     }
 
     render() {
@@ -276,7 +284,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
                         <Box round="1%" margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} gridArea="peers_network" background={COLORS.main}>
-                            <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
+                            <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info} history={this.props.history}></NodePeerGraph>
                         </Box>
                         <Box round="1%" margin={{top: "2%", left: "2%", right: "1%", bottom: "2%"}} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
