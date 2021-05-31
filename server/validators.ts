@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import Logger from "./logger";
-import { decode, encode } from "js-base64";
+import { decode } from "js-base64";
 import {
     getIpAddresses,
     insertNodeValidatorConnections,
@@ -8,7 +8,6 @@ import {
 } from "./db_connection/db_helper";
 import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from "https";
-import { encodeNodePublic } from "ripple-address-codec";
 
 /** @interface
  *
@@ -47,15 +46,6 @@ export default class ValidatorIdentifier {
     validators: Map<string, null> = new Map();
     node_validators: Map<string, string[]> = new Map();
     validatorBatchCount: number = 4;
-    currentCount: number = 0;
-
-    get_validator_list(ip: string, publisher_key: string) {
-        Logger.info(ip);
-        return axios.get<any, AxiosResponse<Validator_List_Result>>(
-            `https://[${ip}]:51235/vl/${publisher_key}`,
-            { httpsAgent: agent, timeout: 3000 }
-        );
-    }
 
     run() {
         getIpAddresses()
@@ -86,6 +76,7 @@ export default class ValidatorIdentifier {
 
         axios
             .all(
+                // Create an array of Promise objects for all requests
                 splice.map((node) =>
                     this.promiseWrapper(
                         node.IP,
@@ -95,13 +86,11 @@ export default class ValidatorIdentifier {
                 )
             )
             .then(
+                // Response is an array of tuples (node_key, val_keys)
                 axios.spread((...res) => {
-                    Logger.info("VI: Extracting validator keys ...");
-
                     // Add the validator keys to the main Validators Map
                     // Add the validator keys to the Node -> Validators Map
-
-                    Logger.info("VI: Extracted validator keys.");
+                    Logger.info("VI: Adding validator keys to maps ...");
 
                     res.forEach((tuple) => {
                         let key: string = tuple[0];
@@ -115,36 +104,25 @@ export default class ValidatorIdentifier {
                         });
                     });
 
-                    Logger.info("VI: Added to maps.");
+                    Logger.info(
+                        "VI: Adding of validator keys to maps completed!"
+                    );
 
-                    // Put in database if batch count reached
-                    if (
-                        ++this.currentCount === this.validatorBatchCount ||
-                        nodes.length == 0
-                    ) {
-                        // Put in database if batch count reached
-                        insertValidators(this.validators).then(() => {
+                    // Put in database
+                    insertValidators(this.validators).then(() => {
+                        Logger.info("VI: Validators inserted successfully!");
+                        insertNodeValidatorConnections(
+                            this.node_validators
+                        ).then(() => {
                             Logger.info(
-                                "VI: Validators inserted successfully!"
+                                "VI: Node - Validators connections inserted successfully!"
                             );
-                            insertNodeValidatorConnections(
-                                this.node_validators
-                            ).then(() => {
-                                Logger.info(
-                                    "VI: Node - Validators connections inserted successfully!"
-                                );
-                                this.validators.clear();
-                                this.node_validators.clear();
+                            this.validators.clear();
+                            this.node_validators.clear();
 
-                                this.currentCount = 0;
-                                this.identify_validators_for_batch(
-                                    nodes
-                                );
-                            });
+                            this.identify_validators_for_batch(nodes);
                         });
-                    } else {
-                        this.identify_validators_for_batch(nodes);
-                    }
+                    });
                 })
             )
             .catch((error: Error) => {
@@ -153,6 +131,17 @@ export default class ValidatorIdentifier {
             });
     }
 
+    // A method thаt makes the request
+    get_validator_list(ip: string, publisher_key: string) {
+        Logger.info(ip);
+        return axios.get<any, AxiosResponse<Validator_List_Result>>(
+            `https://[${ip}]:51235/vl/${publisher_key}`,
+            { httpsAgent: agent, timeout: 3000 }
+        );
+    }
+
+    // A method that calls get_validator_list and makes sure a Promise is returned that does not reject
+    // This is to avoid batch processing to fail because only one of the requests failed.
     promiseWrapper(
         ip: string,
         publisher: string,
