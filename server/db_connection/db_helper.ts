@@ -5,6 +5,7 @@ import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import { ValidatorAssessment } from './models/validator_assessment';
 import Logger from '../logger'
+import e from 'express'
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -174,4 +175,39 @@ export function getIpAddresses() {
     const get_ip_addresses = 'SELECT IP, public_key FROM node WHERE IP is not null and public_key is not null and IP <> "undefined"';
 
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
+}
+
+export function insertValidators(keys: string[]) {
+    let query = "INSERT INTO validator VALUES ";
+    for (let index = 0; index < keys.length; index++) {
+        query = query + `("${keys[index]}")` ;
+        if (index !== keys.length - 1) {
+            query += ",";
+        }
+        else query += ";";
+    }
+    return send_insert_request(query);
+}
+
+
+export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
+    let query = "INSERT INTO node-validator VALUES ";
+    let nEntries = 0;
+    let count = 0;
+    cons.forEach(vals => {
+        nEntries += vals.length;
+    });
+    for(let key in cons.keys()) {
+        for (let valKey in cons.get(key)) {
+            query += `("${key}", "${valKey}")`;
+            count++;
+            if (nEntries === count) {
+                query += ";"
+            } else {
+                query += ","
+            }
+        }
+    }
+
+    return send_insert_request(query);
 }
