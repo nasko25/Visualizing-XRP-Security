@@ -122,6 +122,11 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
                 build_version: "1.7.0",
                 pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -151,7 +156,8 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
         port: DEFAULT_PEER_PORT,
         version: "rippled-1.7.0",
         pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
-        uptime: 1234567
+        uptime: 1234567,
+        publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
     };
     expect(insertNodeMock).toHaveBeenCalledTimes(1);
     expect(insertNodeMock).toHaveBeenCalledWith(insertedNode);
@@ -174,6 +180,11 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
                 build_version: "1.7.0",
                 pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -188,12 +199,17 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
                     public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
                     uptime: 123456
                 }]
+            },
+            unl: {
+                publisher_lists: [{
+                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
 
     const firstPeerPeersResponse = {
-        date: {
+        data: {
             overlay: {
                 active: [{
                     ip: startingServerIP, // this is the first node's IP; the crawler should not loop infinitely
@@ -201,6 +217,11 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
                     version: "rippled-1.7.0",
                     public_key: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
                     uptime: 1234999
+                }]
+            },
+            unl: {
+                publisher_lists: [{
+                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
             }
         }
@@ -238,7 +259,8 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
-            uptime: 1234567
+            uptime: 1234567,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         // the initial node's peer
         {
@@ -246,7 +268,8 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             port: 51235,
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
-            uptime: 123456
+            uptime: 123456,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         }
     ];
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
@@ -275,6 +298,11 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
                 build_version: "1.7.0",
                 pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -288,6 +316,11 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
                     version: "rippled-1.6.0",
                     public_key: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
                     uptime: 123456
+                }]
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
             }
         }
@@ -310,7 +343,8 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
-            uptime: 1234567
+            uptime: 1234567,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         // the initial node's peer
         {
@@ -318,7 +352,8 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
             port: DEFAULT_PEER_PORT,        // the undefined peer port should be substituted with the default peer port
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
-            uptime: 123456
+            uptime: 123456,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         }
     ];
 
@@ -348,7 +383,13 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
                 build_version: "1.7.0",
                 pubkey_node: startingServerPublicKey,
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
+
         }
     };
 
@@ -371,6 +412,11 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
                     uptime: 1234989
                 }
                 ]
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -396,7 +442,8 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
-            uptime: 1234567
+            uptime: 1234567,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         // the initial node's peer
         {
@@ -404,7 +451,8 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
             port: 51234,
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
-            uptime: 123456
+            uptime: 123456,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         }
     ];
 
@@ -435,6 +483,11 @@ test("test crawl() for nodes with many peers", async () => {
                 build_version: "1.7.0",
                 pubkey_node: startingServerPublicKey,
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -471,6 +524,11 @@ test("test crawl() for nodes with many peers", async () => {
                     uptime: 1234989
                 }
                 ]
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -514,6 +572,11 @@ test("test crawl() for nodes with many peers", async () => {
                     uptime: 99998
                 }
                 ]
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -537,7 +600,8 @@ test("test crawl() for nodes with many peers", async () => {
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
-            uptime: 1234567
+            uptime: 1234567,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         // the initial node's peer
         {
@@ -545,49 +609,56 @@ test("test crawl() for nodes with many peers", async () => {
             port: 51234,
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
-            uptime: 123456
+            uptime: 123456,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: "1.0.0.0",
             port: 51234,
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdf",
-            uptime: 124458
+            uptime: 124458,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: undefined,
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdr",
-            uptime: 1234989
+            uptime: 1234989,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: "2.2.2.2",
             port: 51236,
             version: "rippled-1.6.1",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzq",
-            uptime: 123456
+            uptime: 123456,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: "1.2.2.2",
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.6.4",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd3",
-            uptime: 1234984
+            uptime: 1234984,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: "2.3.4.7",
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.4.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd6",
-            uptime: 123
+            uptime: 123,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         },
         {
             ip: undefined,
             port: DEFAULT_PEER_PORT,
             version: "rippled-1.5.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzm",
-            uptime: 99998
+            uptime: 99998,
+            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
         }
     ];
 
@@ -639,6 +710,11 @@ test("test crawl() if the database is unresponsive", async () => {
                 build_version: "1.7.0",
                 pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
                 uptime: 1234567
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
@@ -661,6 +737,11 @@ test("test crawl() if the database is unresponsive", async () => {
                     uptime: 123456
                 }
                 ]
+            },
+            unl: {
+                publisher_lists: [{
+                   pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+                }]
             }
         }
     };
