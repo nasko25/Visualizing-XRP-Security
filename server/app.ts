@@ -9,6 +9,7 @@ import GeoLocate from './geoLocate';
 // Logger
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
+import ValidatorIdentifier from './validators';
 
 const app = express();
 app.use(cors());
@@ -54,6 +55,15 @@ function repeated_crawl() {
 }
 
 repeated_crawl();
+
+
+function start_validator_identification() {
+    Logger.info("Starting validator identification")
+    let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
+    valIden.run();
+}
+
+start_validator_identification();
 
 // startPortScanner().catch((e) => {
 //     console.log(`Crawler exited with the exception: ${e}.`);
