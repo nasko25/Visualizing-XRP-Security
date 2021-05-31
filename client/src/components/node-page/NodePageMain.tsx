@@ -23,7 +23,8 @@ var SETUP = {
 
 var COLORS = {
     main: "#383838",
-    button: "#212529"
+    button: "#212529",
+    nav: "#1a1a1a"
 }
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
@@ -213,7 +214,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 style={{ width: "100%", height: "100%" }}
                 theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} >
 
-                <Header background={COLORS.main} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
+                <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
                     <Grid
                         style={{ width: "100%", height: "100%" }}
                         rows={["1"]}

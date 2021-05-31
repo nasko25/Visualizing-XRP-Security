@@ -18,7 +18,8 @@ var SETUP = {
 
 var COLORS = {
     main: "#383838",
-    button: "#"
+    button: "#212529",
+    nav: "#1a1a1a"
 }
 
 export default class Dashboard extends Component<DashboardProps> {
@@ -102,7 +103,7 @@ export default class Dashboard extends Component<DashboardProps> {
         return (
             // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
-                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: "#1a1a1a"}}>
+                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
                     <DashboardNavbar />
                 </Header>
                 <div className='DashboardMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
