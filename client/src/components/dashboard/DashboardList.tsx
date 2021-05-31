@@ -1,11 +1,12 @@
 import { Component } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
+import { History } from 'history';
 
 export type DashboardListProps = {
     arrNodesData: Array<any>,
     selected: string,
-    history: any
+    history: History
 }
 
 export default class DashboardList extends Component<DashboardListProps> {

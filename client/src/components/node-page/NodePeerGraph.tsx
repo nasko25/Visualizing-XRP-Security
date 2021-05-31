@@ -11,7 +11,8 @@ import { History } from 'history';
  */
 
 type NodePeerGraphProps = {
-    node_info: NodeInfo,
+    public_key: string,
+    peers: Peer[],
     on_node_click: (public_key: string) => void,
     history: History
 }
@@ -21,13 +22,8 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
     networkRef: React.RefObject<HTMLDivElement>;
     network: Network | null = null;
 
-    state = {
-        node_info: {},
-    }
-
     constructor(props: NodePeerGraphProps) {
         super(props);
-        this.state.node_info = props.node_info;
         this.networkRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
     }
@@ -61,13 +57,12 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 border: "white",
                 background: "black",
             },
-            title: this.props.node_info.public_key
+            title: this.props.public_key
         });
         // Add network node and connection for each peer
-        var node_info: any = this.props.node_info;
 
-        for (var i = 2; i <= node_info.peers.length + 1; i++) {
-            var curr: Peer = node_info.peers[i - 2];
+        for (var i = 2; i <= this.props.peers.length + 1; i++) {
+            var curr: Peer = this.props.peers[i - 2];
             nodesArr.push({
                 id: i,
                 shape: "dot",
