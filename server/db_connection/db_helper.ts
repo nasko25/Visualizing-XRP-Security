@@ -177,7 +177,7 @@ export function getIpAddresses() {
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
-export function insertValidators(keys: Map<string, null>, callback: Function) {
+export function insertValidators(keys: Map<string, null>) {
     let query = "INSERT IGNORE INTO validator VALUES ";
     let count = keys.size;
     let currentCount = 0;
@@ -193,7 +193,7 @@ export function insertValidators(keys: Map<string, null>, callback: Function) {
 }
 
 
-export function insertNodeValidatorConnections(cons: Map<string, string[]>, callback: Function) {
+export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
     let query = "INSERT IGNORE INTO node-validator VALUES ";
     let nEntries = 0;
     let count = 0;
