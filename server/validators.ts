@@ -8,6 +8,7 @@ import {
 } from "./db_connection/db_helper";
 import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from "https";
+import EventEmitter from "node:events";
 
 /** @interface
  *
@@ -45,7 +46,14 @@ const agent = new https.Agent({
 export default class ValidatorIdentifier {
     validators: Map<string, null> = new Map();
     node_validators: Map<string, string[]> = new Map();
-    validatorBatchCount: number = 4;
+    validatorBatchCount: number = 10;
+    
+    constructor(validatorBatchCount?: number) {
+        
+        if(validatorBatchCount) {
+            this.validatorBatchCount = validatorBatchCount;
+        }
+    }
 
     run() {
         getIpAddresses()
@@ -151,7 +159,6 @@ export default class ValidatorIdentifier {
 
     // A method thаt makes the request
     get_validator_list(ip: string, publisher_key: string) {
-        Logger.info(ip);
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
             { httpsAgent: agent, timeout: 3000 }

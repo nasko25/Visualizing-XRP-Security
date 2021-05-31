@@ -57,9 +57,9 @@ function repeated_crawl() {
 repeated_crawl();
 
 
-let valIden: ValidatorIdentifier = new ValidatorIdentifier();
 function start_validator_identification() {
     Logger.info("Starting validator identification")
+    let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
     valIden.run();
 }
 
