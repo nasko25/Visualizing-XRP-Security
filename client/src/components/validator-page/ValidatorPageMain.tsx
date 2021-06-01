@@ -1,7 +1,8 @@
-import { Grommet, Header, Grid, Box, Heading } from "grommet";
+import { Grommet, Header, Grid, Box, Heading, DataChart } from "grommet";
 import { Component } from "react";
 import ValidatorPageNav, { ValidatorPageNavProps } from './ValidatorPageNav';
 import { History } from 'history';
+import { HistoricalScore } from './../node-page/NodePageTypes';
 
 
 var SETUP = {
@@ -19,9 +20,51 @@ export type ValidatorPageMainProps = {
     history: History;
 }
 
-export default class ValidatorPageMain extends Component<ValidatorPageMainProps> {
+export type ValidatorPageMainStats = {
+    historical_scores: HistoricalScore[]
+}
 
+export default class ValidatorPageMain extends Component<ValidatorPageMainProps, ValidatorPageMainStats> {
 
+    constructor(props: ValidatorPageMainProps) {
+        super(props);
+        this.state = { 
+            historical_scores: []
+        }
+    }
+
+    componentDidMount() {
+        this.getNodeInfo();
+    }
+
+    getNodeInfo() {
+        var history: HistoricalScore[] = [];
+        for (var i = 1; i <= 30; i++) {
+            history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
+        }
+        this.setState({ historical_scores: history });
+
+        {/* Add requests to API for validator node info*/}
+    
+    }
+
+    createDataChart() {
+        return (
+            <DataChart
+                data={this.state.historical_scores}
+                series={['date', { property: 'score' }]}
+                chart={[
+                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
+                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
+                ]}
+                guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
+                size={{ width: "fill" }}
+                axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
+                legend
+                detail
+            />
+        );
+    };
 
     render() {
         return(
@@ -61,7 +104,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps>
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {/* Insert chart here*/}
+                            {this.createDataChart()}
                         </Box>
                     </Grid>
                 </div>
