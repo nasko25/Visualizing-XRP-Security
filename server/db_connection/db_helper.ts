@@ -16,9 +16,10 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
-export function insertNode(node: CrawlerNode): Promise<void> {
-    var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
+export const insertNode = (node: CrawlerNode): Promise<void> => {
+    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
+        node.port + '\', \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\', \'' +
@@ -29,8 +30,8 @@ export function insertNode(node: CrawlerNode): Promise<void> {
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
-    var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime, node.publisher]);
+    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
+    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, node.publisher]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_nodes_query, vals);
@@ -53,7 +54,7 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
     return send_insert_request_vals(insert_location_query, vals);
 }
 
-export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> {
+export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> => {
     var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';

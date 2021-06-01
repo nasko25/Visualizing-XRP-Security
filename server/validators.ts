@@ -8,7 +8,7 @@ import {
 } from "./db_connection/db_helper";
 import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from "https";
-import EventEmitter from "node:events";
+
 
 /** @interface
  *
