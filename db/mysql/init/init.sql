@@ -1,4 +1,3 @@
-
 USE db;
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -13,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `node` (
   `IP` VARCHAR(45) NULL,
   `rippled_version` VARCHAR(45) NULL,
   `uptime` INT NULL,
+  `portRunningOn` VARCHAR(7) NULL,
   `ports` VARCHAR(3000) NULL,
   `protocols` VARCHAR(3000) NULL,
   `publisher` VARCHAR(80) NOT NULL,

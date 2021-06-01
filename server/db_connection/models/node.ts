@@ -12,6 +12,7 @@ export interface Node {
 
 export interface NodePorts {
     public_key: string,
+    portRunningOn: string,
     ip: string,
     ports: string
 }
