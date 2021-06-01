@@ -11,6 +11,9 @@ import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
 
+//Given in minutes:
+const CRAWLER_INVERVAL: number = 5;
+
 const app = express();
 app.use(cors());
 
@@ -51,7 +54,7 @@ function repeated_crawl() {
 
     // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
     setTimeout(() => new GeoLocate().locate(), 30 * 1000);
-    setTimeout(repeated_crawl, 300000);
+    setTimeout(repeated_crawl, CRAWLER_INVERVAL*60000);
 }
 
 repeated_crawl();
