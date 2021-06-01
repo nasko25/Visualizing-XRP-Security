@@ -123,10 +123,26 @@ export default class Dashboard extends Component<DashboardProps> {
                         style={{width: '100%', height: '100%'}}
                     >
                         <Box gridArea="map" margin={{top: "2%", left: "2%", right: "1%", bottom: "1%"}} round='1%' background={COLORS.main} justify='center' align='center'>
-                            { this.state.loaded ? (<TopMap data={this.state.nodes} handleChange={this.selectNode} />) : (<h1>Loading</h1>)}
+                            { this.state.loaded ? (<TopMap data={this.state.nodes} handleChange={this.selectNode} />) : 
+                            (<div id="loader" style={{ position: "absolute", top: "40%" }} >
+                                <img width="10%" 
+                                    style={{ animation: `spin 3s linear infinite`,
+                                    marginLeft: "auto",
+                                    marginRight: "auto"}} 
+                                    src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
+                                ></img>
+                            </div>)}
                         </Box>
                         <Box gridArea="table" background={COLORS.main} margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} round='1%' justify='center' align='center'>
-                            { this.state.loaded ? (<DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />) : (<h1>Loading</h1>)}
+                            { this.state.loaded ? (<DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />) : 
+                            (<div id="loader" style={{ position: "absolute", top: "40%" }} >
+                                <img width="10%" 
+                                    style={{ animation: `spin 3s linear infinite`,
+                                    marginLeft: "auto",
+                                    marginRight: "auto"}} 
+                                    src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
+                                ></img>
+                            </div>)}
                         </Box>
                         <Box gridArea="info" background={COLORS.main} margin={{top: "1%", left: "2%", right: "1%", bottom: "1%"}} round='1%' justify='center' align='center'>
                             <Heading size="100%" margin="2%"> General Information </Heading>
