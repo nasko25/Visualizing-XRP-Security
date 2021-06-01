@@ -10,3 +10,16 @@
     -ms-overflow-style: none;
     scrollbar-width: none; /* Firefox */
 }
+
+#loader {
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  opacity: 1;
+}
+
+.hide-loader {
+  display: none
+}

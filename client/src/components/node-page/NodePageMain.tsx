@@ -56,7 +56,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.preparePortList = this.preparePortList.bind(this);
         this.createDataChart = this.createDataChart.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
-        this.queryAPI = this.queryAPI.bind(this);
+        this.queryAPI_peers = this.queryAPI_peers.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
         this.parseURL = this.parseURL.bind(this);
         this.historyListener = this.historyListener.bind(this);
@@ -66,20 +66,47 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.getNodeInfo(this.state.public_key);
         this.historyListener();
     }
+    /**
+     * Everytime we change the public_key in the state, 
+     * we should make a request for information from the server
+     * The method is automatically invoked by React,
+     * so we don't need to call it manually
+     * @param prevProps The previous props
+     * @param prevState The previous state
+     * @param some any
+     */
+    componentDidUpdate(prevProps: NodePageProps, prevState: NodePageState, some: any) {
+        if(prevState.public_key != this.state.public_key){
+            this.getNodeInfo(this.state.public_key);
+        }
+    }
 
+    /**
+     * A listener for changes in the history
+     * 
+     * Every time we update the history by navigating forwards or backwards,
+     * we update the public_key with the one from the URL request parameter
+     */
     historyListener() {
         this.props.history.listen((location) => {
-            this.getNodeInfo(location.search.split("?public_key=")[1]);
-            console.log("history change" + location.pathname + location.search);
-            console.log(location.search.split("?public_key=")[1]);
+            this.setState({public_key: location.search.split("?public_key=")[1]});
         });
     }
 
+    /**
+     * Get the public_key from the URL request parameter
+     * @returns The public_key
+     */
     parseURL(): string {
         return this.props.history.location.search.split("?public_key=")[1];
     }
 
-    queryAPI(public_key: string) {
+    /**
+     * Fetch information for the node's peers from the server
+     * @param public_key The public_key of the node
+     * @returns 
+     */
+    queryAPI_peers(public_key: string) {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
@@ -91,6 +118,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         });
     }
 
+    /**
+     * Fetch information for the node's general information from the server
+     * @param public_key The public_key of the node
+     * @returns 
+     */
     queryAPI_node(public_key: string) {
         return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
             var info: NodeInfoDB = res.data[0];
@@ -119,7 +151,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
         this.setState({ historical_scores: history, public_key: public_key });
-        this.queryAPI(this.state.public_key);
+        this.queryAPI_peers(this.state.public_key);
         this.queryAPI_node(this.state.public_key);
     }
 
@@ -150,7 +182,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 ? ""
                 : this.searchRef.current?.value;
             this.props.history.push('/node?public_key=' + text);
-            // this.searchRef.current?.setAttribute('value', '');
         }
     }
 

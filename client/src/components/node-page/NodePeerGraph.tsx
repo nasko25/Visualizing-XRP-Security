@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
 import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network/standalone";
 import "./NodePage.css";
-import { NodeInfo, Peer } from "./NodePageTypes";
+import { Peer } from "./NodePageTypes";
+import { unmountComponentAtNode } from "react-dom";
 import { History } from 'history';
 
 /**
@@ -20,20 +21,41 @@ type NodePeerGraphProps = {
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
     networkRef: React.RefObject<HTMLDivElement>;
+    loadRef: React.RefObject<HTMLDivElement>;
     network: Network | null = null;
 
     constructor(props: NodePeerGraphProps) {
         super(props);
         this.networkRef = React.createRef();
+        this.loadRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
+        this.hideLoad = this.hideLoad.bind(this);
     }
 
     componentDidUpdate() {
         this.createNetwork();
     }
 
-    componentWillUnmount(){
-        if(this.network !== null){
+    showLoad() {
+        document.getElementById("loader")?.classList.remove('hide-loader');
+        // document.getElementById("graph")?.classList.add('hide-loader');
+    }
+
+    hideLoad() {
+        document.getElementById("loader")?.classList.add('hide-loader');
+        // document.getElementById("graph")?.classList.remove('hide-loader');
+    }
+
+    // showGraph() {
+    //     document.getElementById("loader")?.classList.remove('hide-loader');
+    // }
+
+    // hideGraph() {
+    //     document.getElementById("loader")?.classList.add('hide-loader');
+    // }
+
+    componentWillUnmount() {
+        if (this.network !== null) {
             this.network.destroy();
         }
     }
@@ -43,7 +65,8 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
      * The only connections are from our Node to its peers
      */
     createNetwork() {
-        if(this.network !== null){
+        this.showLoad();
+        if (this.network !== null) {
             this.network.destroy();
         }
         var nodesArr: Node[] = [];
@@ -115,21 +138,42 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 func(public_key);
             }
         });
+
+        var sl = this.showLoad;
+        network.on("startStabilizing", function (params){
+            sl();
+        });
+
+        var hl = this.hideLoad;
+        network.once("stabilizationIterationsDone", function (params) {
+            hl();
+            console.log('done');
+        });
+
         this.network = network;
     }
 
     render() {
         return (
-            <>
-                <div
-                    className="peer-network"
-                    style={{ width: "100%", height: "84%" }}
-                    ref={this.networkRef} />
+            <div style={{width: "100%", height: "100%", position: "relative"}}>
+                <div className="peer-network"
+                    style={{ width: "100%", height: "84%", position: "relative" }}
+                    ref={this.networkRef} >
+                </div>
+
+                <div id="loader" style={{ position: "absolute", top: "40%" }} >
+                        <img width="10%" 
+                        style={{ animation: `spin 3s linear infinite`,
+                        marginLeft: "auto",
+                        marginRight: "auto"}} 
+                        src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
+                        ></img>
+                </div>
                 <Button
                     style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
                     onClick={this.createNetwork}>Reshuffle Peers</Button>
-            </>
+            </div>
         );
     }
 }
