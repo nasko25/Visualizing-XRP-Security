@@ -33,7 +33,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     constructor(props: NodePageProps) {
         super(props);
-        // The state
+
         this.state = {
             public_key: this.parseURL(),
             location: this.props.history.location,
@@ -282,7 +282,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 variant="dark"
                                 onClick={() => this.props.history.push("/")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text>Stock</Text>
+                                <Text size="large" weight="bold" >Stock</Text>
                             </Button>
                         </Box>
 
@@ -296,7 +296,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 variant="dark"
                                 onClick={() => this.props.history.push("/")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text>Validators</Text>
+                                <Text size="large" weight="bold">Validators</Text>
                             </Button>
                         </Box>
 
@@ -310,7 +310,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 variant="dark"
                                 onClick={() => this.props.history.push("/")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text>About</Text>
+                                <Text size="large" weight="bold">About</Text>
                             </Button>
                         </Box>
 
