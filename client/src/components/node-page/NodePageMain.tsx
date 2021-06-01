@@ -1,12 +1,12 @@
 import React from "react";
-import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet'
+import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet';
+import { Search } from 'grommet-icons';
 import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Link } from "react-router-dom";
-import { LocationDescriptor } from 'history';
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
+import { Duration } from 'luxon';
 
 
 /**
@@ -30,28 +30,28 @@ var COLORS = {
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
+    searchRef: React.RefObject<HTMLInputElement>;
+
     constructor(props: NodePageProps) {
         super(props);
-
         // The state
         this.state = {
             public_key: this.parseURL(),
             location: this.props.history.location,
-            node_info: this.props.node_info ? this.props.node_info : {
-                public_key: "",
-                IP: "",
-                peers: [],
-                trust_score: 0,
-                rippled_version: "",
-                ports: [],
-                history: [],
-                uptime: 0
-            },
-            speed: 3,
-            displayButton: false,
-            displayGreen: false
+            IP: "",
+            peers: [],
+            trust_score: 0,
+            rippled_version: "",
+            ports: [],
+            historical_scores: [],
+            uptime: 0
         }
 
+        this.searchRef = React.createRef();
+
+        /**
+         * Binding the class methods to the 'this' keyword for the class
+         */
         this.getNodeInfo = this.getNodeInfo.bind(this);
         this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
         this.preparePortList = this.preparePortList.bind(this);
@@ -60,9 +60,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI = this.queryAPI.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
         this.parseURL = this.parseURL.bind(this);
-        this.goBack = this.goBack.bind(this);
         this.historyListener = this.historyListener.bind(this);
     }
+
     componentDidMount() {
         this.getNodeInfo(this.state.public_key);
         this.historyListener();
@@ -70,13 +70,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     historyListener() {
         this.props.history.listen((location) => {
-            this.getNodeInfo(this.parseURL());
-            this.setState({location: location});
+            this.getNodeInfo(location.search.split("?public_key=")[1]);
+            console.log("history change" + location.pathname + location.search);
+            console.log(location.search.split("?public_key=")[1]);
         });
     }
 
     parseURL(): string {
-        return this.props.location.search.split("\?public_key=")[1];
+        return this.props.history.location.search.split("?public_key=")[1];
     }
 
     queryAPI(public_key: string) {
@@ -85,19 +86,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
             }
-            this.setState(
-                {
-                    node_info: {
-                        IP: this.state.node_info.IP,
-                        history: this.state.node_info.history,
-                        ports: this.state.node_info.ports,
-                        public_key: this.state.node_info.public_key,
-                        trust_score: this.state.node_info.trust_score,
-                        peers: peers,
-                        rippled_version: this.state.node_info.rippled_version,
-                        uptime: this.state.node_info.uptime
-                    }
-                });
+            this.setState({peers: peers});
         }).catch((e) => {
             console.log(e.response);
         });
@@ -105,30 +94,21 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     queryAPI_node(public_key: string) {
         return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
-            // console.log(res.data);
             var info: NodeInfoDB = res.data[0];
-            // console.log(info);
-
             var ports: Port[] = [];
             if (info.ports) {
                 for (var i = 0; i < info.ports.length; i++) {
                     ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
                 }
             }
-
             this.setState(
                 {
-                    node_info: {
-                        IP: info.IP,
-                        history: this.state.node_info.history,
-                        ports: ports,
-                        public_key: this.state.node_info.public_key,
-                        trust_score: this.state.node_info.trust_score,
-                        peers: this.state.node_info.peers,
-                        rippled_version: info.rippled_version,
-                        uptime: info.uptime
-                    }
+                    IP: info.IP,
+                    rippled_version: info.rippled_version,
+                    uptime: info.uptime,
+                    ports: ports,
                 });
+            console.log("state" + this.state.peers);
         }).catch((error) => {
             console.log(error.response);
         });
@@ -139,18 +119,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         for (var i = 1; i <= 30; i++) {
             history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
-
-        var info = {
-            public_key: public_key,
-            IP: this.state.node_info.IP,
-            peers: this.state.node_info.peers,
-            trust_score: 0,
-            ports: this.state.node_info.ports,
-            rippled_version: this.state.node_info.rippled_version,
-            history: history,
-            uptime: this.state.node_info.uptime
-        };
-        this.setState({ public_key: public_key, node_info: info });
+        this.setState({ historical_scores: history, public_key: public_key });
         this.queryAPI(this.state.public_key);
         this.queryAPI_node(this.state.public_key);
     }
@@ -158,7 +127,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     createDataChart() {
         return (
             <DataChart
-                data={this.state.node_info.history}
+                data={this.state.historical_scores}
                 series={['date', { property: 'score' }]}
                 chart={[
                     { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
@@ -173,22 +142,46 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         );
     };
 
-    // Event Handler for the Search Bar
+    /**
+     * Event Handler for the Search Bar
+     */
     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
-        // this.setState({ displayGreen: !this.state.displayGreen });
-        // TODO send request to check for the key
-        // If key exists and information is obtained, render a green button to lead to the page
-        // If not, render a red box with message
+        if (e.code === "Enter") {
+            let text: string = this.searchRef.current?.value === undefined
+                ? ""
+                : this.searchRef.current?.value;
+            this.props.history.push('/node?public_key=' + text);
+            // this.searchRef.current?.setAttribute('value', '');
+        }
     }
 
     preparePortList() {
         var ports: string = "";
-        var thisPorts = this.state.node_info.ports;
+        var thisPorts = this.state.ports;
         for (var i = 0; i < thisPorts.length; i++) {
             ports = ports.concat("Port: " + thisPorts[i].port_number + " Service: " + thisPorts[i].service + "\n");
         }
         return ports;
+    }
+
+    /**
+     * We receive the uptime of nodes in seconds.
+     * This methods converts it into the format:
+     *          X days Y hours Z minutes
+     */
+    humanizeUptime(seconds: number): string {
+        var duration: Duration = Duration.fromMillis(seconds * 1000).shiftTo('days', 'hours', 'minutes');
+        var ret: string = '';
+        if (duration.days > 0) {
+            ret = ret.concat(duration.days + " days ");
+        }
+        if (duration.hours > 0) {
+            ret = ret.concat(duration.hours + " hours ");
+        }
+        if (duration.minutes > 0) {
+            ret = ret.concat(duration.minutes.toFixed(0) + " minutes ");
+        }
+        return ret;
     }
 
     createNodeInformationList() {
@@ -199,12 +192,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             secondaryKey="value"
 
             data={[
-                { name: 'Security score', value: this.state.node_info.trust_score },
-                { name: 'IP', value: this.state.node_info.IP },
-                { name: 'Rippled version', value: this.state.node_info.rippled_version },
+                { name: 'Security score', value: this.state.trust_score },
+                { name: 'IP', value: this.state.IP },
+                { name: 'Rippled version', value: this.state.rippled_version },
                 { name: 'Ports', value: this.preparePortList() },
-                { name: 'Uptime', value: this.state.node_info.uptime },
-                { name: 'Peer count', value: this.state.node_info.peers.length },
+                { name: 'Uptime', value: this.humanizeUptime(this.state.uptime) },
+                { name: 'Peer count', value: this.state.peers.length },
             ]}
         />
     }
@@ -214,7 +207,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             style={{ alignSelf: "center" }}
             primaryKey="public_key"
             secondaryKey="score"
-            data={this.state.node_info.peers.sort((a, b) => {
+            data={this.state.peers.sort((a, b) => {
                 return b.score - a.score;
             })}
             border={false}
@@ -222,32 +215,27 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         />
     }
 
-    goBack() {
-        // console.log(this.props.history);
-        this.props.history.goBack();
-    }
-
     nodeOnClick(public_key: string) {
         this.props.history.push("/node?public_key=" + public_key);
-        this.setState({ public_key: public_key });
-        this.getNodeInfo(public_key);
     }
 
     render() {
         return (
             <Grommet
-                style={{ width: "100%", height: "100%" }}
-                theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} >
+                style={{ width: "100%", height: "100%" }}>
+                {/* // theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} */}
 
                 <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
                     <Grid
                         style={{ width: "100%", height: "100%" }}
                         rows={["1"]}
-                        columns={["1/4", "1/4", "1/2"]}
+                        columns={["1/5", "1/5", "1/5", "1/5", "1/5"]}
                         areas={[
                             { name: 'heading', start: [0, 0], end: [0, 0] },
-                            { name: 'button_return', start: [1, 0], end: [1, 0] },
-                            { name: 'search', start: [2, 0], end: [2, 0] },
+                            { name: 'button_stock', start: [1, 0], end: [1, 0] },
+                            { name: 'button_validator', start: [2, 0], end: [2, 0] },
+                            { name: 'button_about', start: [3, 0], end: [3, 0] },
+                            { name: 'search', start: [4, 0], end: [4, 0] },
                         ]}>
 
                         {/* The heading. */}
@@ -256,15 +244,43 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         {/* The Button for returning to the main page. */}
                         <Box
                             height="80%"
-                            gridArea="button_return"
+                            gridArea="button_stock"
                             justify="center"
                             alignSelf="center"
                             margin="2%">
                             <Button
                                 variant="dark"
-                                onClick={() => this.props.history.push('/')}
+                                onClick={() => this.props.history.push("/")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text size="large" weight="bold">Back To Homepage</Text>
+                                <Text>Stock</Text>
+                            </Button>
+                        </Box>
+
+                        <Box
+                            height="80%"
+                            gridArea="button_validator"
+                            justify="center"
+                            alignSelf="center"
+                            margin="2%">
+                            <Button
+                                variant="dark"
+                                onClick={() => this.props.history.push("/")}
+                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                                <Text>Validators</Text>
+                            </Button>
+                        </Box>
+
+                        <Box
+                            height="80%"
+                            gridArea="button_about"
+                            justify="center"
+                            alignSelf="center"
+                            margin="2%">
+                            <Button
+                                variant="dark"
+                                onClick={() => this.props.history.push("/")}
+                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                                <Text>About</Text>
                             </Button>
                         </Box>
 
@@ -274,17 +290,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             direction="row"
                             justify="center"
                             background={COLORS.button}
-                            margin={{ left: "1%", right: "2%" }}>
+                            margin={{ left: "1%", right: "3%" }}>
                             <TextInput
                                 onKeyPress={this.onKeyPressSearch}
+                                icon={<Search />}
                                 textAlign="center"
                                 placeholder="Search Public Key"
+                                ref={this.searchRef}
                             />
-                            {/* {this.state.displayButton === false ? null : this.state.displayGreen === false ?
-                                <Button style={{ width: "10%", alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
-                                :
-                                <Button style={{ width: "10%", alignSelf: "center", background: "red", borderRadius: "10%", fontWeight: "bold" }} color="black" >Wrong Key</Button>
-                            } */}
                         </Box>
                     </Grid>
                 </Header>
@@ -300,7 +313,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
                         <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
-                            <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info} history={this.props.history}></NodePeerGraph>
+                            <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers} history={this.props.history}></NodePeerGraph>
                         </Box>
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
@@ -317,9 +330,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             </Box>
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
-                            {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
-                                <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
-                            </Box> */}
                             <Heading size="100%" margin="2%">Score over Time</Heading>
                             {this.createDataChart()}
                         </Box>

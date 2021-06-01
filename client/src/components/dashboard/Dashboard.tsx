@@ -4,11 +4,12 @@ import DashboardList from "./DashboardList";
 import TopMap from "../TopMap";
 import axios from 'axios';
 import { Box, Grid, Grommet, Header, Heading, List } from 'grommet';
+import { History } from 'history';
 
 let dataJson = require("../../nodes.json");
 
 export type DashboardProps = {
-    history: any
+    history: History
 }
 
 var SETUP = {
