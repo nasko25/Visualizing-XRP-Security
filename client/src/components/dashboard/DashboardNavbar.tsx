@@ -28,7 +28,7 @@ export default class DashboardNavbar extends Component {
                         variant="dark"
                         style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                         <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                            <Text contentEditable="false" size="large" weight="bold">Validator Nodes</Text>
+                            <Text contentEditable="false" size="large" weight="bold">Validators</Text>
                         </Link>
                     </Button>
                 </Box>
