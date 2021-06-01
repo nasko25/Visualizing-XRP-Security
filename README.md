@@ -42,6 +42,12 @@ after that you can:
 docker-compose start/stop/restart
 ```
 
+## Running the unit tests
+```
+cd server
+npm t
+```
+
 ## Geolocation Lookup APIs
 The application supports two ways to extract geolocation from the node's IP addresses. The default way is to use an npm module called `geoip-lite`, which loads a geoiplookup table in memory and is therefore really fast.
 

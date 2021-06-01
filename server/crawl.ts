@@ -51,7 +51,7 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
-        // TODO save all valid servers and use the first that responds when starting the crawl
+        // save all valid servers and use the first that responds when starting the crawl
 
         // Try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
@@ -73,7 +73,7 @@ class Crawler {
 
     }
 
-    crawl() {
+    crawl(): Promise<any> {
         // Start from first node, which is chosen from the config/ripple_servers.list
         // Perform a BFS by getting peers from each node
 
@@ -92,19 +92,21 @@ class Crawler {
         }
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
-        // Get the peers of the initial stock node
-        axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
+        // Get the peers of the initial stock node and return the promise from axios
+        return axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
             .then( async function ( response )  {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
+
+                // get the ssl certificate for the server
                 // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
 
                 // Initialize initial node
                 let node: Node = {
                                     ip: rippleStartingServerIP,
-                                    port: DEFAULT_PEER_PORT, 
+                                    port: DEFAULT_PEER_PORT,
                                     version: "rippled-" + response.data.server.build_version,
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
                                     uptime: response.data.server.uptime,
@@ -210,4 +212,4 @@ class Crawler {
 
 
 export default Crawler;
-export { Node };
+export { Node, normalizePublicKey };

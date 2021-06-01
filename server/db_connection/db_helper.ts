@@ -16,7 +16,7 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
-export function insertNode(node: CrawlerNode): Promise<void> {
+export const insertNode = (node: CrawlerNode): Promise<void> => {
     var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.version + '\', \'' +
@@ -53,7 +53,7 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
     return send_insert_request_vals(insert_location_query, vals);
 }
 
-export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> {
+export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> => {
     var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
