@@ -7,6 +7,7 @@ import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 import { Duration } from 'luxon';
+import { humanizeUptime } from '../../helper';
 
 
 /**
@@ -164,26 +165,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         return ports;
     }
 
-    /**
-     * We receive the uptime of nodes in seconds.
-     * This methods converts it into the format:
-     *          X days Y hours Z minutes
-     */
-    humanizeUptime(seconds: number): string {
-        var duration: Duration = Duration.fromMillis(seconds * 1000).shiftTo('days', 'hours', 'minutes');
-        var ret: string = '';
-        if (duration.days > 0) {
-            ret = ret.concat(duration.days + " days ");
-        }
-        if (duration.hours > 0) {
-            ret = ret.concat(duration.hours + " hours ");
-        }
-        if (duration.minutes > 0) {
-            ret = ret.concat(duration.minutes.toFixed(0) + " minutes ");
-        }
-        return ret;
-    }
-
     createNodeInformationList() {
         return <List
             style={{ width: "70%", height: "70%", alignSelf: "center" }}
@@ -196,7 +177,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 { name: 'IP', value: this.state.IP },
                 { name: 'Rippled version', value: this.state.rippled_version },
                 { name: 'Ports', value: this.preparePortList() },
-                { name: 'Uptime', value: this.humanizeUptime(this.state.uptime) },
+                { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
                 { name: 'Peer count', value: this.state.peers.length },
             ]}
         />

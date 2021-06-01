@@ -2,6 +2,7 @@ import { Component } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
 import { History } from 'history';
+import { humanizeUptime } from '../../helper';
 
 export type DashboardListProps = {
     arrNodesData: Array<any>,
@@ -42,7 +43,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 {
                                     property: 'public_key',
                                     header: <Text><b>Public Key</b></Text>,
-                                    size: '50%',
+                                    size: '45%',
                                     search: true,
                                     primary: true
                                 },
@@ -54,13 +55,13 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 {
                                     property: 'uptime',
                                     header: <Text><b>Uptime</b></Text>,
-                                    size: '10%',
+                                    size: '15%',
                                     align: 'start',
                                     sortable: true
                                 },
                                 {
-                                    property: 'trustScore',
-                                    header: <Text><b>Trust Score</b></Text>,
+                                    property: 'securityScore',
+                                    header: <Text><b>Security Score</b></Text>,
                                     size: '10%',
                                     align: 'start'
                                 }
@@ -75,7 +76,12 @@ export default class DashboardList extends Component<DashboardListProps> {
                             //     }
                             // })}
                         
-                            data={nodes}
+                            data={nodes.map(node => ({
+                                public_key: node.public_key,
+                                rippled_version: node.rippled_version,
+                                uptime: humanizeUptime(node.uptime),
+                                securityScore: node.trustScore
+                            }))}
                             step={10}
                             size='large'
                             // onSearch={this.highlightInList}
