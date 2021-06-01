@@ -1,6 +1,7 @@
 import { Grommet, Header, Grid, Box, Heading } from "grommet";
 import { Component } from "react";
-import ValidatorPageNav from './ValidatorPageNav';
+import ValidatorPageNav, { ValidatorPageNavProps } from './ValidatorPageNav';
+import { History } from 'history';
 
 
 var SETUP = {
@@ -14,7 +15,11 @@ var COLORS = {
     nav: "#1a1a1a"
 }
 
-export default class ValidatorPageMain extends Component {
+export type ValidatorPageMainProps = {
+    history: History;
+}
+
+export default class ValidatorPageMain extends Component<ValidatorPageMainProps> {
 
 
 
@@ -22,7 +27,7 @@ export default class ValidatorPageMain extends Component {
         return(
             <Grommet style={{height: '100%', width: '100%'}}>
                 <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
-                    <ValidatorPageNav />
+                    <ValidatorPageNav history={this.props.history}/>
                 </Header>
 
                 <div className='ValidatorPageMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>

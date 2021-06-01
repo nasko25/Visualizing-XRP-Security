@@ -2,8 +2,18 @@ import { Component } from "react";
 import { Grid, Box, Heading, Text } from 'grommet';
 import Button from 'react-bootstrap/Button';
 import { Link } from "react-router-dom";
+import { History } from 'history';
 
-export default class ValidatorPageNav extends Component {
+export type ValidatorPageNavProps = {
+    history: History
+}
+
+export default class ValidatorPageNav extends Component<ValidatorPageNavProps> {
+
+    constructor(props: ValidatorPageNavProps) {
+        super(props);
+    }
+
     render() {
         return (
             <Grid
@@ -26,10 +36,10 @@ export default class ValidatorPageNav extends Component {
                     margin="2%">
                     <Button
                         variant="dark"
-                        style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                        <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                            <Text contentEditable="false" size="large" weight="bold">Stock</Text>
-                        </Link>
+                        style={{ width: "80%", height: "80%", alignSelf: "center" }}
+                        onClick={() => this.props.history.push("/")}
+                        >
+                        <Text contentEditable="false" size="large" weight="bold">Stock</Text>
                     </Button>
                 </Box>
 
@@ -41,10 +51,10 @@ export default class ValidatorPageNav extends Component {
                     margin="2%">
                     <Button
                         variant="dark"
-                        style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                        <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                            <Text contentEditable="false" size="large" weight="bold">About</Text>
-                        </Link>
+                        style={{ width: "80%", height: "80%", alignSelf: "center" }} 
+                        onClick={() => this.props.history.push("/about")}
+                        >
+                        <Text contentEditable="false" size="large" weight="bold">About</Text>
                     </Button>
                 </Box>
             </Grid>
