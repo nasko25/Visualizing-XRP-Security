@@ -73,6 +73,11 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
     return send_insert_request(insert_sa_query);
 }
 
+export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
+    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ;'
+    return send_insert_request_vals(insert_sa_query, security_assessments);
+}
+
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
     Logger.info("adding "+ node.ports +
     ', protocols = ' + node.protocols +
