@@ -74,10 +74,14 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
 }
 
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
-    const insert_ports_query = 'UPDATE node SET ports = ' + node.ports +
-        ', protocols = ' + node.protocols +
-        ' where public_key = ' + node.public_key + ';';
-    return send_insert_request(insert_ports_query);
+    Logger.info("adding "+ node.ports +
+    ', protocols = ' + node.protocols +
+    ' where public_key = ' + node.public_key + ';')
+    if(node.protocols=="") node.protocols="\'\'"
+    if(node.ports=="") node.ports="\'\'"
+    const insert_ports_query = 'UPDATE node SET ports = ?, protocols = ? where public_key = ?;';
+    const vals: string[] = [node.ports, node.protocols, node.public_key];
+    return send_insert_request_vals(insert_ports_query, vals);
 }
 
 export function getAllNodes(): Promise<Node[]> {
@@ -106,12 +110,12 @@ export function getAllSecurityAssessments(): Promise<SecurityAssessment[]> {
 
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(): Promise<NodePorts[]> {
-    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ports IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 
 export function getAllNodesForPortScan(): Promise<NodePorts[]> {
-    var get_nodes_non_null = 'SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ip IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 

@@ -26,8 +26,8 @@ if(process.argv[2]=="crawler"){
         console.log(`PortScanner exited with the exception: ${e}.`);
     });
 }else if(process.argv[2]=="validator"){
-    Logger.info("VALIDATOR STARTED 29")
-    start_validator_identification();
+    // Logger.info("VALIDATOR STARTED 29")
+    // start_validator_identification();
 }else{
     //Preparations for a for bomb:
     var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);

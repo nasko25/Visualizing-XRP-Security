@@ -11,7 +11,7 @@ import {
 
 
 //How aggressive is our Short Scan
-const T_LEVEL_SHORT: number = 2;
+const T_LEVEL_SHORT: number = 3;
 
 //How aggressive is our Long Scan
 const T_LEVEL_LONG: number = 4;
@@ -29,7 +29,7 @@ const DAYS_BETWEEN_SHORT_SCANS: number = 2;
 const MINUTES_BETWEEN_LONG_SCANS: number = 10;
 
 //When do we timeout on a short scan
-const TIMEOUT_SHORT_SCAN: string = "20m";
+const TIMEOUT_SHORT_SCAN: string = "10m";
 
 //When do we timeout on a long scan
 const TIMEOUT_LONG_SCAN: string = "24h";
@@ -117,7 +117,9 @@ class PortScan {
     //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
     normaliseIP(ip: string){
         if(ip.startsWith("::ffff:")){
-            ip.slice(7);
+            Logger.info("haha")
+            ip=ip.substring(7);
+            console.log(ip)
         }
         return ip;
     }
@@ -318,6 +320,7 @@ class PortScan {
                     ports: outPorts,
                     protocols: outProtocols,
                 };
+                Logger.info("putting in "+outPorts+" and "+outProtocols+" for "+listOfNodes[ip].ip)
                 dbCon.insertPorts(putin).catch((err: Error) => {
                     Logger.error(err.message);
                 });
