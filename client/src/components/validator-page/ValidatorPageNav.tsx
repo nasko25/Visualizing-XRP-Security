@@ -26,7 +26,7 @@ export default class ValidatorPageNav extends Component<ValidatorPageNavProps> {
                         { name: 'button_about', start: [2,0], end: [2,0]}
                     ]}
             >
-                <Heading margin="2%" gridArea="title" alignSelf="center" size="small" color='#f8f8f8'>CISELab</Heading>
+                <Heading margin="2%" gridArea="title" alignSelf="center" size="small" color='#f8f8f8'>Validator Page</Heading>
 
                 <Box
                     height="80%"
