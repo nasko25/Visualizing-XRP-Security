@@ -271,7 +271,11 @@ export default function setupClientAPIEndpoints(app: Express) {
         const public_key: string = String(req.query.public_key);
         if (is_key_present(public_key, res)) {
             getNode(public_key).then((results) => {
-                res.send(JSON.stringify(results));
+                if(results.length === 0){
+                    res.status(404).send();
+                } else {
+                    res.send(JSON.stringify(results));
+                }
             }).catch((err: Error) => {
                 Logger.error(err.message);
                 res.status(400).send(err.message);

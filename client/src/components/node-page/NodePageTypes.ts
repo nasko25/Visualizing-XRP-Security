@@ -1,16 +1,21 @@
+import { History, LocationDescriptor } from 'history';
+
 // The properties that should be passed in JSX to this component
 export type NodePageProps = {
-    node_info: NodeInfo,
-    key: string
+    history: History
 }
 
 // How the state should look like
 export type NodePageState = {
     public_key: string,
-    node_info: NodeInfo,
-    speed: number,
-    displayButton: boolean,
-    displayGreen: boolean
+    peers: Peer[],
+    trust_score: number,
+    IP: string,
+    rippled_version: string,
+    ports: Port[],
+    historical_scores: HistoricalScore[],
+    uptime: number
+    location: LocationDescriptor
 }
 
 // How the info should be passed around

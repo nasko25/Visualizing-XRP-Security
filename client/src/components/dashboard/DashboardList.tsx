@@ -1,13 +1,12 @@
 import { Component } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
-import Button from 'react-bootstrap/Button'
-import { Link } from "react-router-dom";
+import { History } from 'history';
 
 export type DashboardListProps = {
     arrNodesData: Array<any>,
     selected: string,
-    history: any
+    history: History
 }
 
 export default class DashboardList extends Component<DashboardListProps> {
@@ -72,7 +71,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                             // onSearch={this.highlightInList}
                             onClickRow={({datum}) => {
                                 console.log(datum.public_key);
-                                this.props.history.push("/node");
+                                this.props.history.push("/node?public_key=" + datum.public_key);
                             }}
                             pad= {{
                                 horizontal: "medium",
