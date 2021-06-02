@@ -4,6 +4,7 @@ import { Circle, CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } fr
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
 import Button from 'react-bootstrap/Button'
+import { List } from 'grommet';
 
 // TODO Define props.data type
 // Replace JSX.Element
@@ -67,11 +68,15 @@ class TopMap extends React.Component<Props, TopMapState> {
     onClusterClick = (a: any) => {
         var children = a.layer.getAllChildMarkers();
         var lis = [];
+        var keys: Object[] = [];
 
         for (var child in children) {
-            lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+            // lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+            keys.push({pub_key: children[child]._popup.options.children});
         }
-        var contentForCluster = <ul>{lis}</ul>
+        // var contentForCluster = <ul>{lis}</ul>
+
+        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data:any) => {this.props.handleChange(data.item.pub_key)}}/>
 
         // Create the new popup
         var popup = null;
