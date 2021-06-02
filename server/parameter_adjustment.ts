@@ -1,4 +1,4 @@
-var fitForThese = [100,98,93,88,80,71,59, 45, 27, 7, -18, -48];
+var fitForThese = [100,82,48,24,0,-20,-30, -50];
 var min_total = 100000;
 var x=0;
 var y=0;

@@ -18,8 +18,8 @@ export function power_function(x: number, a?: number, b?: number, c?: number, cu
 
 export function quadratic_function(x: number, a?: number, b?: number, c?: number, cutoff?: number, decimals?: number){
     if(cutoff==undefined) cutoff=def_cutoff;
-    if(a==undefined) a=-0.002;
-    if(b==undefined) b=0;
+    if(a==undefined) a=-0.005;
+    if(b==undefined) b=-0.2;
     if(c==undefined) c=1;
     if(decimals==undefined) decimals=def_decimals;
     

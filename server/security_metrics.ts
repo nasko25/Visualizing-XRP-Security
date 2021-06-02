@@ -52,6 +52,10 @@ export default class SecurityMetric {
         return evalFunction(index,a,b,c,-1000,2);
     }
 
+    rateBasedOnOpenPorts(ports:number){
+        ports = Math.max(0, ports-2);
+        return formulas.quadratic_function(ports);
+    }
     //Rate Limit 60 requests per hour so be careful!
     checkForUpdate() {
         axios.get(`https://api.github.com/repos/ripple/rippled/releases`,
