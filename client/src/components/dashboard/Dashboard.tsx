@@ -19,7 +19,8 @@ var SETUP = {
 
 var COLORS = {
     main: "#383838",
-    button: "#"
+    button: "#212529",
+    nav: "#1a1a1a"
 }
 
 export default class Dashboard extends Component<DashboardProps> {
@@ -35,12 +36,13 @@ export default class Dashboard extends Component<DashboardProps> {
     timer = undefined;
     state = {
         nodes: [],
-        selected: ""
+        selected: "",
+        loaded: false,
     }
 
     constructor(props: any) {
         super(props);
-        this.state = { nodes: [], selected: "" };
+        this.state = { nodes: [], selected: "", loaded: false };
 
         this.update_state = this.update_state.bind(this);
         this.selectNode = this.selectNode.bind(this);
@@ -67,6 +69,8 @@ export default class Dashboard extends Component<DashboardProps> {
         this.getData().then(response => {
             console.log(response.data);
             this.setState({ nodes: response.data });
+        }).then(response => {
+            this.setState({ loaded: true })
         })
         console.log("Node info updated...");
         setTimeout(this.update_state, 300000);
@@ -103,8 +107,8 @@ export default class Dashboard extends Component<DashboardProps> {
         return (
             // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
-                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: "#1a1a1a"}}>
-                    <DashboardNavbar />
+                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
+                    <DashboardNavbar history={this.props.history}/>
                 </Header>
                 <div className='DashboardMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
                     <Grid
@@ -119,10 +123,26 @@ export default class Dashboard extends Component<DashboardProps> {
                         style={{width: '100%', height: '100%'}}
                     >
                         <Box gridArea="map" margin={{top: "2%", left: "2%", right: "1%", bottom: "1%"}} round='1%' background={COLORS.main} justify='center' align='center'>
-                            <TopMap data={this.state.nodes} handleChange={this.selectNode} />
+                            { this.state.loaded ? (<TopMap data={this.state.nodes} handleChange={this.selectNode} />) : 
+                            (<div id="loader" style={{ position: "absolute", top: "40%" }} >
+                                <img width="10%" 
+                                    style={{ animation: `spin 3s linear infinite`,
+                                    marginLeft: "auto",
+                                    marginRight: "auto"}} 
+                                    src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
+                                ></img>
+                            </div>)}
                         </Box>
                         <Box gridArea="table" background={COLORS.main} margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} round='1%' justify='center' align='center'>
-                            <DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />
+                            { this.state.loaded ? (<DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />) : 
+                            (<div id="loader" style={{ position: "absolute", top: "40%" }} >
+                                <img width="10%" 
+                                    style={{ animation: `spin 3s linear infinite`,
+                                    marginLeft: "auto",
+                                    marginRight: "auto"}} 
+                                    src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
+                                ></img>
+                            </div>)}
                         </Box>
                         <Box gridArea="info" background={COLORS.main} margin={{top: "1%", left: "2%", right: "1%", bottom: "1%"}} round='1%' justify='center' align='center'>
                             <Heading size="100%" margin="2%"> General Information </Heading>
