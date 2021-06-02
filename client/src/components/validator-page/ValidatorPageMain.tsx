@@ -3,6 +3,7 @@ import { Component } from "react";
 import ValidatorPageNav, { ValidatorPageNavProps } from './ValidatorPageNav';
 import { History } from 'history';
 import { HistoricalScore } from './../node-page/NodePageTypes';
+import axios from 'axios';
 
 
 var SETUP = {
@@ -84,6 +85,16 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         );
     };
 
+
+    // TODO
+    // Update setting state according to response once endpoint it implemented
+    
+    updateList(public_key: string) {
+        return axios.get("http://localhost:8080/validator/info?public_key=" + public_key).then( (response) => {
+            this.setState({info: response.data});
+        });
+    }
+
     render() {
         return(
             <Grommet style={{height: '100%', width: '100%'}}>
@@ -154,10 +165,10 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                             ]}
                             step={10}
                             size='large'
-                            // onClickRow={({datum}) => {
-                            //     console.log(datum.public_key);
-                            //     this.props.history.push("/node?public_key=" + datum.public_key);
-                            // }}
+                            onClickRow={({datum}) => {
+                                console.log(datum.public_key);
+                                // this.updateList(datum.public_key);
+                            }}
                             pad= {{
                                 horizontal: "medium",
                                 vertical: "xsmall"
