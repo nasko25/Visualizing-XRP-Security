@@ -99,7 +99,7 @@ if(process.argv[2]=="crawler"){
     // });
     
     // Add the Client API Endpoints to the server
-    //setupClientAPIEndpoints(app);
+    setupClientAPIEndpoints(app);
     
     app.listen(PORT, () => {
         console.log(`The application is listening on port ${PORT}!`);
