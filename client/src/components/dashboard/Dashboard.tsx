@@ -108,7 +108,7 @@ export default class Dashboard extends Component<DashboardProps> {
             // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
                 <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
-                    <DashboardNavbar />
+                    <DashboardNavbar history={this.props.history}/>
                 </Header>
                 <div className='DashboardMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
                     <Grid
