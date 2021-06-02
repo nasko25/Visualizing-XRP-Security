@@ -1,10 +1,11 @@
-import { Node, NodePortsNull } from './models/node'
+import { Node, NodePortsNull, NodeIpKeyPublisher } from './models/node'
 import { Node as CrawlerNode } from "../crawl"
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import { ValidatorAssessment } from './models/validator_assessment';
 import Logger from '../logger'
+import e from 'express'
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -15,23 +16,25 @@ var connection = mysql.createConnection({
     database: 'db'
 })
 
-export function insertNode(node: CrawlerNode): Promise<void> {
-    var insert_node_query: string = 'INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+export const insertNode = (node: CrawlerNode): Promise<void> => {
+    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
+        node.port + '\', \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
-        node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;';
+        node.uptime + '\', \'' +
+        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;';
 
     return send_insert_request(insert_node_query);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, rippled_version, public_key, uptime) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime;";
-    var vals = nodes.map(node => [node.ip, node.version, node.pubkey, node.uptime]);
+    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
+    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, node.publisher]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
-    return send_insert_request(insert_nodes_query);
+    return send_insert_request_vals(insert_nodes_query, vals);
 }
 
 // insert longitude and latitude for a given ip address
@@ -48,10 +51,10 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
     }).concat(ip);
 
     // connection.query(query, vals, create_query_callback_no_return(callback));
-    return send_insert_request(insert_location_query);
+    return send_insert_request_vals(insert_location_query, vals);
 }
 
-export function insertConnection(start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> {
+export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> => {
     var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +
         start_node.pubkey + '\', \'' +
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
@@ -140,22 +143,6 @@ export function getNode(public_key: string): Promise<Node[]> {
     return send_select_request<Node>(get_node);
 }
 
-// function create_query_callback<T>(callback: (err: Error, res: T[]) => void): (err: Error, results: JSON[], fields: JSON) => void {
-//     return function query_callback(err: Error, results: JSON[], fields: JSON) {
-//         if (err) {
-//             return callback(err, []);
-//         }
-//         let res: T[] = JSON.parse(JSON.stringify(results));
-//         return callback(err, res);
-//     };
-// }
-
-// function create_query_callback_no_return(callback: (err: Error) => void): (err: Error, results: any, fields: any) => void {
-//     return function query_callback(err: Error, results: JSON[], fields: JSON) {
-//         return callback(err);
-//     };
-// }
-
 function send_select_request<T>(request: string): Promise<T[]> {
     return new Promise(function (resolve, reject) {
         connection.query(
@@ -184,4 +171,73 @@ function send_insert_request(request: string): Promise<void> {
             }
         )
     })
+}
+
+function send_insert_request_vals(request: string, vals: any): Promise<void> {
+    return new Promise(function (resolve, reject) {
+        connection.query(
+            request,
+            vals,
+            function (err: Error, results: JSON[], fields: JSON) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            }
+        )
+    })
+}
+
+export function getIpAddresses() {
+    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
+    return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
+}
+
+export function insertValidators(keys: Map<string, null>) {
+    let query = "INSERT IGNORE INTO validator VALUES ";
+    let count = keys.size;
+
+    if (count === 0) {
+        return new Promise((res, rej) => rej(new Error("validator list was empty")));
+    }
+
+    let currentCount = 0;
+    keys.forEach((val, key) => {
+        query = query + `("${key}")` ;
+        currentCount++;
+        if (currentCount !== count) {
+            query += ",";
+        }
+        else query += ";";
+    });
+    return send_insert_request(query);
+}
+
+
+export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
+    let query = "INSERT IGNORE INTO node_validator VALUES ";
+    let nEntries = 0;
+    let count = 0;
+    cons.forEach(vals => {
+        nEntries += vals.length;
+    });
+
+    if (nEntries === 0) {
+        return new Promise((res, rej) => rej(new Error("node-validator list was empty")));
+    }
+
+    cons.forEach((vals, node) => {
+        for (let valKey of vals) {
+            query += `("${node}", "${valKey}")`;
+            count++;
+            if (nEntries === count) {
+                query += ";"
+            } else {
+                query += ","
+            }
+        }
+    });
+
+    return send_insert_request(query);
 }

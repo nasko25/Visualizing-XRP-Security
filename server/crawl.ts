@@ -19,6 +19,7 @@ interface Node {
     version: string;
     pubkey: string;
     uptime: Number;
+    publisher: string
 }
 
 // Wait for at most 3 seconds when making an HTTP request to obtain a node's peers
@@ -50,7 +51,7 @@ class Crawler {
             console.error("The list of servers cannot be empty.");
             throw "EmptyArrayException";
         }
-        // TODO save all valid servers and use the first that responds when starting the crawl
+        // save all valid servers and use the first that responds when starting the crawl
 
         // Try to use every server in the list of ripple servers, and use the first one that does not throw an error
         for (let server of rippleServers) {
@@ -72,7 +73,7 @@ class Crawler {
 
     }
 
-    crawl() {
+    crawl(): Promise<any> {
         // Start from first node, which is chosen from the config/ripple_servers.list
         // Perform a BFS by getting peers from each node
 
@@ -91,22 +92,25 @@ class Crawler {
         }
         const DEFAULT_PEER_PORT = this.DEFAULT_PEER_PORT;
 
-        // Get the peers of the initial stock node
-        axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
+        // Get the peers of the initial stock node and return the promise from axios
+        return axios.get(rippleStartingServer, {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
             .then( async function ( response )  {
 
                 // Keep track of already visited nodes (with a list of their IPs)
                 let visited: string[] = [rippleStartingServerIP];
+
+                // get the ssl certificate for the server
                 // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
 
                 // Initialize initial node
                 let node: Node = {
                                     ip: rippleStartingServerIP,
-                                    port: DEFAULT_PEER_PORT, 
+                                    port: DEFAULT_PEER_PORT,
                                     version: "rippled-" + response.data.server.build_version,
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
-                                    uptime: response.data.server.uptime
+                                    uptime: response.data.server.uptime,
+                                    publisher: response.data.unl.publisher_lists[0].pubkey_publisher
                                  };
 
                 // insert the initial node that was given in config/ripple_servers.list
@@ -139,7 +143,7 @@ class Crawler {
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip)) {
                                         visited.push(peer.ip);
-                                        let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime, publisher: response.data.unl.publisher_lists[0].pubkey_publisher};
                                         ToBeVisited.push(node);
                                         insertNode(node).catch((err: Error) => {
                                             Logger.error(err.message);
@@ -151,7 +155,7 @@ class Crawler {
                                         if (Nodes.has(normalizedPublicKey)) {
                                             continue;
                                         } else {
-                                            let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime};
+                                            let node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizedPublicKey, uptime: peer.uptime, publisher: response.data.unl.publisher_lists[0].pubkey_publisher};
                                             Nodes.set(normalizedPublicKey, node);
                                             insertNode(node).catch((err: Error) => {
                                                 Logger.error(err.message);
@@ -163,7 +167,7 @@ class Crawler {
                                     if (n !== undefined) {
                                         // insert a connection between n and peer in the database
                                         // the connection is now bidirectional
-                                        var node_to_add: Node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime};
+                                        var node_to_add: Node = <Node>{ip: peer.ip, port: ((peer.port === undefined) ? DEFAULT_PEER_PORT : peer.port), version: peer.version, pubkey: normalizePublicKey(peer.public_key), uptime: peer.uptime, publisher: response.data.unl.publisher_lists[0].pubkey_publisher};
                                         insertConnection(n, node_to_add).catch((err: Error) => {
                                             Logger.error(err.message);
                                         });
@@ -208,4 +212,4 @@ class Crawler {
 
 
 export default Crawler;
-export { Node };
+export { Node, normalizePublicKey };
