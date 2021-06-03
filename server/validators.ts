@@ -15,7 +15,7 @@ import https from "https";
  * JSON format of result returned from /vl/{publisher-key}
  *
  * */
-interface Validator_List_Result {
+export interface Validator_List_Result {
     manifest: string;
     blob: string;
     public_key: string;
@@ -28,13 +28,13 @@ interface Validator_List_Result {
  * JSON format of decoded blob field of @interface Validator_List_Result
  *
  * */
-interface Validator_Data {
+export interface Validator_Data {
     sequence: number;
     expiration: number;
     validators: Validator[];
 }
 
-interface Validator {
+export interface Validator {
     validation_public_key: string;
     manifest: string;
 }

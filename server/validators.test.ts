@@ -1,5 +1,16 @@
-import ValidatorIdentifier from './validators'
+import ValidatorIdentifier, { Validator_List_Result, Validator, Validator_Data } from './validators'
+import axios from 'axios';
+import { encode } from 'js-base64';
 
+
+// prepare axios for mocking
+jest.mock("axios");
+const axiosMock = axios as jest.Mocked<typeof axios>;
+
+
+afterEach(() => {
+    jest.clearAllMocks();
+});
 
 test("test validator identifier: empty constructor", () => {
 
@@ -18,5 +29,58 @@ test("test validator identifier: constructor with number", () => {
 
     expect(valIden.validatorBatchCount).toEqual(number);
 
+
+})
+
+test("test: extractValidatorKeys() returns correctly decoded data non-empty list", () => {
+
+    // the public keys
+    let pubKeys = ["pubkey1", "pubkey2", "pubkey3"];
+
+    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
+    let valData: Validator_Data = {
+        validators: validators,
+        expiration: 0,
+        sequence: 1
+    }
+
+    let valListData: Validator_List_Result = {
+        manifest: "manifest",
+        version: 2,
+        public_key: "ddd",
+        signature: "signature",
+        blob: encode(JSON.stringify(valData))
+    };
+
+    let valIden = new ValidatorIdentifier();
+
+    expect(valIden.extractValidatorKeys(valListData)).toEqual(pubKeys);
+
+})
+
+
+test("test: extractValidatorKeys() returns correctly decoded data empty kist", () => {
+
+    // the public keys
+    let pubKeys = <string[]>[];
+
+    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
+    let valData: Validator_Data = {
+        validators: validators,
+        expiration: 0,
+        sequence: 1
+    }
+
+    let valListData: Validator_List_Result = {
+        manifest: "manifest",
+        version: 2,
+        public_key: "ddd",
+        signature: "signature",
+        blob: encode(JSON.stringify(valData))
+    };
+
+    let valIden = new ValidatorIdentifier();
+
+    expect(valIden.extractValidatorKeys(valListData)).toEqual(pubKeys);
 
 })
