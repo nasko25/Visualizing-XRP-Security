@@ -276,7 +276,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             margin="2%">
                             <Button
                                 variant="dark"
-                                onClick={() => this.props.history.push("/")}
+                                onClick={() => this.props.history.push("/validators")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text size="large" weight="bold">Validators</Text>
                             </Button>
@@ -290,7 +290,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             margin="2%">
                             <Button
                                 variant="dark"
-                                onClick={() => this.props.history.push("/")}
+                                onClick={() => this.props.history.push("/about")}
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text size="large" weight="bold">About</Text>
                             </Button>
