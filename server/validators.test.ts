@@ -11,6 +11,26 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
+function prepareValidatorResponse(pubKeys: string[]) : Validator_List_Result {
+
+    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
+    let valData: Validator_Data = {
+        validators: validators,
+        expiration: 0,
+        sequence: 1
+    }
+
+    let valListData: Validator_List_Result = {
+        manifest: "manifest",
+        version: 2,
+        public_key: "ddd",
+        signature: "signature",
+        blob: encode(JSON.stringify(valData))
+    };
+
+    return valListData;
+}
+
 test("test validator identifier: empty constructor", () => {
 
     let valIden : ValidatorIdentifier = new ValidatorIdentifier();
@@ -33,23 +53,8 @@ test("test validator identifier: constructor with number", () => {
 
 test("test: extractValidatorKeys() returns correctly decoded data non-empty list", () => {
 
-    // the public keys
-    let pubKeys = ["pubkey1", "pubkey2", "pubkey3"];
-
-    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
-    let valData: Validator_Data = {
-        validators: validators,
-        expiration: 0,
-        sequence: 1
-    }
-
-    let valListData: Validator_List_Result = {
-        manifest: "manifest",
-        version: 2,
-        public_key: "ddd",
-        signature: "signature",
-        blob: encode(JSON.stringify(valData))
-    };
+    let pubKeys = ["key1", "key2", "key3"];
+    let valListData = prepareValidatorResponse(pubKeys);
 
     let valIden = new ValidatorIdentifier();
 
@@ -60,23 +65,8 @@ test("test: extractValidatorKeys() returns correctly decoded data non-empty list
 
 test("test: extractValidatorKeys() returns correctly decoded data empty kist", () => {
 
-    // the public keys
     let pubKeys = <string[]>[];
-
-    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
-    let valData: Validator_Data = {
-        validators: validators,
-        expiration: 0,
-        sequence: 1
-    }
-
-    let valListData: Validator_List_Result = {
-        manifest: "manifest",
-        version: 2,
-        public_key: "ddd",
-        signature: "signature",
-        blob: encode(JSON.stringify(valData))
-    };
+    let valListData = prepareValidatorResponse(pubKeys);
 
     let valIden = new ValidatorIdentifier();
 
@@ -89,21 +79,7 @@ test("test: promiseWrapper() successfully returns axios response", async () => {
 
     // the public keys
     let pubKeys = ["pubkey1", "pubkey2", "pubkey3"];
-
-    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
-    let valData: Validator_Data = {
-        validators: validators,
-        expiration: 0,
-        sequence: 1
-    }
-
-    let valListData: Validator_List_Result = {
-        manifest: "manifest",
-        version: 2,
-        public_key: "ddd",
-        signature: "signature",
-        blob: encode(JSON.stringify(valData))
-    };
+    let valListData = prepareValidatorResponse(pubKeys);
 
     let valIden = new ValidatorIdentifier();
 
