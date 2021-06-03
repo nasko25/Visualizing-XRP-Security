@@ -23,15 +23,15 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
         node.uptime + '\', \'' +
-        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;';
+        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime;';
 
     return send_insert_request(insert_node_query);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
-    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, node.publisher]);
+    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULL(new.publisher, \'undefined\';";
+    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, (node.publisher == undefined ? null : node.publisher)]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_nodes_query, vals);
@@ -53,6 +53,13 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
     // connection.query(query, vals, create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_location_query, vals);
 }
+
+export const updateVersionUptimeAndPublisher = (node: CrawlerNode) => {
+    const update_node_query = "UPDATE node SET rippled_version = ?, uptime = ?, publisher = ? WHERE public_key = ?";
+    const vals = [node.version, node.uptime, node.publisher, node.pubkey];
+
+    return send_insert_request_vals(update_node_query, vals);
+};
 
 export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> => {
     var insert_connection_query: string = 'INSERT INTO connection (start_node, end_node) VALUES (\'' +

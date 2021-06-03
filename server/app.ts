@@ -30,14 +30,14 @@ if(process.argv[2]=="crawler"){
     start_validator_identification();
 }else{
     //Preparations for a for bomb:
-    var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);
-    portScanner.on('close', (code) => {
-        console.log(`portscanner process exited with code ${code}`);
-    });
-    var validator = exec.fork(__dirname+"/app.js",["validator"]);
-    portScanner.on('close', (code) => {
-        console.log(`validator process exited with code ${code}`);
-    });
+    //var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);
+    //portScanner.on('close', (code) => {
+    //    console.log(`portscanner process exited with code ${code}`);
+    //});
+    //var validator = exec.fork(__dirname+"/app.js",["validator"]);
+    //portScanner.on('close', (code) => {
+    //    console.log(`validator process exited with code ${code}`);
+    //});
     var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
     crawler.on('close', (code) => {
         console.log(`crawler process exited with code ${code}`);
