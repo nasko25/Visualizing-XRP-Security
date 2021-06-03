@@ -6,7 +6,6 @@ import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
-import { Duration } from 'luxon';
 import { humanizeUptime } from '../../helper';
 
 
@@ -47,6 +46,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             historical_scores: [],
             uptime: 0
         }
+
+        console.log(this.props.history);
 
         this.searchRef = React.createRef();
 
@@ -110,6 +111,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     queryAPI_peers(public_key: string) {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
+            console.log(res);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
@@ -129,6 +131,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
             var info: NodeInfoDB = res.data[0];
             var ports: Port[] = [];
+            console.log(res);
             if (info.ports) {
                 for (var i = 0; i < info.ports.length; i++) {
                     ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })

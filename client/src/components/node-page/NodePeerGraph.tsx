@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
-import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
+import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
+import { DataSet } from 'vis-data';
 import "./NodePage.css";
 import { Peer } from "./NodePageTypes";
 import { unmountComponentAtNode } from "react-dom";
