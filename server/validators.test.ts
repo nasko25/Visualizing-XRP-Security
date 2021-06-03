@@ -93,3 +93,18 @@ test("test: get_node_validator_list() successfully returns axios response", asyn
     })
 
 })
+
+test("test: get_node_validator_list() returns empty array after error", async () => {
+
+    let valIden = new ValidatorIdentifier();
+
+    axiosMock.get.mockRejectedValueOnce(new Error());
+
+    let public_key: string = "test_key";
+
+    valIden.get_node_validator_list("ip", "publisher", public_key).then((res) => {
+        expect(res[0]).toEqual(public_key)
+        expect(res[1]).toEqual([])
+    })
+
+})
