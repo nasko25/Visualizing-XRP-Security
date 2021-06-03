@@ -75,7 +75,7 @@ test("test: extractValidatorKeys() returns correctly decoded data empty kist", (
 })
 
 
-test("test: promiseWrapper() successfully returns axios response", async () => {
+test("test: get_node_validator_list() successfully returns axios response", async () => {
 
     // the public keys
     let pubKeys = ["pubkey1", "pubkey2", "pubkey3"];
@@ -87,7 +87,7 @@ test("test: promiseWrapper() successfully returns axios response", async () => {
 
     let public_key: string = "test_key";
 
-    valIden.promiseWrapper("ip", "publisher", public_key).then((res) => {
+    valIden.get_node_validator_list("ip", "publisher", public_key).then((res) => {
         expect(res[0]).toEqual(public_key)
         expect(res[1]).toEqual(pubKeys)
     })

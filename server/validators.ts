@@ -86,7 +86,7 @@ export default class ValidatorIdentifier {
             .all(
                 // Create an array of Promise objects for all requests
                 splice.map((node) =>
-                    this.promiseWrapper(
+                    this.get_node_validator_list(
                         node.IP,
                         node.publisher,
                         node.public_key
@@ -167,7 +167,7 @@ export default class ValidatorIdentifier {
 
     // A method that calls get_validator_list and makes sure a Promise is returned that does not reject
     // This is to avoid batch processing to fail because only one of the requests failed.
-    promiseWrapper(
+    get_node_validator_list(
         ip: string,
         publisher: string,
         public_key: string
