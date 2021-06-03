@@ -1,11 +1,20 @@
 import ValidatorIdentifier, { Validator_List_Result, Validator, Validator_Data } from './validators'
 import axios, {AxiosResponse} from 'axios';
 import { encode } from 'js-base64';
+import { getIpAddresses, insertNodeValidatorConnections, insertValidators } from './db_connection/db_helper';
 
 
 // prepare axios for mocking
 jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>;
+
+import Logger from './logger';
+jest.mock("./logger")
+
+jest.mock('./db_connection/db_helper');
+const getIpAddressesMock = getIpAddresses as jest.MockedFunction<typeof getIpAddresses>
+const insertValidatorsMock = insertValidators as jest.MockedFunction<typeof insertValidators>
+const insertNodeValidatorConnectionsMock = insertNodeValidatorConnections as jest.MockedFunction<typeof insertNodeValidatorConnections>
 
 afterEach(() => {
     jest.clearAllMocks();
