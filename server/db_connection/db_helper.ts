@@ -1,5 +1,6 @@
 import { Node, NodePortsNull, NodeIpKeyPublisher } from './models/node'
-import { Node as CrawlerNode } from "../crawl"
+import { Node as CrawlerNode } from '../crawl';
+import { Validator } from '../validators';
 import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
@@ -201,24 +202,16 @@ export function getIpAddresses() {
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
-export function insertValidators(keys: Map<string, null>) {
-    let query = "INSERT IGNORE INTO validator VALUES ";
-    let count = keys.size;
+export function insertValidators(validators: Validator[]) {
+    const query = "INSERT INTO validator (public_key, unl, missed_ledgers) VALUES ? AS new ON DUPLICATE KEY UPDATE unl=new.unl, missed_ledgers=new.missed_ledgers;";
+    const vals = validators.map(validator => [validator.public_key, validator.unl, validator.missed_ledgers]);
 
-    if (count === 0) {
-        return new Promise((res, rej) => rej(new Error("validator list was empty")));
-    }
+    return send_insert_request_vals(query, vals);
+}
 
-    let currentCount = 0;
-    keys.forEach((val, key) => {
-        query = query + `("${key}")` ;
-        currentCount++;
-        if (currentCount !== count) {
-            query += ",";
-        }
-        else query += ";";
-    });
-    return send_insert_request(query);
+export function getValidators() {
+    const query = "SELECT * FROM validator";
+    return send_select_request<Validator>(query);
 }
 
 

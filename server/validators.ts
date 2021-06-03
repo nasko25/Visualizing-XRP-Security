@@ -34,9 +34,10 @@ interface Validator_Data {
     validators: Validator[];
 }
 
-interface Validator {
-    validation_public_key: string;
-    manifest: string;
+export interface Validator {
+    public_key: string,
+    unl?: boolean,
+    missed_ledgers?: number
 }
 
 const agent = new https.Agent({
@@ -44,12 +45,12 @@ const agent = new https.Agent({
 });
 
 export default class ValidatorIdentifier {
-    validators: Map<string, null> = new Map();
+    validators_set: Set<string> = new Set();
     node_validators: Map<string, string[]> = new Map();
     validatorBatchCount: number = 10;
-    
+
     constructor(validatorBatchCount?: number) {
-        
+
         if(validatorBatchCount) {
             this.validatorBatchCount = validatorBatchCount;
         }
@@ -108,7 +109,7 @@ export default class ValidatorIdentifier {
                             this.node_validators.set(key, vals);
 
                         vals.forEach((valKey) => {
-                            this.validators.set(valKey, null);
+                            this.validators_set.add(valKey);
                         });
                     });
 
@@ -117,7 +118,7 @@ export default class ValidatorIdentifier {
                     );
 
                     // Put in database
-                    insertValidators(this.validators)
+                    insertValidators(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}))
                         .then(() => {
                             Logger.info(
                                 "VI: Validators inserted successfully!"
@@ -135,7 +136,7 @@ export default class ValidatorIdentifier {
                                     );
                                 })
                                 .finally(() => {
-                                    this.validators.clear();
+                                    this.validators_set.clear();
                                     this.node_validators.clear();
                                     this.identify_validators_for_batch(nodes);
                                 });
@@ -145,7 +146,7 @@ export default class ValidatorIdentifier {
                                 "VI: Could not insert validators into database: " +
                                     err.message
                             );
-                            this.validators.clear();
+                            this.validators_set.clear();
                             this.node_validators.clear();
                             this.identify_validators_for_batch(nodes);
                         });
@@ -187,6 +188,6 @@ export default class ValidatorIdentifier {
         let decoded: Validator_Data = JSON.parse(decode(valData.blob));
 
         // Extract the list of validator keys
-        return decoded.validators.map((val) => val.validation_public_key);
+        return decoded.validators.map((val) => val.public_key);
     }
 }
