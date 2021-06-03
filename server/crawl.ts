@@ -123,9 +123,9 @@ class Crawler {
                     Logger.error(err.message);
                 });
 
-                // The use of map instead of an array saves us the work we have to do later when filtering duplicate public keys
-                // Later nodes will be stored in the database
+                // save all nodes in memory for quicker access and some computations
                 let Nodes = new Map<String, Node>();
+
                 // Keep track of what nodes need to be visited
                 let ToBeVisited = [node];
 
@@ -153,7 +153,9 @@ class Crawler {
                                     n.version = "rippled-" + response.data.server.build_version;
                                     n.uptime = response.data.server.uptime;
                                     n.publisher = response.data.unl.publisher_lists[0].pubkey_publisher;
-                                    //updateVersionUptimeAndPublisher(n);
+                                    updateVersionUptimeAndPublisher(n).catch((err: Error) => {
+                                        Logger.error(err.message);
+                                    });;
                                 }
                                 for (let peer of response.data.overlay.active) {
                                     if (peer.ip !== undefined && !visited.includes(peer.ip) &&

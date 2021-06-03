@@ -9,10 +9,11 @@ jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>;
 
 // mock the db helper
-import { insertNode, insertConnection } from './db_connection/db_helper';
+import { insertNode, insertConnection, updateVersionUptimeAndPublisher } from './db_connection/db_helper';
 jest.mock('./db_connection/db_helper');
 const insertNodeMock = insertNode as jest.MockedFunction<typeof insertNode>;
 const insertConnectionMock = insertConnection as jest.MockedFunction<typeof insertConnection>;
+const updateVersionUptimeAndPublisherMock = updateVersionUptimeAndPublisher as jest.MockedFunction<typeof updateVersionUptimeAndPublisher>;
 
 // the logger should be mocked to test the promise rejection of insertNode() and insertConnection()
 import Logger from './logger';
@@ -147,6 +148,7 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -164,6 +166,9 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     expect(insertNodeMock).toHaveBeenCalledWith(insertedNode);
 
     expect(insertConnectionMock).toHaveBeenCalledTimes(0);
+
+    // there are no visited peers that can be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(0);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     // only 1 node should have been visited, because it does not have any neighbors
@@ -254,6 +259,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     // call the actual code from "crawl.ts"
     await crawler.crawl();
@@ -287,6 +293,11 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     ];
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // the two nodes that are "visited" should have their version, uptime and publisher updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(2);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
 
     // since the connection only needs the public keys, some of the information about the ndoes will be missing
     // so the objects need to be changed a little
@@ -362,6 +373,10 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     // (that only 1 node has been visited, but both nodes have been saved)
     console.log = jest.fn();
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
+
     await new Crawler([startingServerIP]).crawl();
 
     const insertedNodes = [
@@ -392,6 +407,10 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     expect(insertNodeMock).toHaveBeenCalledTimes(2);
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // only the initial node should have been visited, so only it should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(1);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
 
     // a connection between the two nodes should be inserted in the database
     expect(insertConnectionMock).toHaveBeenCalledTimes(2);
@@ -458,7 +477,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
 
     // resolve the first axios request with the mocked startingServerResponse object,
     // and the second axios request gets the starting server's peer
-    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse);
+    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse).mockRejectedValue(new Error("Server not responding"));
 
     // mock console.log to assert it prints extected results
     // (that only 2 nodes have been visited, and both nodes have been saved)
@@ -467,6 +486,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -496,6 +516,10 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     expect(insertNodeMock).toHaveBeenCalledTimes(2);
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // only the initial node should have been visited, so only it should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(1);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
 
     // a connection between the two nodes should be inserted in the database
     expect(insertConnectionMock).toHaveBeenCalledTimes(2);
@@ -635,6 +659,7 @@ test("test crawl() for nodes with many peers", async () => {
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -718,6 +743,11 @@ test("test crawl() for nodes with many peers", async () => {
     expect(insertNodeMock).toHaveBeenNthCalledWith(6, insertedNodes[5]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(7, insertedNodes[6]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(8, insertedNodes[7]);
+
+    // the two visited nodes should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(2);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
 
     // a connection between the two nodes should be inserted in the database
     // since a connection will be inserted before the second node is visited, it should not yet have a publisher key
@@ -820,6 +850,8 @@ test("test crawl() if the database is unresponsive", async () => {
 
     insertNodeMock.mockRejectedValue(new Error("Database unresponsive."));
     insertConnectionMock.mockRejectedValue(new Error("Database unresponsive."));
+    updateVersionUptimeAndPublisherMock.mockRejectedValue(new Error("Database unresponsive."));
+
     // wait for the Promises that axios returns
     await crawler.crawl();
 
@@ -832,11 +864,14 @@ test("test crawl() if the database is unresponsive", async () => {
     // the 3 different instances on insertNode() should all have been called once
     expect(insertNodeMock).toHaveBeenCalledTimes(3);
 
+    // the two visited nodes should be updated
+    expect(updateVersionUptimeAndPublisher).toHaveBeenCalledTimes(2);
+
     // the 2 instances of insertConnection() should each have been called twice
     // (the initial node should have a bidirectional connection with each of its peers)
     expect(insertConnectionMock).toHaveBeenCalledTimes(4);
-    // the logger should have been called 7 times (once for each rejected promise)
-    expect(Logger.error).toHaveBeenCalledTimes(7);
+    // the logger should have been called 9 times (once for each rejected promise)
+    expect(Logger.error).toHaveBeenCalledTimes(9);
 
     spy.mockRestore();
     console.log = console_log;
