@@ -129,6 +129,9 @@ class Crawler {
                 // Keep track of what nodes need to be visited
                 let ToBeVisited = [node];
 
+                // this array will be filled with Promises returned from axios (to later wait for them to be resolved before console.logging how many
+                // nodes were found)
+                let getPeersPromises: Array<Promise<any>> = [];
                 while (ToBeVisited.length !== 0) {
                     // FOR DEBUGGING ONLY: STOP THE LOOP WHEN YOU HAVE 200 NODES IN THE LIST
                     //if (Nodes.length === 200) {
@@ -143,7 +146,7 @@ class Crawler {
                         //console.log("IP : " + n.ip + "\nPORT: " + n.port);
 
                         // Request the peers of the node and add them to the ToBeVisited list
-                        let getPeersPromise = axios.get("https://[" + n.ip + "]:" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
+                        getPeersPromises.push(axios.get("https://[" + n.ip + "]:" + n.port + "/crawl", {httpsAgent : agent, timeout: TIMEOUT_GET_REQUEST})
                             .then(response => {
                                 if (n !== undefined) {
                                     n._visited = true;
@@ -196,17 +199,19 @@ class Crawler {
                             .catch(error => {
                                 // Uncomment to console log the peers that refuse connection
                                 // console.log(error);
-                            });
+                            }));
                         // If there are no nodes that can be visited, wait for the "get peers" request to retrieve some new peers that can be crawled
                         // Deals with the http requests being async
                         if (ToBeVisited.length === 0)
-                            await getPeersPromise;
+                            await Promise.all(getPeersPromises);
 
                     }
                 }
-                // console.log(Nodes);
-                console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length);
-                console.log("How many nodes we have saved: " + Nodes.size);
+                Promise.all(getPeersPromises).then(() => {
+                    // console.log(Nodes);
+                    console.log("How many nodes we have visited: " + visited.length + "\nHow many UNIQUE IPs we have visited: " + visited.filter((item, i, ar) => ar.indexOf(item) === i).length);
+                    console.log("How many nodes we have saved: " + Nodes.size);
+                });
 
                 // save all nodes in the database
                 //insertNodes(Array.from(Nodes.values()));
