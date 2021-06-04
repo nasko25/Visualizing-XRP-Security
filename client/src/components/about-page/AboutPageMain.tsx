@@ -90,7 +90,7 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>What is this website?</h1>
                             <p style={{ width: '100%', height: '100%' }}>
                                 Our aim is to present important information about the security and trustability
-                                of nodes which participate in XRP Ledger in an intuitive way.
+                                of Nodes which participate in XRP Ledger in an intuitive way.
                                 We achieve this by providing visualizations that represent the current state of the nework,
                                 such as maps, tables and colored graphs.
                                 You can read more about XRPL <a href="https://xrpl.org/">here</a>.
@@ -101,9 +101,9 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                         <Box align='center' margin={{ top: "3%", left: "10%", right: "10%", bottom: "3%" }}>
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>Who is this website for?</h1>
                             <p>
-                                This tool's primary audience is operators of nodes on the network.
-                                They can gather information about the security of each node and its peers,
-                                and make improvements to their own node's configuration if necessary.
+                                This tool's primary audience is operators of Nodes on the network.
+                                They can gather information about the security of each Node and its peers,
+                                and make improvements to their own Node's configuration if necessary.
 
                                 Also, everyone that wants to take a look around, explore the network,
                                 and learn about it.
@@ -112,7 +112,7 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                         <Box align='center' margin={{ top: "1%", left: "10%", right: "10%", bottom: "3%" }}>
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>A note on security</h1>
                             <p>
-                                We have developed a security metric, which measures how secure a particular node is.
+                                We have developed a security metric, which measures how secure a particular Node is.
                                 This metric takes into account...(fill in later)
                                 One must look beyond the number.
                             </p>
@@ -127,18 +127,18 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                                 { name: 'node', start: [2, 0], end: [2, 0] },
                             ]}>
                             <Box gridArea="stock" align='center' margin={{ top: "2%", left: "6%", right: "3%", bottom: "3%" }}>
-                                <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Stock node page</h1>
+                                <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Stock Node page</h1>
                                 <p>
-                                    Stock nodes are responsible for relaying client transactions throughout the network
+                                    Stock Nodes are responsible for relaying client transactions throughout the network
                                     and they also provide an API for getting information about themselves and the network itself.
-                                    You can find relevant information about each stock node on the network on our <a href='/'>Dashboard</a>,
+                                    You can find relevant information about each stock Node on the network on our <a href='/'>Dashboard</a>,
                                     as well as a map that shows their geo-locations.
                                 </p>
                             </Box>
                             <Box gridArea="validator" align='center' margin={{ top: "2%", left: "3%", right: "3%", bottom: "3%" }}>
-                                <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Validator node page</h1>
+                                <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Validator Node page</h1>
                                 <p>
-                                    Validator nodes are responsible for determining the next Ledger Version in the blockchain.
+                                    Validator Nodes are responsible for determining the next Ledger Version in the blockchain.
                                     This is done on the basis of consensus between the Validators' votes. Learn more about the
                                     consensus protocol <a href=''>here</a>.
                                     Our Validator page provides an overview of Validators with information such as
@@ -148,10 +148,10 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                             <Box gridArea="node" align='center' margin={{ top: "2%", left: "3%", right: "6%", bottom: "3%" }}>
                                 <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Node page</h1>
                                 <p>
-                                    Here you can find more in-depth information about each node.
+                                    Here you can find more in-depth information about each Node.
                                     This includes information such as IP address and open ports and services running on them.
-                                    You can also find a graph of the node's peers, colored based on their security score,
-                                    as well as a chart of the historical performance of the node.
+                                    You can also find a graph of the Node's peers, colored based on their security score,
+                                    as well as a chart of the historical performance of the Node.
                             </p>
                             </Box>
                         </Grid>
