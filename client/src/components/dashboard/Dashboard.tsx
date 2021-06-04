@@ -67,6 +67,8 @@ export default class Dashboard extends Component<DashboardProps> {
             this.setState({ nodes: response.data });
         }).then(response => {
             this.setState({ loaded: true })
+        }).catch((e) => {
+            console.log(e.response);
         });
     }
 
