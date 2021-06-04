@@ -44,12 +44,12 @@ export default class Dashboard extends Component<DashboardProps> {
         super(props);
         this.state = { nodes: [], selected: "", loaded: false };
 
-        this.update_state = this.update_state.bind(this);
+        this.refresh_data = this.refresh_data.bind(this);
         this.selectNode = this.selectNode.bind(this);
     }
 
     componentDidMount() {
-        this.update_state();
+        this.refresh_data();
     }
 
     componentWillUnmount() {
@@ -62,18 +62,18 @@ export default class Dashboard extends Component<DashboardProps> {
     }
 
     getData() {
-        return axios.get("http://localhost:8080/node/get-all-nodes");
-    }
-
-    update_state() {
-        this.getData().then(response => {
+        return axios.get("http://localhost:8080/node/get-all-nodes").then(response => {
             console.log(response.data);
             this.setState({ nodes: response.data });
         }).then(response => {
             this.setState({ loaded: true })
-        })
+        });
+    }
+
+    refresh_data() {
+        this.getData();
         console.log("Node info updated...");
-        setTimeout(this.update_state, 300000);
+        setTimeout(this.refresh_data, 300000);
     }
 
     getNodeInfo() {
