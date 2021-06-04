@@ -109,7 +109,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @param public_key The public_key of the node
      * @returns 
      */
-    queryAPI_peers(public_key: string) {
+    queryAPI_peers(public_key: string): Promise<void> {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
             console.log(res);
             var peers: Peer[] = [];
@@ -328,7 +328,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
                         <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
-                            <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers} history={this.props.history}></NodePeerGraph>
+                            <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>

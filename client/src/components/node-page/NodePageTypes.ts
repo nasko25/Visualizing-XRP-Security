@@ -57,3 +57,7 @@ export type HistoricalScore = {
     date: string,
     score: number
 }
+
+export type PeerNodeDB = {
+    end_node: string
+}

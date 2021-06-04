@@ -4,8 +4,6 @@ import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
 import { DataSet } from 'vis-data';
 import "./NodePage.css";
 import { Peer } from "./NodePageTypes";
-import { unmountComponentAtNode } from "react-dom";
-import { History } from 'history';
 
 /**
  * Component that visualizes the peer connections of a Node
@@ -16,7 +14,6 @@ type NodePeerGraphProps = {
     public_key: string,
     peers: Peer[],
     on_node_click: (public_key: string) => void,
-    history: History
 }
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
