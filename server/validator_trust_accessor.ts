@@ -39,16 +39,18 @@ class ValidatorTrustAssessor {
     }
 
     assessScores(validators: Validator[]): Promise<ValidatorAssessment[]> {
-        return new Promise(() => validators.map((validator: Validator) => {
-            return this.assessScore(validator)
+        return Promise.all(validators.map((validator: Validator) => {
+            return this.assessScore(validator);
         }));
     }
 
-    assessScore(validator: Validator): ValidatorAssessment {
-        return {
-            public_key: "",
-            trust_metric_version: 0,
-            score: 0
-        };
+    assessScore(validator: Validator): Promise<ValidatorAssessment> {
+        return new Promise(() => {
+            return {
+                public_key: "",
+                trust_metric_version: 0,
+                score: 0
+            };
+        });
     }
 }
