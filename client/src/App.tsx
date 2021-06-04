@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import Dashboard from "./components/dashboard/Dashboard";
 import NodePageMain from './components/node-page/NodePageMain';
+import ValidatorPageMain from './components/validator-page/ValidatorPageMain';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
             <Dashboard history={props.history}/>
         }/>
         <Route exact path="/node" component={NodePageMain}/>
+        <Route exact path="/validators" component={ValidatorPageMain}></Route>
       </main>
     </div>
     </BrowserRouter>
