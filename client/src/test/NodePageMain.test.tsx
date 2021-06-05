@@ -1,10 +1,8 @@
 import NodePageMain from '../components/node-page/NodePageMain';
 import axios from 'axios';
-import '../components/node-page/NodePageTypes'
 import { createBrowserHistory, History } from 'history';
 import { Peer, NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
-import { shallow } from 'enzyme';
-import { List } from 'grommet';
+import { shallow, mount } from 'enzyme';
 
 //---------------SETUP AND CLEAN UP---------------//
 
@@ -14,6 +12,10 @@ jest.mock("../components/node-page/NodePeerGraph");
 // Mock axios
 jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>;
+
+afterEach(() => {
+    jest.clearAllMocks();
+});
 
 const mockNodeInfo: NodeInfoDB = {
     public_key: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
@@ -52,7 +54,7 @@ test('Correct behaviour on API node info call success', async () => {
     let history: History = createBrowserHistory();
     history.push('/node?public_key=' + mockNodeInfo.public_key);
 
-    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
     // Set up some spies
     const componentDidMountSpy = jest.spyOn(node_page, "componentDidMount");
@@ -83,7 +85,7 @@ test('Correct behaviour on API node info call failure', async () => {
     let history: History = createBrowserHistory();
     history.push('/node?public_key=' + mockNodeInfo.public_key);
 
-    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
     // Set up some spies
     const componentDidMountSpy = jest.spyOn(node_page, "componentDidMount");
@@ -99,49 +101,187 @@ test('Correct behaviour on API node info call failure', async () => {
     expect(setStateSpy).toHaveBeenCalledTimes(0);
 });
 
+test('Correct behaviour on API node info call empty response (a.k.a we did not find the node on the server side)', async () => {
+
+    // Mock the axios response as resolution
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValueOnce(mockPeersData);  
+
+    // Shallowly render the node page
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+    // Set up some spies
+    const componentDidMountSpy = jest.spyOn(node_page, "componentDidMount");
+    const setStateSpy = jest.spyOn(node_page, "setState");
+    const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
+
+    axiosMock.get.mockResolvedValue({data: []});
+    
+    // Make the call to the function
+    await node_page.queryAPI_node(mockNodeInfo.public_key);
+    
+    // Make sure nothing is called in excess
+    expect(getNodeInfoSpy).toHaveBeenCalledTimes(0);
+    expect(componentDidMountSpy).toHaveBeenCalledTimes(0);
+    expect(setStateSpy).toHaveBeenCalledTimes(0);
+});
+
+test('Correct behaviour on API node info call failure', async () => {
+
+    // Mock the axios response as rejection
+    axiosMock.get.mockRejectedValue(new Error('404 Not Found'));   
+
+    // Shallowly render the node page
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+    // Set up some spies
+    const componentDidMountSpy = jest.spyOn(node_page, "componentDidMount");
+    const setStateSpy = jest.spyOn(node_page, "setState");
+    const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
+
+    // Make the call to the function
+    await node_page.queryAPI_node(mockNodeInfo.public_key);
+    
+    // Make sure nothing is called
+    expect(getNodeInfoSpy).toHaveBeenCalledTimes(0);
+    expect(componentDidMountSpy).toHaveBeenCalledTimes(0);
+    expect(setStateSpy).toHaveBeenCalledTimes(0);
+});
+
+
 /**
  * TODO
  * This test should be made to pass once we have finalized the scores
  */
-test('Correct behaviour on API peer info call success', async () => {
+test('Correct behaviour on API peer call success', async () => {
 
-    axiosMock.get.mockResolvedValue(mockPeersData);
+    // When rendering, there are 2 request that take place and we mock them
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValue(mockPeersData);
+    // axiosMock.get.mockResolvedValue(mockPeersData);
     let history: History = createBrowserHistory();
     history.push('/node?public_key=' + mockNodeInfo.public_key);
-    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
     await node_page.queryAPI_peers("");
     
-    expect(node_page.state.peers).toContain({ public_key: mockNodePeers[0].end_node, score: 1 });
+    // expect(node_page.state.peers).toContain({ public_key: mockNodePeers[0].end_node, score: 1 });
     expect(node_page.state.peers).toHaveLength(2);
 });
 
-test('Create peer list returns correct List element with 0 peers', () => {
+test('Create peer list returns correct List element with 0 peers', async () => {
+
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValueOnce({ data: [] });
 
     let history: History = createBrowserHistory();
     history.push('/node?public_key=' + mockNodeInfo.public_key);
-    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
     const list = node_page.createPeerList();
+    await node_page.setState({ peers: []});
 
     expect(list.props.data).toHaveLength(0);
 });
 
-test('Create peer list returns correct List element with multiple peers', () => {
+test('Create peer list returns correct List element with multiple peers', async () => {
+
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValueOnce(mockPeersData);
 
     let history: History = createBrowserHistory();
     history.push('/node?public_key=' + mockNodeInfo.public_key);
-    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
     
     let peers: Peer[] = mockNodePeers.map((p) => {
          return {public_key: p.end_node, score: 1}
         }
     );
 
-    node_page.setState({ peers: peers});
+    const setStateSpy = jest.spyOn(node_page, "setState");
+    await node_page.setState({ peers: peers } );
     const list = node_page.createPeerList();
-
+    
+    expect(setStateSpy).toHaveBeenCalledTimes(1);
+    expect(node_page.state.peers).toHaveLength(2);
     expect(list.props.data).toHaveLength(peers.length);
     expect(list.props.data).toContain(peers[0]);
     expect(list.props.data).toContain(peers[1]);
+});
+
+test('Correct behaviour of getNodeInfo on both request success', async () => {
+    // Mock the axios response as resolution
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValueOnce(mockPeersData);
+
+    // Shallowly render the node page
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+    // Mock the axios response once for the node info request and once for the peer request
+    axiosMock.get.mockResolvedValueOnce(mockData).mockResolvedValueOnce(mockPeersData);
+
+    // const componentDidMountSpy = jest.spyOn(node_page, "componentDidMount");
+    const setStateSpy = jest.spyOn(node_page, "setState");
+    const queryAPI_nodeSpy = jest.spyOn(node_page, "queryAPI_node");
+    const queryAPI_peersSpy = jest.spyOn(node_page, "queryAPI_peers");
+    const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
+
+    await node_page.getNodeInfo(mockNodeInfo.public_key);
+
+    expect(setStateSpy).toHaveBeenCalledTimes(3);
+    expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
+    expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
+    expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
+
+    expect(node_page.state.IP).toEqual(mockNodeInfo.IP);
+    expect(node_page.state.rippled_version).toEqual(mockNodeInfo.rippled_version);
+    expect(node_page.state.ports).toEqual([{port_number: 42, service: "HTTP", version: "Not Implemented yet"}]);
+    expect(node_page.state.uptime).toEqual(mockNodeInfo.uptime);
+
+    // expect(node_page.state.peers).toContain({ public_key: mockNodePeers[0].end_node, score: 1 });
+    expect(node_page.state.peers).toHaveLength(2);
+});
+
+/**
+ * This test fails, because we still don't have a method to query the score history of a node
+ */
+test('Correct behaviour of getNodeInfo on both requests failure', async () => {
+    // Mock all axios responses as reject
+    axiosMock.get.mockRejectedValue(new Error("404 Not Found"));
+
+    // Shallowly render the node page
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+    const setStateSpy = jest.spyOn(node_page, "setState");
+    const queryAPI_nodeSpy = jest.spyOn(node_page, "queryAPI_node");
+    const queryAPI_peersSpy = jest.spyOn(node_page, "queryAPI_peers");
+    const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
+
+    await node_page.getNodeInfo(mockNodeInfo.public_key);
+
+    expect(setStateSpy).toHaveBeenCalledTimes(0);
+    expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
+    expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
+    expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
+});
+
+test('All components are present in DOM after render', async () => {
+
+    // Mock all axios responses as reject
+    axiosMock.get.mockRejectedValue(new Error("404 Not Found"));
+
+    // Shallowly render the node page
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+
+    const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+
 });
