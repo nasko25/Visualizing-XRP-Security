@@ -2,8 +2,9 @@ import NodePageMain from '../components/node-page/NodePageMain';
 import axios from 'axios';
 import '../components/node-page/NodePageTypes'
 import { createBrowserHistory, History } from 'history';
-import { NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
+import { Peer, NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
 import { shallow } from 'enzyme';
+import { List } from 'grommet';
 
 //---------------SETUP AND CLEAN UP---------------//
 
@@ -29,7 +30,10 @@ const mockNodeInfo: NodeInfoDB = {
 const mockData = {
     data: [mockNodeInfo]
 }
-
+/**
+ * TODO
+ * Once we update the API these should also contain a score
+ */
 const mockNodePeers: PeerNodeDB[] = [
     { end_node: "n9MGChK9EgiCBM6s15EwF9d6m4LWZHh1UnJcgr16kQr4xBpx71fS" },
     { end_node: "n9Jy88tMgEhHocG9hZssgsYRmTz9CjCgjp3DiqzSgYqrp4BxTE11" },
@@ -103,11 +107,41 @@ test('Correct behaviour on API peer info call success', async () => {
 
     axiosMock.get.mockResolvedValue(mockPeersData);
     let history: History = createBrowserHistory();
-    history.push('/node?public_key=bruh');
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
     const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
     await node_page.queryAPI_peers("");
     
     expect(node_page.state.peers).toContain({ public_key: mockNodePeers[0].end_node, score: 1 });
     expect(node_page.state.peers).toHaveLength(2);
+});
+
+test('Create peer list returns correct List element with 0 peers', () => {
+
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+
+    const list = node_page.createPeerList();
+
+    expect(list.props.data).toHaveLength(0);
+});
+
+test('Create peer list returns correct List element with multiple peers', () => {
+
+    let history: History = createBrowserHistory();
+    history.push('/node?public_key=' + mockNodeInfo.public_key);
+    const node_page = shallow<NodePageMain>(<NodePageMain history={history} />).instance();
+    
+    let peers: Peer[] = mockNodePeers.map((p) => {
+         return {public_key: p.end_node, score: 1}
+        }
+    );
+
+    node_page.setState({ peers: peers});
+    const list = node_page.createPeerList();
+
+    expect(list.props.data).toHaveLength(peers.length);
+    expect(list.props.data).toContain(peers[0]);
+    expect(list.props.data).toContain(peers[1]);
 });

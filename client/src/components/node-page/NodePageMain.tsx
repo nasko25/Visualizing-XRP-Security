@@ -133,7 +133,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
                 var info: NodeInfoDB = res.data[0];
                 var ports: Port[] = [];
-                
+
                 if (info.ports) {
                     for (var i = 0; i < info.ports.length; i++) {
                         ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
@@ -220,7 +220,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     createPeerList() {
-        return <List
+        let list = <List
             style={{ alignSelf: "center" }}
             primaryKey="public_key"
             secondaryKey="score"
@@ -228,8 +228,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 return b.score - a.score;
             })}
             border={false}
-            alignSelf="center"
-        />
+            alignSelf="center" />;
+        return list;
     }
 
     nodeOnClick(public_key: string) {
