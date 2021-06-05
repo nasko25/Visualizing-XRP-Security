@@ -55,7 +55,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     componentDidMount() {
-        this.getNodeInfo(this.state.public_key);
+        this.getNodeInfo();
     }
     /**
      * Everytime we change the public_key in the state, 
@@ -68,7 +68,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     componentDidUpdate(prevProps: NodePageProps, prevState: NodePageState, some: any) {
         if (prevState.public_key != this.state.public_key) {
-            this.getNodeInfo(this.state.public_key);
+            this.getNodeInfo();
         }
     }
 
@@ -76,11 +76,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * A listener for changes in the history
      * 
      * Every time we update the history by navigating forwards or backwards,
-     * we update the public_key with the one from the URL request parameter
+     * we update the public_key with the one from the URL request parameter.
      */
     historyListener() {
         this.props.history.listen((location) => {
-            this.setState({ public_key: location.search.split("?public_key=")[1] });
+            let public_key_from_url = location.search.split("?public_key=")[1];
+            if(this.state.public_key != public_key_from_url){
+                this.setState({ public_key: public_key_from_url});
+            }
         });
     }
 
@@ -144,12 +147,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             });
     }
 
-    getNodeInfo(public_key: string) {
+    getNodeInfo() {
         var history: HistoricalScore[] = [];
         for (var i = 1; i <= 30; i++) {
             history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
-        this.setState({ historical_scores: history, public_key: public_key });
+        this.setState({ historical_scores: history });
         this.queryAPI_node(this.state.public_key);
         this.queryAPI_peers(this.state.public_key);
     }

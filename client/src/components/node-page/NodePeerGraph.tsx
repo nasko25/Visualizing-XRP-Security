@@ -18,21 +18,22 @@ type NodePeerGraphProps = {
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
-    networkRef: React.RefObject<HTMLDivElement>;
-    loadRef: React.RefObject<HTMLDivElement>;
     network: Network | null = null;
 
     constructor(props: NodePeerGraphProps) {
         super(props);
-        this.networkRef = React.createRef();
-        this.loadRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
         this.hideLoad = this.hideLoad.bind(this);
         this.getColor = this.getColor.bind(this);
     }
 
-    componentDidUpdate() {
-        this.createNetwork();
+    componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
+        console.log(prevProps);
+        console.log(prevState);
+        if(this.props.public_key !== prevProps.public_key || this.props.peers != prevProps.peers){
+            console.log(this.props.public_key + "\n" + prevProps.public_key + "\n", this.props.peers, prevProps.peers);
+            this.createNetwork();
+        }
     }
 
     /**
@@ -138,7 +139,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         var nodes: DataSetNodes = new DataSet(nodesArr);
         var edges: DataSetEdges = new DataSet(edgesArr);
 
-        const container: any = this.networkRef.current;
+        const container: any = document.getElementById('peer-network');
         const data = {
             nodes: nodes,
             edges: edges,
@@ -179,7 +180,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
                 <div className="peer-network"
                     style={{ width: "100%", height: "84%", position: "relative" }}
-                    ref={this.networkRef} >
+                    id='peer-network' >
                 </div>
 
                 <div id="loader" style={{ position: "absolute", top: "40%" }} >
