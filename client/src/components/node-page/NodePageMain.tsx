@@ -47,8 +47,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             uptime: 0
         }
 
-        console.log(this.props.history);
-
         this.searchRef = React.createRef();
 
         /**
@@ -63,11 +61,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI_node = this.queryAPI_node.bind(this);
         this.parseURL = this.parseURL.bind(this);
         this.historyListener = this.historyListener.bind(this);
+
+        this.historyListener();
     }
 
     componentDidMount() {
         this.getNodeInfo(this.state.public_key);
-        this.historyListener();
     }
     /**
      * Everytime we change the public_key in the state, 
@@ -79,7 +78,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @param some any
      */
     componentDidUpdate(prevProps: NodePageProps, prevState: NodePageState, some: any) {
-        if(prevState.public_key != this.state.public_key){
+        if (prevState.public_key != this.state.public_key) {
             this.getNodeInfo(this.state.public_key);
         }
     }
@@ -92,7 +91,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     historyListener() {
         this.props.history.listen((location) => {
-            this.setState({public_key: location.search.split("?public_key=")[1]});
+            this.setState({ public_key: location.search.split("?public_key=")[1] });
         });
     }
 
@@ -111,14 +110,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     queryAPI_peers(public_key: string): Promise<void> {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
-            console.log(res);
+            // console.log(res);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
             }
-            this.setState({peers: peers});
-        }).catch((e) => {
-            console.log(e.response);
+            this.setState({ peers: peers });
+        }).catch((error) => {
+            console.log('Encountered error:', error.response);
         });
     }
 
@@ -128,26 +127,29 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @returns 
      */
     queryAPI_node(public_key: string) {
-        return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
-            var info: NodeInfoDB = res.data[0];
-            var ports: Port[] = [];
-            console.log(res);
-            if (info.ports) {
-                for (var i = 0; i < info.ports.length; i++) {
-                    ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
+        return axios.get("http://localhost:8080/node/info?public_key=" + public_key)
+            .then((res) => {
+                console.log(res);
+
+                var info: NodeInfoDB = res.data[0];
+                var ports: Port[] = [];
+                
+                if (info.ports) {
+                    for (var i = 0; i < info.ports.length; i++) {
+                        ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
+                    }
                 }
-            }
-            this.setState(
-                {
-                    IP: info.IP,
-                    rippled_version: info.rippled_version,
-                    uptime: info.uptime,
-                    ports: ports,
-                });
-            console.log("state" + this.state.peers);
-        }).catch((error) => {
-            console.log(error.response);
-        });
+                this.setState(
+                    {
+                        IP: info.IP,
+                        rippled_version: info.rippled_version,
+                        uptime: info.uptime,
+                        ports: ports,
+                    });
+                console.log('correctly here');
+            }).catch((error) => {
+                console.log('Encountered error:', error);
+            });
     }
 
     getNodeInfo(public_key: string) {
@@ -297,6 +299,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 style={{ width: "80%", height: "80%", alignSelf: "center" }} >
                                 <Text size="large" weight="bold">About</Text>
                             </Button>
+                            {/* <div><a href="/about"><h1>About</h1></a></div> */}
                         </Box>
 
                         {/* The Search Bar */}
