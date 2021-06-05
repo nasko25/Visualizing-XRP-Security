@@ -5,22 +5,12 @@ import TopMap from "../TopMap";
 import axios from 'axios';
 import { Box, Grid, Grommet, Header, Heading, List } from 'grommet';
 import { History } from 'history';
+import { COLORS, SETUP } from '../../style/constants'
 
 let dataJson = require("../../nodes.json");
 
 export type DashboardProps = {
     history: History
-}
-
-var SETUP = {
-    header_height: 7.5,
-    hd_bgnd: '#C3C3C3',
-}
-
-var COLORS = {
-    main: "#383838",
-    button: "#212529",
-    nav: "#1a1a1a"
 }
 
 export default class Dashboard extends Component<DashboardProps> {

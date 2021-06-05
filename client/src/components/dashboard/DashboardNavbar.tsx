@@ -1,7 +1,6 @@
 import { Grid, Heading, Box, Text } from "grommet";
 import { Component } from "react";
 import Button from 'react-bootstrap/Button'
-import { Link } from "react-router-dom";
 import { History } from 'history';
 
 export type DashboardNavbarProps = {

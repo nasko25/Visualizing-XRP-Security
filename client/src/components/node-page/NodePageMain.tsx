@@ -1,12 +1,12 @@
 import React from "react";
 import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet';
-import { Search } from 'grommet-icons';
-import Button from "react-bootstrap/Button";
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 import { humanizeUptime } from '../../helper';
+import NodePageNavbar from "./NodePageNavbar";
+import { COLORS, SETUP } from '../../style/constants'
 
 
 /**
@@ -16,17 +16,6 @@ import { humanizeUptime } from '../../helper';
  * a statistical chart and an info box.
  * 
  */
-
-var SETUP = {
-    header_height: 7.5,
-    hd_bgnd: '#C3C3C3',
-}
-
-var COLORS = {
-    main: "#383838",
-    button: "#212529",
-    nav: "#1a1a1a"
-}
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
@@ -110,7 +99,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     queryAPI_peers(public_key: string): Promise<void> {
         return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
-            // console.log(res);
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
@@ -129,7 +117,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     queryAPI_node(public_key: string) {
         return axios.get("http://localhost:8080/node/info?public_key=" + public_key)
             .then((res) => {
-                console.log(res);
+
+                if(res.data.length === 0){
+                    console.log('empty')
+                    return;
+                }
 
                 var info: NodeInfoDB = res.data[0];
                 var ports: Port[] = [];
@@ -139,6 +131,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         ports.push({ port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet" })
                     }
                 }
+
                 this.setState(
                     {
                         IP: info.IP,
@@ -146,9 +139,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         uptime: info.uptime,
                         ports: ports,
                     });
-                console.log('correctly here');
             }).catch((error) => {
-                console.log('Encountered error:', error);
+                console.log('Encountered error:', error.response);
             });
     }
 
@@ -158,8 +150,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
         this.setState({ historical_scores: history, public_key: public_key });
-        this.queryAPI_peers(this.state.public_key);
         this.queryAPI_node(this.state.public_key);
+        this.queryAPI_peers(this.state.public_key);
     }
 
     createDataChart() {
@@ -183,7 +175,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     /**
      * Event Handler for the Search Bar
      */
-    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
+    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
         if (e.code === "Enter") {
             let text: string = this.searchRef.current?.value === undefined
                 ? ""
@@ -240,86 +232,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         return (
             <Grommet
                 style={{ width: "100%", height: "100%" }}>
-                {/* // theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} */}
 
                 <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
-                    <Grid
-                        style={{ width: "100%", height: "100%" }}
-                        rows={["1"]}
-                        columns={["1/5", "1/5", "1/5", "1/5", "1/5"]}
-                        areas={[
-                            { name: 'heading', start: [0, 0], end: [0, 0] },
-                            { name: 'button_stock', start: [1, 0], end: [1, 0] },
-                            { name: 'button_validator', start: [2, 0], end: [2, 0] },
-                            { name: 'button_about', start: [3, 0], end: [3, 0] },
-                            { name: 'search', start: [4, 0], end: [4, 0] },
-                        ]}>
-
-                        {/* The heading. */}
-                        <Heading margin="2%" gridArea="heading" alignSelf="center" size="small">Node Page</Heading>
-
-                        {/* The Button for returning to the main page. */}
-                        <Box
-                            height="80%"
-                            gridArea="button_stock"
-                            justify="center"
-                            alignSelf="center"
-                            margin="2%">
-                            <Button
-                                variant="dark"
-                                onClick={() => this.props.history.push("/")}
-                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text size="large" weight="bold" >Stock</Text>
-                            </Button>
-                        </Box>
-
-                        <Box
-                            height="80%"
-                            gridArea="button_validator"
-                            justify="center"
-                            alignSelf="center"
-                            margin="2%">
-                            <Button
-                                variant="dark"
-                                onClick={() => this.props.history.push("/")}
-                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text size="large" weight="bold">Validators</Text>
-                            </Button>
-                        </Box>
-
-                        <Box
-                            height="80%"
-                            gridArea="button_about"
-                            justify="center"
-                            alignSelf="center"
-                            margin="2%">
-                            <Button
-                                variant="dark"
-                                onClick={() => this.props.history.push("/")}
-                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Text size="large" weight="bold">About</Text>
-                            </Button>
-                            {/* <div><a href="/about"><h1>About</h1></a></div> */}
-                        </Box>
-
-                        {/* The Search Bar */}
-                        <Box gridArea="search"
-                            alignSelf="center"
-                            direction="row"
-                            justify="center"
-                            background={COLORS.button}
-                            margin={{ left: "1%", right: "3%" }}>
-                            <TextInput
-                                onKeyPress={this.onKeyPressSearch}
-                                icon={<Search />}
-                                textAlign="center"
-                                placeholder="Search Public Key"
-                                ref={this.searchRef}
-                            />
-                        </Box>
-                    </Grid>
+                    <NodePageNavbar history={this.props.history} onSearch={this.onKeyPressSearch} searchRef={this.searchRef}></NodePageNavbar>
                 </Header>
-
+                {/* We split the main part of the application in a 2x2 grid with 3 components,
+                    the one on the left show information about the node and its peers, the top
+                    right one is the peer network graph and the bottm right one is the history
+                    graph. */}
                 <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                     <Grid
                         style={{ width: "100%", height: "100%" }}
