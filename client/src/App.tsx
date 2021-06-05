@@ -3,22 +3,24 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import Dashboard from "./components/dashboard/Dashboard";
 import NodePageMain from './components/node-page/NodePageMain';
+import AboutPageMain from './components/about-page/AboutPageMain'
 import ValidatorPageMain from './components/validator-page/ValidatorPageMain';
 
 function App() {
   return (
     <BrowserRouter>
-    <div className="App">
+      <div className="App">
 
-      <main className='main'>
-        {/* <Route exact path="/" component={Dashboard}/> */}
-        <Route exact path="/" render={(props) => 
-            <Dashboard history={props.history}/>
-        }/>
-        <Route exact path="/node" component={NodePageMain}/>
-        <Route exact path="/validators" component={ValidatorPageMain}></Route>
-      </main>
-    </div>
+        <main className='main'>
+          {/* <Route exact path="/" component={Dashboard}/> */}
+          <Route exact path="/" render={(props) =>
+            <Dashboard history={props.history} />
+          } />
+          <Route exact path="/node" component={NodePageMain} />
+          <Route exact path="/about" component={AboutPageMain} />
+          <Route exact path="/validators" component={ValidatorPageMain}></Route>
+        </main>
+      </div>
     </BrowserRouter>
   );
 }
