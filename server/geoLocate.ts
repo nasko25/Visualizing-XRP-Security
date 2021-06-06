@@ -123,7 +123,7 @@ class GeoLocate {
         //     console.log(e);
         // }
 
-        getAllNodesWithoutLocation().then((nodes) => {
+        return getAllNodesWithoutLocation().then((nodes) => {
             this.IPList = nodes.map(node => node.IP);
             this.DBRequestResolved = true;
             if (this.IPList == null || this.IPList.length == 0) {
