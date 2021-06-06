@@ -47,7 +47,17 @@ test('Correct behavior on API get all nodes success', async () => {
     history.push('/');
     const dashboard = await shallow<Dashboard>(<Dashboard history={history} />).instance();
 
+    const componentDidMountSpy = jest.spyOn(dashboard, "componentDidMount");
+    const setStateSpy = jest.spyOn(dashboard, "setState");
+    const getDataSpy = jest.spyOn(dashboard, "getData");
+
     await dashboard.getData();
 
+    expect(componentDidMountSpy).toHaveBeenCalledTimes(0);
+    expect(setStateSpy).toHaveBeenCalledTimes(3);
+    expect(getDataSpy).toHaveBeenCalledTimes(1);
+
     expect(dashboard.state).toHaveProperty('nodes', mockNodeData);
+    expect(dashboard.state).toHaveProperty('loaded', true);
+    expect(dashboard.state).toHaveProperty('selected', "");
 }); 
