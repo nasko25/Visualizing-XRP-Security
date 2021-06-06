@@ -36,6 +36,7 @@ export default class Dashboard extends Component<DashboardProps> {
 
         this.refresh_data = this.refresh_data.bind(this);
         this.selectNode = this.selectNode.bind(this);
+        this.getData = this.getData.bind(this);
     }
 
     componentDidMount() {
