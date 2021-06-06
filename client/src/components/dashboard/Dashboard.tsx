@@ -36,6 +36,7 @@ export default class Dashboard extends Component<DashboardProps> {
 
         this.refresh_data = this.refresh_data.bind(this);
         this.selectNode = this.selectNode.bind(this);
+        this.getData = this.getData.bind(this);
     }
 
     componentDidMount() {
@@ -66,19 +67,6 @@ export default class Dashboard extends Component<DashboardProps> {
         this.getData();
         console.log("Node info updated...");
         setTimeout(this.refresh_data, 300000);
-    }
-
-    getNodeInfo() {
-        var peers = [];
-        for (var i = 0; i < 50; i++) {
-            peers.push({ trust_score: Math.random() });
-        }
-        return {
-            public_key: "n9MozjnGB3tpULewtTsVtuudg5JqYFyV3QFdAtVLzJaxHcBaxuXD",
-            IP: "34.221.161.114",
-            peers: peers,
-            trust_score: 1,
-        }
     }
 
     createGenInfo() {
