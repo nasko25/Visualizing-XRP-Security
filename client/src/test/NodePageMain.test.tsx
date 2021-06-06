@@ -230,7 +230,7 @@ test('Correct behaviour of getNodeInfo on both request success', async () => {
     const queryAPI_peersSpy = jest.spyOn(node_page, "queryAPI_peers");
     const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
 
-    await node_page.getNodeInfo(mockNodeInfo.public_key);
+    await node_page.getNodeInfo();
 
     expect(setStateSpy).toHaveBeenCalledTimes(3);
     expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
@@ -264,7 +264,7 @@ test('Correct behaviour of getNodeInfo on both requests failure', async () => {
     const queryAPI_peersSpy = jest.spyOn(node_page, "queryAPI_peers");
     const getNodeInfoSpy = jest.spyOn(node_page, "getNodeInfo");
 
-    await node_page.getNodeInfo(mockNodeInfo.public_key);
+    await node_page.getNodeInfo();
 
     expect(setStateSpy).toHaveBeenCalledTimes(0);
     expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);

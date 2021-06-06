@@ -19,8 +19,7 @@ import { COLORS, SETUP } from '../../style/constants'
 
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
-    searchRef: React.RefObject<HTMLInputElement>;
-
+    searchID: string = "node-page-search-bar";
     constructor(props: NodePageProps) {
         super(props);
 
@@ -35,8 +34,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             historical_scores: [],
             uptime: 0
         }
-
-        this.searchRef = React.createRef();
 
         /**
          * Binding the class methods to the 'this' keyword for the class
@@ -181,9 +178,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
         if (e.code === "Enter") {
-            let text: string = this.searchRef.current?.value === undefined
-                ? ""
-                : this.searchRef.current?.value;
+            let text: string = (document.getElementById(this.searchID) as HTMLInputElement).value;
             this.props.history.push('/node?public_key=' + text);
         }
     }
@@ -238,7 +233,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 style={{ width: "100%", height: "100%" }}>
 
                 <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
-                    <NodePageNavbar history={this.props.history} onSearch={this.onKeyPressSearch} searchRef={this.searchRef}></NodePageNavbar>
+                    <NodePageNavbar history={this.props.history} onSearch={this.onKeyPressSearch} searchID={this.searchID}></NodePageNavbar>
                 </Header>
                 {/* We split the main part of the application in a 2x2 grid with 3 components,
                     the one on the left show information about the node and its peers, the top

@@ -5,12 +5,26 @@ import Button from 'react-bootstrap/Button'
 import { History } from 'history';
 import { COLORS } from '../../style/constants'
 
+/**
+ * The history represents the Browser history and is used for navigating
+ * between the different pages.
+ * 
+ * The onSearch is a function which should handle the searching functionality
+ * 
+ * The searchID is the element id of the Input where the 
+ * search query is typed.
+ */
 type NodePageNavbarProps = {
     history: History,
     onSearch: (e: React.KeyboardEvent<HTMLInputElement>) => void,
-    searchRef: React.RefObject<HTMLInputElement>
+    searchID: string
 }
 
+/**
+ * This component displays the Navigation bar on the Node page
+ * It has buttons to navigate through the website, as well
+ * as a search bar
+ */
 export default class NodePageNavbar extends Component<NodePageNavbarProps>{
 
     constructor(props: NodePageNavbarProps){
@@ -43,7 +57,8 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                 <Button
                     variant="dark"
                     onClick={() => this.props.history.push("/")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
+                    data-testid="stock-button" >
                     <Text size="large" weight="bold" >Stock</Text>
                 </Button>
             </Box>
@@ -58,7 +73,8 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                 <Button
                     variant="dark"
                     onClick={() => this.props.history.push("/validators")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
+                    data-testid="validators-button" >
                     <Text size="large" weight="bold">Validators</Text>
                 </Button>
             </Box>
@@ -74,10 +90,10 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                     className=""
                     variant="dark"
                     onClick={() => this.props.history.push("/about")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }} >
+                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
+                    data-testid="about-button" >
                     <Text size="large" weight="bold">About</Text>
                 </Button>
-                {/* <div><a href="/about"><h1>About</h1></a></div> */}
             </Box>
 
             {/* The Search Bar */}
@@ -92,7 +108,8 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                     icon={<Search />}
                     textAlign="center"
                     placeholder="Search Public Key"
-                    ref={this.props.searchRef}
+                    id={this.props.searchID}
+                    data-testid="search"
                 />
             </Box>
         </Grid>)
