@@ -15,21 +15,28 @@ const insertLocationMock = insertLocation as jest.MockedFunction<typeof insertLo
 // mock the Logger
 jest.mock('./logger');
 
+// save the getIPsFromDB implementation if a test needs it, because it will be mocked
+const getIPsFromDB = GeoLocate.prototype.getIPsFromDB;
+
+// this IP list is used by most tests
+const IPList = ["1.2.3.4", "8.8.8.8"];
+
 beforeEach(() => {
     config.useIPStack = false;
+    // mock the getIPsFromDB() function because it requires a connection to the database
+    //  and needs to be tested separately
+    GeoLocate.prototype.getIPsFromDB = jest.fn().mockImplementationOnce(() => IPList);
 });
 
 afterEach(() => {
       jest.clearAllMocks();
 });
 
+
+
 describe("test get locator constructor", () => {
     it("without parameters", () => {
-        const IPList = ["1.2.3.4", "8.8.8.8"];
 
-        // mock the getIPsFromDB() function because it requires a connection to the database
-        //  and cannot be tested without the locate() function
-        GeoLocate.prototype.getIPsFromDB = jest.fn().mockImplementationOnce(() => IPList);
         const geoLocate = new GeoLocate();
 
         expect(geoLocate.useIPStack).toBe(false);
@@ -37,8 +44,6 @@ describe("test get locator constructor", () => {
     });
 
     it("with a list of IPs as a parameter", () => {
-        const IPList = ["1.2.3.4", "8.8.8.8"];
-
         // no need to mock getIPsFromDB() when the IPs are provided
         const geoLocate = new GeoLocate(IPList);
 
@@ -54,8 +59,6 @@ describe("test get locator constructor", () => {
 });
 
 test("test locate() with 2 successful geoip lookups", async () => {
-    const IPList = ["1.2.3.4", "8.8.0.0"];
-
     const geoLocate = new GeoLocate(IPList);
     const nodesWithoutLocation = [
         {
@@ -95,4 +98,33 @@ test("test locate() with 2 successful geoip lookups", async () => {
     expect(insertLocationMock).toHaveBeenNthCalledWith(2, loc2, IPList[1]);
     expect(Logger.info).toHaveBeenCalledTimes(1);
     expect(Logger.info).toHaveBeenCalledWith("Finished locating IPs");
+});
+
+test("test getIPsFromDB()", async () => {
+    const geoLocate = new GeoLocate([""]);
+
+    // restore the mocked getIPsFromDB method to be tested
+    geoLocate.getIPsFromDB = getIPsFromDB;
+
+    const nodesWithoutLocation = [
+        {
+            IP: IPList[0]
+        },
+        {
+            IP: IPList[1]
+        }
+    ];
+    // mock the response from the database
+    const getAllNodes = getAllNodesWithoutLocationMock.mockResolvedValueOnce(nodesWithoutLocation).mockRejectedValueOnce(new Error("The database is not responding."));
+
+    geoLocate.getIPsFromDB();
+    await getAllNodes;
+
+    // the ip list from geoLocate should be equal to IPList, but not the exact same object,
+    //  because it was constructed inside the GeoLocate class
+    expect(geoLocate.IPList).not.toBe(IPList);
+    expect(geoLocate.IPList).toEqual(IPList);
+
+    geoLocate.getIPsFromDB();
+    await getAllNodes;
 });
