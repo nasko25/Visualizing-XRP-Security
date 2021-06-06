@@ -266,7 +266,7 @@ test('Correct behaviour of getNodeInfo on both requests failure', async () => {
 
     await node_page.getNodeInfo();
 
-    expect(setStateSpy).toHaveBeenCalledTimes(0);
+    expect(setStateSpy).toHaveBeenCalledTimes(1);
     expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
     expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
     expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
