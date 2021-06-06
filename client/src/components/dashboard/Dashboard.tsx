@@ -52,7 +52,7 @@ export default class Dashboard extends Component<DashboardProps> {
     }
 
     getData() {
-        return axios.get("http://localhost:8080/node/get-all-nodes").then(response => {
+        return axios.get("http://" + window.location.hostname + ":8080/node/get-all-nodes").then(response => {
             console.log(response.data);
             this.setState({ nodes: response.data });
         }).then(response => {

@@ -101,7 +101,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @returns 
      */
     queryAPI_peers(public_key: string): Promise<void> {
-        return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
+        return axios.get("http://" + window.location.hostname + ":8080/node/peers?public_key=" + public_key).then((res) => {
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
@@ -118,7 +118,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @returns 
      */
     queryAPI_node(public_key: string) {
-        return axios.get("http://localhost:8080/node/info?public_key=" + public_key)
+        console.log(window.location.hostname);
+        return axios.get("http://"+ window.location.hostname + ":8080/node/info?public_key=" + public_key)
             .then((res) => {
 
                 if(res.data.length === 0){
