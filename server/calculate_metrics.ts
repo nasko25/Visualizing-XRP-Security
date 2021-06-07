@@ -18,9 +18,9 @@ export function calculateSMA(scores: SecurityAssessment[]): number{
 export function calculateEMA(scores: SecurityAssessment[]): number{
 
     var ema: number = 0;
-    var multiplier: number = 2 / (scores.length);
     if(scores.length == 0){
         return 0;
     }
+    var multiplier: number = 2 / (scores.length);
     return multiplier * scores[0].score + (1 - multiplier) * calculateEMA(scores.slice(1, scores.length));
 }
