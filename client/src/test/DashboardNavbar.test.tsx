@@ -10,6 +10,13 @@ beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement("div");
     document.body.appendChild(container);
+
+    // Render the DashboardNavbar
+    act(() => {
+        render(<DashboardNavbar
+            history={DashboardNavbarPropsMock.history}>
+            </DashboardNavbar>, container);
+    });
 });
 
 afterEach(() => {
@@ -28,13 +35,6 @@ const DashboardNavbarPropsMock = {
 
 test('All buttons are present in DOM', () => {
 
-    // Render the DashboardNavbar
-    act(() => {
-        render(<DashboardNavbar
-            history={DashboardNavbarPropsMock.history}>
-            </DashboardNavbar>, container);
-    });
-
     var buttonValidators = null;
     var buttonAbout = null;
 
@@ -50,13 +50,6 @@ test('All buttons are present in DOM', () => {
 });
 
 test('Validators button triggers correct onClick event', () => {
-
-    // Render the DashboardNavbar
-    act(() => {
-        render(<DashboardNavbar
-            history={DashboardNavbarPropsMock.history}>
-            </DashboardNavbar>, container);
-    });
 
     var buttonValidators: HTMLButtonElement | null = null;
 
@@ -80,13 +73,6 @@ test('Validators button triggers correct onClick event', () => {
 });
 
 test('About button triggers correct onClick event', () => {
-
-    // Render the DashboardNavbar
-    act(() => {
-        render(<DashboardNavbar
-            history={DashboardNavbarPropsMock.history}>
-            </DashboardNavbar>, container);
-    });
 
     var buttonAbout: HTMLButtonElement | null = null;
 
