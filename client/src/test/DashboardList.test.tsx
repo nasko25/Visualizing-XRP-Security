@@ -1,7 +1,6 @@
-import Dashboard from './../components/dashboard/Dashboard';
 import { createBrowserHistory, History } from 'history';
 import { mount, shallow } from 'enzyme';
-import { fireEvent, getByTestId, getByText } from '@testing-library/react';
+import { fireEvent, getAllByRole, getByRole, getByTestId, getByText } from '@testing-library/react';
 import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";
 import DashboardList from '../components/dashboard/DashboardList';
@@ -55,7 +54,7 @@ const mockNodeData: Array<any> = [
 
 const DashboardListPropsMock = {
     arrNodesData: mockNodeData,
-    selected: '',
+    selected: 'key2',
     history: createBrowserHistory()
 }
 
@@ -98,5 +97,33 @@ test('Click on node in the list triggers correctly onClick event', () => {
             // Check that the history has updated
             expect(DashboardListPropsMock.history.location.pathname + DashboardListPropsMock.history.location.search).toEqual('/node?public_key=key');
         }
+    }
+});
+
+test('Selected node is highlighted in the list', () => {
+
+    var list: HTMLTableElement | null = null;
+    var rows: HTMLCollectionOf<HTMLTableRowElement> | null = null;
+    // var el: HTMLTableCellElement | null = null;
+    var el: HTMLElement | null = null;  
+
+    // Get the list from the DOM
+    if (container !== null) {
+        list = (getByTestId(container, "dashboard-list") as HTMLTableElement);
+    }
+
+    // Assert that the list is present
+    expect(list).not.toBeNull();
+    expect(list).toBeTruthy();
+
+    if (list !== null){
+        // Get the rows of the list
+        rows = list.rows;
+
+        if (container !== null) {
+            el = getAllByRole(container, "rowheader")[0];
+            
+            expect(el.textContent).toEqual(mockNodeData[1].public_key);    
+        }    
     }
 });
