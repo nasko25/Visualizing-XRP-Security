@@ -12,10 +12,7 @@ export type DashboardListProps = {
 
 export default class DashboardList extends Component<DashboardListProps> {
     highligth = {};
-
-    test(){
-
-    }
+    
     render() {
         let nodes = this.props.arrNodesData;
         let selected: string = this.props.selected;
@@ -66,16 +63,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     align: 'start'
                                 }
                             ]}
-                            // data={this.props.arrNodesData.filter(node => {
-                            //     if (this.props.selected == "") {
-                            //         return node;
-                            //     } else {
-                            //         if (node.public_key == this.props.selected) {
-                            //             return node;
-                            //         }
-                            //     }
-                            // })}
-                        
                             data={nodes.map(node => ({
                                 public_key: node.public_key,
                                 rippled_version: node.rippled_version,
@@ -84,7 +71,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                             }))}
                             step={10}
                             size='large'
-                            // onSearch={this.highlightInList}
                             onClickRow={({datum}) => {
                                 console.log(datum.public_key);
                                 this.props.history.push("/node?public_key=" + datum.public_key);
@@ -94,11 +80,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 vertical: "xsmall"
                             }}
                             style={{scrollbarWidth: 'none', height: '100%'}}
-                            // background={{
-                            //     "body": ["#383838", "rgb(38,38,38)"]
-                            //     }
-                            //   }
-                            // sort={({property: 'uptime', direction: 'desc'})}
                             rowProps= { this.highligth }
                             border={{
                                 color: 'white',
