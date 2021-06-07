@@ -68,6 +68,7 @@ Build all the files to javascript.
 Then Run:
 ```
 cd server
+tsc --project ./
 npm t
 ```
 
