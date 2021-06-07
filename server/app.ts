@@ -11,6 +11,7 @@ import * as exec from "child_process";
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
+import ValidatorTrustAssessor from './validator_trust_assessor';
 
 //Given in minutes:
 const CRAWLER_INVERVAL: number = 5;
@@ -38,10 +39,12 @@ if(process.argv[2]=="crawler"){
     //portScanner.on('close', (code) => {
     //    console.log(`validator process exited with code ${code}`);
     //});
-    var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
-    crawler.on('close', (code) => {
-        console.log(`crawler process exited with code ${code}`);
-    });
+    //var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
+    //crawler.on('close', (code) => {
+    //    console.log(`crawler process exited with code ${code}`);
+    //});
+    let trustAssessor = new ValidatorTrustAssessor();
+    trustAssessor.run();
     const app = express();
     app.use(cors());
 

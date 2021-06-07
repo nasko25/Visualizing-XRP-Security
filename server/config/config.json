@@ -1,6 +1,8 @@
 {
-    "_comment": "set useIpStack to true if you want to make an http request to ipstack to resolve the geolocation of an IP address with their API",
+    "_comment": "Set useIpStack to true if you want to make an http request to ipstack to resolve the geolocation of an IP address with their API",
     "useIPStack" : false,
-    "__comment": "access key used for the ipstack geoip lookup (TODO more info in the readme)",
-    "accessKey": "1f7dce5f41b09991c3b932423e359995"
+    "__comment": "Access key used for the ipstack geoip lookup (TODO more info in the readme)",
+    "accessKey": "1f7dce5f41b09991c3b932423e359995",
+    "_comment_": "API endpoint used to fetch data for the validator node, like 'missed' and 'total' ledgers",
+    "validators_api_endpoint": "https://data.xrpl.org/v1/network/validators"
 }
