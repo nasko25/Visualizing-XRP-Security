@@ -85,7 +85,6 @@ export default class Dashboard extends Component<DashboardProps> {
 
     render() {
         return (
-            // <div className='Dashboard'>
             <Grommet style={{height: '100%', width: '100%'}}>
                 <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
                     <DashboardNavbar history={this.props.history}/>
@@ -94,7 +93,6 @@ export default class Dashboard extends Component<DashboardProps> {
                     <Grid
                         rows={["2/3", "1/3"]}
                         columns={["1/2", "1/2"]}
-                        // gap={"small"}
                         areas={[
                             { name: "map", start: [0, 0], end: [0, 0.5] },
                             { name: "info", start: [0, 1], end: [0, 1] },
@@ -130,7 +128,6 @@ export default class Dashboard extends Component<DashboardProps> {
                         </Box>
                     </Grid>
                 </div>
-                {/* </div> */}
             </Grommet>
         );
     }

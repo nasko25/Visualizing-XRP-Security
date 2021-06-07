@@ -12,7 +12,7 @@ export type DashboardListProps = {
 
 export default class DashboardList extends Component<DashboardListProps> {
     highligth = {};
-    
+
     render() {
         let nodes = this.props.arrNodesData;
         let selected: string = this.props.selected;
@@ -86,6 +86,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 side: 'bottom',
                                 size: '1px',
                             }}
+                            data-testid='dashboard-list'
                         />
                     </Box>
                 </Grommet>
