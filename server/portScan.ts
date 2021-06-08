@@ -10,38 +10,6 @@ import {
 
 
 
-//How aggressive is our Short Scan
-const T_LEVEL_SHORT: number = 3;
-
-//How aggressive is our Long Scan
-const T_LEVEL_LONG: number = 4;
-
-//Affects how many short scans are ran at the same time
-const MAX_SHORT_SCANS: number = 2;
-
-//Affects how many ip addresses are fed to NMAP for the long scan
-const MAX_LONG_SCANS: number = 4;
-
-//How many days do we wait until next short scan
-const DAYS_BETWEEN_SHORT_SCANS: number = 2;
-
-//How many minutes we wait before doing the next long scan
-const MINUTES_BETWEEN_LONG_SCANS: number = 10;
-
-//When do we timeout on a short scan
-const TIMEOUT_SHORT_SCAN: string = "10m";
-
-//When do we timeout on a long scan
-const TIMEOUT_LONG_SCAN: string = "24h";
-
-//For the short scan we check the top N ports (defined by this variable)
-const TOP_PORTS = 2000;
-
-//Do or do not long scans... There is no try.
-const DO_LONG_SCAN = false;
-
-const VERBOSE_LEVEL = 0;
-
 interface ProtocolPortid {
     protocol: string;
     portid: string;
@@ -54,16 +22,37 @@ interface Node {
 }
 
 class PortScan {
+    T_LEVEL_SHORT: number = 3;
+    T_LEVEL_LONG: number = 4;
+    MAX_SHORT_SCANS: number = 2;
+    MAX_LONG_SCANS: number = 4;
+    DAYS_BETWEEN_SHORT_SCANS: number = 2;
+    MINUTES_BETWEEN_LONG_SCANS: number = 10;
+    TIMEOUT_SHORT_SCAN: string = "20m";
+    TIMEOUT_LONG_SCAN: string = "24h";
+    TOP_PORTS = 2000;
+    DO_LONG_SCAN = false;
+    VERBOSE_LEVEL = 0;
     shortScanList: NodePorts[];
     nmapInterface: NmapInterface;
-    constructor(nmmpintrf: NmapInterface) {
+
+    constructor(nmmpintrf: NmapInterface, doLongScans?: boolean, topPorts?: number, tLevelShort?: number, tLevelLong?: number, maxShortScns?: number,
+        maxLongScans?: number, daysBtwnShrtScns?: number, timeoutShrtScn?: string, tmoutLngScn?: string, vrbLvl?: number ) {
         this.nmapInterface = nmmpintrf;
         this.shortScanList = [];
+
+        if(doLongScans) this.DO_LONG_SCAN = doLongScans;
+        if(topPorts) this.TOP_PORTS = topPorts;
+        if(tLevelShort) this.T_LEVEL_SHORT = tLevelShort;
+        if(tLevelLong) this.T_LEVEL_LONG = tLevelLong;
+        if(maxShortScns) this.MAX_SHORT_SCANS = maxShortScns;
+        if(maxLongScans) this.MAX_LONG_SCANS = maxLongScans;
+        if(daysBtwnShrtScns) this.DAYS_BETWEEN_SHORT_SCANS = daysBtwnShrtScns;
+        if(timeoutShrtScn) this.TIMEOUT_SHORT_SCAN = timeoutShrtScn;
+        if(tmoutLngScn) this.TIMEOUT_LONG_SCAN = tmoutLngScn;
+        if(vrbLvl) this.VERBOSE_LEVEL = vrbLvl;
     }
 
-    setList(lst: NodePorts[]){
-        this.shortScanList = lst;
-    }
     /**
      * getRandomDate is used to schedule the next batch of scans in a pseudo random manner for the next day
      * @param increaseInDays how many days from now should the returned date be
@@ -83,9 +72,9 @@ class PortScan {
      * Schedules a short scan of the second kind (where several scans run together)
      */
     scheduleAShortScanver2() {
-        const job = schedule.scheduleJob(this.getRandomDate(2), () => {
+        const job = schedule.scheduleJob(this.getRandomDate(this.DAYS_BETWEEN_SHORT_SCANS), () => {
             console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
-            if(DO_LONG_SCAN){
+            if(this.DO_LONG_SCAN){
                 dbCon.getNodesNonNullPort().then((result) => {
                     this.shortScanList = result;
                     this.shortScanver2(0);
@@ -107,14 +96,14 @@ class PortScan {
      * Schedules a long scan
      */
     scheduleALongScan() {
-        const job = schedule.scheduleJob(this.getRandomDate(2), () => {
+        setTimeout(() =>{
             console.log("- - - BEGINNING  LONG  PORT  SCAN - - -");
             dbCon.getNullPortNodes().then((result) => {
                 this.longScan(result).then(() => this.scheduleALongScan());
             }).catch((err: Error) => {
                 Logger.error(err.message);
             });
-        });
+        }, this.MINUTES_BETWEEN_LONG_SCANS*60*1000)
     }
     
     //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
@@ -138,7 +127,7 @@ class PortScan {
             var i = 0;
             var listOfIpS = "";
             var mp = new Map();
-            while (n < listOfNodes.length && i < MAX_LONG_SCANS) {
+            while (n < listOfNodes.length && i < this.MAX_LONG_SCANS) {
                 if (this.normaliseIP(listOfNodes[n].ip).includes(":")) {
                     indexArrayForIPv6.push(n);
                 } else {
@@ -150,7 +139,7 @@ class PortScan {
                 n++;
             }
 
-            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, true, T_LEVEL_LONG, TIMEOUT_LONG_SCAN);
+            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, true, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
             if (out != null) {
                 for (var node in out) {
                     if (out[node].up) {
@@ -190,7 +179,7 @@ class PortScan {
             var mp = new Map();
             var i = 0;
             var listOfIpS = "";
-            while (n < indexArrayForIPv6.length && i < MAX_LONG_SCANS) {
+            while (n < indexArrayForIPv6.length && i < this.MAX_LONG_SCANS) {
                 listOfIpS += listOfNodes[indexArrayForIPv6[n]].ip + " ";
                 mp.set(
                     listOfNodes[indexArrayForIPv6[n]].ip,
@@ -200,7 +189,7 @@ class PortScan {
                 n++;
             }
 
-            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, false, T_LEVEL_LONG, TIMEOUT_LONG_SCAN);
+            var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, false, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
             console.log(out);
             if (out != null) {
                 for (var node in out) {
@@ -262,8 +251,8 @@ class PortScan {
             }
             let out1: Node | null = await this.nmapInterface.checkSpecificports(
                 this.normaliseIP(listOfNodes[ip].ip),
-                T_LEVEL_SHORT,
-                TIMEOUT_SHORT_SCAN,
+                this.T_LEVEL_SHORT,
+                this.TIMEOUT_SHORT_SCAN,
                 portsToCheck
             );
             //Checks if the scan succeed
@@ -293,7 +282,7 @@ class PortScan {
 
             console.log("Second scan")
 
-            var out2 = await this.nmapInterface.topPortsScan(this.normaliseIP(listOfNodes[ip].ip), TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
+            var out2 = await this.nmapInterface.topPortsScan(this.normaliseIP(listOfNodes[ip].ip), this.TIMEOUT_SHORT_SCAN, this.T_LEVEL_SHORT, this.TOP_PORTS);
             //Checks if the scan succeed
             if (out2 != null && out2 && out2.up) {
                 var i: number = 0;
@@ -357,7 +346,7 @@ class PortScan {
         //We should keep the number of scans low as once I made 20 promises for nmap scans and crashed my linux
         for (
             var i = 0;
-            ip < this.shortScanList.length && i < MAX_SHORT_SCANS;
+            ip < this.shortScanList.length && i < this.MAX_SHORT_SCANS;
             i++
         ) {
             promiseArr.push(this.shortScanPromiseMaker(ip));
@@ -378,7 +367,7 @@ class PortScan {
     start() {
         Logger.info("PORT SCANNER STARTED")
 
-        if(DO_LONG_SCAN){
+        if(this.DO_LONG_SCAN){
             dbCon.getNodesNonNullPort().then((result) => {
                 this.shortScanList = result;
                 this.shortScanver2(0);
@@ -404,6 +393,67 @@ class PortScan {
         //this.longScan(data2).then(() => this.scheduleALongScan());
         // this.shortScanList = data;
         // this.shortScanver2(0);
+    }
+
+    setDoLongScans(doLong: boolean){
+        this.DO_LONG_SCAN = doLong;
+        return this;
+    }
+
+    setTLevelShort(tlevel: number){
+        this.T_LEVEL_SHORT = tlevel;
+        return this;
+    }
+
+    setTLevelLong(tlevel: number){
+        this.T_LEVEL_LONG = tlevel;
+        return this;
+    }
+
+    setMaxShortScans(maxShortScans: number){
+        this.MAX_SHORT_SCANS = maxShortScans;
+        return this;
+    }
+
+    setMaxLongScans(maxLongScans: number){
+        this.MAX_LONG_SCANS = maxLongScans;
+        return this;
+    }
+
+    setDaysBetweenSS(days: number){
+        this.DAYS_BETWEEN_SHORT_SCANS = days;
+        return this;
+    }
+
+    setMinutesBetweenLS(minutes: number){
+        this.MINUTES_BETWEEN_LONG_SCANS = minutes;
+        return this;
+    }
+
+    setTimeoutSS(timeout: string){
+        this.TIMEOUT_SHORT_SCAN = timeout;
+        return this;
+    }
+
+    setTimeoutLS(timeout: string){
+        this.TIMEOUT_LONG_SCAN = timeout;
+        return this;
+    }
+
+    setTopPorts(topPorts: number){
+        this.TOP_PORTS = topPorts;
+        return this;
+    }
+
+    setVerboseLevel(vlevel: number){
+        this.VERBOSE_LEVEL = vlevel;
+        return this;
+    }
+
+
+    setList(lst: NodePorts[]){
+        this.shortScanList = lst;
+        return this;
     }
 }
 //Debug:

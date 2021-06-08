@@ -47,6 +47,7 @@ class Security_Scanner {
                             Logger.error(`SS: Storing failed: ${err.message}`);
                         })
                         .finally(() => {
+                            Logger.info("Scheduling 50")
                             this.schedule(once);
                         });
                 });
@@ -55,6 +56,7 @@ class Security_Scanner {
                 Logger.error(`SS: Fetching of nodes failed: ${err.message}!`);
             })
             .finally(() => {
+                Logger.info("Scheduling 58")
                 this.schedule(once);
             });
     }

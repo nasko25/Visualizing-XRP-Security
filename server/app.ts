@@ -7,14 +7,13 @@ import { Node as CrawlerNode } from './crawl';
 import GeoLocate from './geoLocate';
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 import * as exec from "child_process";
-// Logger
+import config from './config/config.json';
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
 import NmapInterface from './nmapInterface';
 
-//Given in minutes:
-const CRAWLER_INVERVAL: number = 5;
+
 
 
 if(process.argv[2]=="crawler"){
@@ -101,7 +100,7 @@ function repeated_crawl() {
 
     // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
     setTimeout(() => new GeoLocate().locate(), 30 * 1000);
-    setTimeout(repeated_crawl, CRAWLER_INVERVAL*60000);
+    setTimeout(repeated_crawl, config.crawler_interva*60000);
 }
 
 function start_validator_identification() {
@@ -119,6 +118,10 @@ function start_validator_identification() {
 async function startPortScanner() {
 
     let portScanner = new PortScanner(new NmapInterface());
+    portScanner.setDoLongScans(config.DO_LONG_SCAN).setTimeoutLS(config.TIMEOUT_LONG_SCAN)
+    .setTimeoutSS(config.TIMEOUT_SHORT_SCAN).setTopPorts(config.TOP_PORTS).setTLevelShort(config.T_LEVEL_SHORT)
+    .setTLevelLong(config.T_LEVEL_LONG).setMaxShortScans(config.MAX_SHORT_SCANS).setMaxLongScans(config.MAX_LONG_SCANS)
+    .setMinutesBetweenLS(config.MINUTES_BETWEEN_LONG_SCANS).setDaysBetweenSS(config.DAYS_BETWEEN_SHORT_SCANS).setVerboseLevel(config.VERBOSE_LEVEL);
     portScanner.start()
 }
 
