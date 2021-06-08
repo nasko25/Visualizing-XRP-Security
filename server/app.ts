@@ -11,6 +11,7 @@ import * as exec from "child_process";
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
+import NmapInterface from './nmapInterface';
 
 //Given in minutes:
 const CRAWLER_INVERVAL: number = 5;
@@ -26,22 +27,9 @@ if(process.argv[2]=="crawler"){
         console.log(`PortScanner exited with the exception: ${e}.`);
     });
 }else if(process.argv[2]=="validator"){
-    // Logger.info("VALIDATOR STARTED 29")
-    // start_validator_identification();
-}else{
-    //Preparations for a for bomb:
-    var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);
-    portScanner.on('close', (code) => {
-        console.log(`portscanner process exited with code ${code}`);
-    });
-    var validator = exec.fork(__dirname+"/app.js",["validator"]);
-    portScanner.on('close', (code) => {
-        console.log(`validator process exited with code ${code}`);
-    });
-    var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
-    crawler.on('close', (code) => {
-        console.log(`crawler process exited with code ${code}`);
-    });
+    Logger.info("VALIDATOR STARTED 29")
+    start_validator_identification();
+}else if(process.argv[2]=="api"){
     const app = express();
     app.use(cors());
 
@@ -57,6 +45,33 @@ if(process.argv[2]=="crawler"){
     app.listen(PORT, () => {
         console.log(`The application is listening on port ${PORT}!`);
     });
+}else{
+    //Preparations for a for bomb:
+
+    //Starts the portscanner service
+    var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);
+    portScanner.on('close', (code) => {
+        console.log(`portscanner process exited with code ${code}`);
+    });
+
+    //Starts the validator service
+    var validator = exec.fork(__dirname+"/app.js",["validator"]);
+    validator.on('close', (code) => {
+        console.log(`validator process exited with code ${code}`);
+    });
+
+    //Starts the crawler service
+    var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
+    crawler.on('close', (code) => {
+        console.log(`crawler process exited with code ${code}`);
+    });
+
+    //Starts the api service
+    var api = exec.fork(__dirname+"/app.js",["api"]);
+    api.on('close', (code) => {
+        console.log(`API process exited with code ${code}`);
+    });
+    
 }
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
@@ -103,7 +118,7 @@ function start_validator_identification() {
 
 async function startPortScanner() {
 
-    let portScanner = new PortScanner();
+    let portScanner = new PortScanner(new NmapInterface());
     portScanner.start()
 }
 
