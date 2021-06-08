@@ -12,6 +12,8 @@ import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
 import ValidatorTrustAssessor from './validator_trust_assessor';
+import { ValidatorMonitor } from './validator_monitor';
+import { EventEmitter } from 'events';
 
 //Given in minutes:
 const CRAWLER_INVERVAL: number = 5;
@@ -35,16 +37,22 @@ if(process.argv[2]=="crawler"){
     //portScanner.on('close', (code) => {
     //    console.log(`portscanner process exited with code ${code}`);
     //});
-    var validator = exec.fork(__dirname+"/app.js",["validator"]);
-    validator.on('close', (code) => {
-        console.log(`validator process exited with code ${code}`);
-    });
+    //var validator = exec.fork(__dirname+"/app.js",["validator"]);
+    //validator.on('close', (code) => {
+    //    console.log(`validator process exited with code ${code}`);
+    //});
     //var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
     //crawler.on('close', (code) => {
     //    console.log(`crawler process exited with code ${code}`);
     //});
-    let trustAssessor = new ValidatorTrustAssessor();
-    trustAssessor.run();
+
+    // TODO the validator monitor should emit an event when it is done, and the trust assessor needs to listen for that event
+    //  and start only when it is emitted
+    //let trustAssessor = new ValidatorTrustAssessor();
+    //trustAssessor.run();
+
+    new ValidatorMonitor(new EventEmitter());
+
     const app = express();
     app.use(cors());
 

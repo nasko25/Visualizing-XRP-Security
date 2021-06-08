@@ -14,64 +14,13 @@ const ripple1_hash = "nHUPAdpS7GdfeisdtHE5YiSUcUJ8VhtHP2o4yWNQcsXfE89WKHMN"
 const ripple2_hash = "nHUZoRNnFqxiLrXyydtLapFJxZMUxgTuGg9624Pdg4med73xNSP2"
 
 
-
-//const api = new RippleAPI({
-//  server: ripple3_node
-//});
-//
-//api.on('error', (errorCode, errorMessage) => {
-//    console.log(errorCode + ': ' + errorMessage);
-//});
-//
-//api.on('connected', () => {
-//    console.log('Connected to Ripple node');
-//});
-//
-//api.on('disconnected', (code) => {
-//    console.log('disconnected, code:', code);
-//});
-//
-//api.connect().then(() => {
-//    api.connection.on('ledgerClosed', (event) => {
-//        //canonical_ledgers.push(event.ledger_hash)
-//        console.log("Canonical ledger is", event.ledger_hash)
-//    })
-//
-//    api.connection.on('validationReceived', (event) => {
-//        if (validated_ledgers.get(master_key)) {
-//            validated_ledgers.get(event.master_key).push(event.ledger_hash);
-//        } else {
-//            validated_ledgers.set(event.master_key, [event.ledger_hash])
-//        }
-//
-//        //if (event.master_key === ripple1_hash) {
-//        //    //validated_ledgers.push(event.ledger_hash)
-//        //    console.log("Ripple1: Validation of ledger", event.ledger_hash, "by node", ripple1_hash)
-//        //}
-//
-//        //if (event.master_key === ripple2_hash) {
-//        //    //validated_ledgers.push(event.ledger_hash)
-//        //    console.log("Ripple2: Validation of ledger", event.ledger_hash, "by node", ripple2_hash)
-//        //}
-//    })
-//
-//    api.request('subscribe', {
-//      streams: ['ledger', 'validations']
-//    }).then(response => {
-//        console.log('Successfully subscribed')
-//    }).catch(error => {
-//        console.error(error)
-//    })
-//  }).catch(console.error);
-
-
 export interface ValidatorStatistics {
     public_key: string,
     total: number,
     missed: number
 }
 
-class ValidatorMonitor {
+export class ValidatorMonitor {
     // event emitter passed from app.ts that will be used to fire an event
     // to notify the ValidatorTrustAssessor that it can recalculate the trust score of the validators
     // (since the information in the database will have been updated)
@@ -87,20 +36,78 @@ class ValidatorMonitor {
     constructor(eventEmitter: EventEmitter) {
         this.eventEmitter = eventEmitter;
         this.subsribeToAPI();
+        this.schedule();
     }
 
     async subsribeToAPI() {
+
+        const api = new RippleAPI({
+          server: ripple3_node
+        });
+
+        api.on('error', (errorCode: string, errorMessage: string) => {
+            Logger.error(errorCode + ': ' + errorMessage);
+        });
+
+        api.on('connected', () => {
+            Logger.info(`Connected to the ${config.validators_api_endpoint} Ripple node to listen for validated ledgers.`);
+        });
+
+        api.on('disconnected', (code: number) => {
+            if (code !== 1000) {
+                Logger.info(`Disconnected from the Ripple node with error code: ${code}`);
+            } else {
+                Logger.info('Disconnected from the Ripple node normally.');
+            }
+        });
+
+        api.connect().then(() => {
+            api.connection.on('ledgerClosed', (event: any) => {
+                //console.log("Canonical ledger is", event.ledger_hash)
+                this.canonicalLedgers.push(event.ledger_hash);
+            })
+
+            api.connection.on('validationReceived', (event: any) => {
+                if (this.validatedLedgers.get(event.master_key)) {
+                    this.validatedLedgers.get(event.master_key)?.push(event.ledger_hash);
+                } else {
+                    this.validatedLedgers.set(event.master_key, [event.ledger_hash])
+                }
+
+                //if (event.master_key === ripple1_hash) {
+                //    //validated_ledgers.push(event.ledger_hash)
+                //    console.log("Ripple1: Validation of ledger", event.ledger_hash, "by node", ripple1_hash)
+                //}
+
+                //if (event.master_key === ripple2_hash) {
+                //    //validated_ledgers.push(event.ledger_hash)
+                //    console.log("Ripple2: Validation of ledger", event.ledger_hash, "by node", ripple2_hash)
+                //}
+            })
+
+            api.request('subscribe', {
+              streams: ['ledger', 'validations']
+            }).then(() => {
+                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
+            }).catch((error: Error) => {
+                Logger.error(error);
+            })
+          }).catch((error: Error) => {
+            Logger.error(error);
+          });
+
     }
 
     schedule() {
         Logger.info(`Scheduling a validator trust assessment after ${this.INTERVAL} minutes.`);
-        setTimeout(this.run, this.INTERVAL * 1000 * 60);
+        setTimeout(() => { this.run() }, this.INTERVAL * 1000 * 60);
     }
 
     // clear the cached information every `INTERVAL` minutes and fire an event for the ValidatorTrustAssessor to recalculate
     //  the nodes' scores
     run() {
         // TODO only validators public keys are needed
+        // TODO encode the public keys of the validator nodes to base58 before adding them to the database
         getValidators().then(validators => {
             const validator_statistics = validators.map(validator => {
                 const total = this.canonicalLedgers.length;
@@ -113,7 +120,6 @@ class ValidatorMonitor {
                 if (validatedLedgers !== undefined) {
                     missed = validatedLedgers.filter(l => !this.canonicalLedgers.includes(l))
                         .concat(this.canonicalLedgers.filter(l => !validatedLedgers.includes(l) )).length;
-
                 }
 
                 return <ValidatorStatistics> {
@@ -124,17 +130,22 @@ class ValidatorMonitor {
             })
 
             // now insert the statistics in the database
-            insertValidatorsStatistics(validator_statistics).finally(() => {
+            insertValidatorsStatistics(validator_statistics)
+                .catch((err: Error) => {
+                    Logger.error(`Cannot insert the computed validators statistics to the database: ${err}`);
+                })
+                .finally(() => {
 
-                // clear the cached ledgers
-                this.validatedLedgers.clear();
-                this.canonicalLedgers = [];
+                    // clear the cached ledgers
+                    this.validatedLedgers.clear();
+                    this.canonicalLedgers = [];
 
-                // schedule the same procedure again after `INTERVAL` minutes
-                this.schedule();
+                    // schedule the same procedure again after `INTERVAL` minutes
+                    this.schedule();
+                });
 
-            });
-
+        }).catch((err: Error) => {
+            Logger.error(`Could not get the validator public keys from the database: ${err}`)
         });
 
 

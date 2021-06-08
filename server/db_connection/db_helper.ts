@@ -218,7 +218,7 @@ export function insertValidatorsAssessments(assessments: ValidatorAssessment[]) 
     const query = "INSERT INTO validator_assessment (public_key, trust_metric_version, score) VALUES ? AS new ON DUPLICATE KEY UPDATE trust_metric_version=new.trust_metric_version, score=new.score;";
     const vals = assessments.map(assessment => [assessment.public_key, assessment.trust_metric_version, assessment.score]);
 
-    return send_insert_request_vals(query, vals);
+    return send_insert_request_vals(query, [vals]);
 }
 
 export function getValidatorsStatistics(): Promise<ValidatorStatistics[]> {
@@ -231,7 +231,7 @@ export function insertValidatorsStatistics(validatorsStatistics: ValidatorStatis
     const query = "INSERT INTO validator_statistics (public_key, total, missed) VALUES ?;";
     const vals = validatorsStatistics.map(validatorStats => [validatorStats.public_key, validatorStats.total, validatorStats.missed]);
 
-    return send_insert_request_vals(query, vals);
+    return send_insert_request_vals(query, [vals]);
 }
 
 
