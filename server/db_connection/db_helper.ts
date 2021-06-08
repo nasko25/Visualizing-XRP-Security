@@ -5,6 +5,7 @@ import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import ValidatorAssessment from './models/validator_assessment';
+import { ValidatorStatistics } from '../validator_trust_assessor';
 import Logger from '../logger'
 import e from 'express'
 var mysql = require('mysql');
@@ -219,6 +220,12 @@ export function insertValidatorsAssessments(assessments: ValidatorAssessment[]) 
     const vals = assessments.map(assessment => [assessment.public_key, assessment.trust_metric_version, assessment.score]);
 
     return send_insert_request_vals(query, vals);
+}
+
+export function getValidatorsStatistics(): Promise<ValidatorStatistics[]> {
+    const query = "SELECT * FROM validator_statistics;";
+
+    return send_select_request(query);
 }
 
 

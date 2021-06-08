@@ -91,12 +91,37 @@ CREATE TABLE IF NOT EXISTS `security_assessment` (
 )
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `validator_assessment`
+-- -----------------------------------------------------
 USE db;
 CREATE TABLE IF NOT EXISTS `validator_assessment` (
   `public_key` VARCHAR(80) NOT NULL,
   `trust_metric_version` FLOAT NOT NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `score` FLOAT NOT NULL
+)
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `validator_statistics`
+-- It stores hourly statistics about the validator nodes
+-- -----------------------------------------------------
+USE db;
+CREATE TABLE IF NOT EXISTS `validator_statistics` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `public_key` VARCHAR(80) NOT NULL,
+    `total` INT NOT NULL,                           -- total validated ledgers
+    `missed` INT NOT NULL,                          -- missed validated ledgers
+    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX (`public_key`),
+    FOREIGN KEY (`public_key`)
+     REFERENCES `validator` (`public_key`)
+     ON DELETE NO ACTION
+     ON UPDATE NO ACTION
 )
 ENGINE = InnoDB;
 
