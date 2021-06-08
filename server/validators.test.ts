@@ -117,3 +117,17 @@ test("test: get_node_validator_list() returns empty array after error", async ()
     })
 
 })
+
+test("test: run successfully handles database error", async () => {
+
+    getIpAddressesMock.mockRejectedValue(new Error);
+
+    let valIden: ValidatorIdentifier = new ValidatorIdentifier();
+
+    await valIden.run()
+
+        expect(Logger.info).not.toHaveBeenCalled();
+        expect(Logger.error).toHaveBeenCalledTimes(1);
+
+
+});

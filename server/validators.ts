@@ -56,7 +56,8 @@ export default class ValidatorIdentifier {
     }
 
     run() {
-        getIpAddresses()
+
+        return getIpAddresses()
             .then((nodes: NodeIpKeyPublisher[]) => {
                 Logger.info("VI: Database queried ...");
 
