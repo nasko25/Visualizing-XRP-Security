@@ -247,7 +247,12 @@ class PortScan {
             var portsToCheck=listOfNodes[ip].portRunningOn;
             //var portsToCheck = "";
             if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
-                portsToCheck+=","+listOfNodes[ip].ports;
+                if(listOfNodes[ip].ports.includes(portsToCheck)){
+                    portsToCheck = listOfNodes[ip].ports;
+                }else{
+                    portsToCheck+=","+listOfNodes[ip].ports;
+                }
+                
             }
             let out1: Node | null = await this.nmapInterface.checkSpecificports(
                 this.normaliseIP(listOfNodes[ip].ip),

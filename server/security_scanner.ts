@@ -6,20 +6,23 @@ import {
 import { Node } from "./db_connection/models/node";
 import { SecurityAssessment } from "./db_connection/models/security_assessment";
 import Logger from "./logger";
+import SecurityMetric from "./security_metrics";
 
 // A class representing the component that handles the data flow for the security assessment of Stock Nodes
 class Security_Scanner {
     scan_interval: number = 10;
-
+    security_calculator: SecurityMetric = new SecurityMetric();
+    update_finished: boolean = false;
     /* 
     Constructor
 
     scan_interval - the interval during which to perform the scanning
     */
-    constructor(scan_interval: number) {
+    constructor(scan_interval: number, security_calculator?: SecurityMetric) {
         this.scan_interval = scan_interval;
+        if(security_calculator) this.security_calculator = security_calculator;
     }
-
+  
     /*
     The starting point for security scanning.
     
@@ -60,10 +63,25 @@ class Security_Scanner {
                 this.schedule(once);
             });
     }
-
+    start(once?: boolean){
+        if(this.update_finished){
+            this.run(once);
+        }else{
+            console.log("WE NEED TO START SEC CAL FIRST!")
+            const finish = new EventEmitter();
+            finish.on('done', ()=>{
+                if(!this.update_finished){
+                    
+                    this.update_finished=true;
+                    this.run(once);
+                }
+            });
+            this.security_calculator.start(finish);
+        }
+    }
     schedule(once?: boolean) {
         if (!once) {
-            Logger.error(
+            Logger.info(
                 `SS: Scheduling next assessment after ${this.scan_interval} hours.`
             );
             setTimeout(this.run, 3600 * 1000 * this.scan_interval);
@@ -77,12 +95,21 @@ class Security_Scanner {
 
         return Promise.all(computation_promises);
     }
-
+    flag: number = 0;
     computeScoreForNode(node: Node): SecurityAssessment {
+        var buff =this.security_calculator.getRating(node.rippled_version)[1];
+        if(this.flag<4){
+            Logger.info("NODE "+node.IP+" SCORED "+buff+" ver "+node.rippled_version)
+            this.flag++;
+        }
         return {
-            public_key: "",
-            metric_version: 0.0,
-            score: 0.0,
+            public_key: node.public_key,
+            metric_version: buff,
+            score: Math.max(0,node.ports ? 0.6*buff+0.4*this.security_calculator.rateBasedOnOpenPorts(node.ports.split(',').length) : 0.8*buff),
+            timestamp: new Date()
         };
     }
+
+    
 }
+export default Security_Scanner;

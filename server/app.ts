@@ -12,6 +12,7 @@ import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
 import NmapInterface from './nmapInterface';
+import Security_Scanner from './security_scanner';
 
 
 
@@ -28,6 +29,8 @@ if(process.argv[2]=="crawler"){
 }else if(process.argv[2]=="validator"){
     Logger.info("VALIDATOR STARTED 29")
     start_validator_identification();
+    var ble = new Security_Scanner(2);
+    ble.start();
 }else if(process.argv[2]=="api"){
     const app = express();
     app.use(cors());
@@ -106,6 +109,7 @@ function repeated_crawl() {
 function start_validator_identification() {
     Logger.info("Starting validator identification")
     let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
+    //BRAT VALIDEN SI
     valIden.run();
 }
 

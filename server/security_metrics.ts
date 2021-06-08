@@ -1,4 +1,5 @@
 import axios from "axios";
+import EventEmitter from "events";
 import * as formulas from "./formulas"
 
 interface VersionInfo{
@@ -44,9 +45,9 @@ export default class SecurityMetric {
         // this.listOfVersions.set('1.5.0',4);
     }
 
-    start() {
+    start(evntEmit: EventEmitter) {
         try {
-            this.checkForUpdate();
+            this.checkForUpdate(evntEmit);
         } catch (err) {
             console.log("Could not update the list " + err.message)
         }
@@ -64,11 +65,13 @@ export default class SecurityMetric {
 
     getRating(version: string){
         var v = this.listOfVersions.get(version);
-        return v==undefined ? -1000 : (v.scoreIndex, v.scoreRelease)
+        if(v==undefined) v=this.listOfVersions.get(version.slice(8))
+        
+        return v==undefined ? [this.cutoff, this.cutoff] : [v.scoreIndex, v.scoreRelease]
     }
 
     rateVersionBasedOnIndex(index:number, evalFunction: (x:number, a?: number, b?: number, c?: number, cutoff?: number, decimals?: number)=>number):number {
-        return evalFunction(index,a,b,c,-1000,2);
+        return evalFunction(index,this.a,this.b,this.c,this.cutoff,this.decimal_to_round_to);
     }
 
     rateBasedOnOpenPorts(ports:number){
@@ -77,7 +80,7 @@ export default class SecurityMetric {
     }
     
     //Rate Limit is 60 requests per hour so be careful!
-    checkForUpdate() {
+    checkForUpdate(evntEmit: EventEmitter) {
         axios.get(`https://api.github.com/repos/ripple/rippled/releases`,
             { timeout: 6000, params: { page: 1 } }
         ).then((res) => {
@@ -88,7 +91,7 @@ export default class SecurityMetric {
                     if (this.listOfVersions && this.listOfVersions.has(res.data[0].tag_name) && this.listOfVersions.get(res.data[0].tag_name)?.index==0) {
 
                         console.log("No update needed");
-                        setTimeout(() => this.checkForUpdate(), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
+                        setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
                         return;
                     } else {
 
@@ -114,7 +117,8 @@ export default class SecurityMetric {
                         //this.updateListOfVersions(2, i, prev);
                         this.listOfVersions = this.listOfVersionsBuffer;
                         console.log(this.listOfVersions)
-                        setTimeout(() => this.checkForUpdate(), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
+                        evntEmit.emit('done');
+                        setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
 
                         return;
                     }
@@ -165,7 +169,7 @@ export default class SecurityMetric {
                     this.listOfVersions = this.listOfVersionsBuffer;
                     console.log(this.listOfVersions);
                     
-                    setTimeout(() => this.checkForUpdate(), 10 * 1000);
+                    //setTimeout(() => this.checkForUpdate(evntEmi), 10 * 1000);
 
                 }
             } else {
@@ -225,8 +229,8 @@ export default class SecurityMetric {
 
 }
 
-var test = new SecurityMetric();
-test.start();
+// var test = new SecurityMetric();
+// test.start();
 // console.log(test.getRating('1.7.2'));
 // console.log(test.getRating('1.7.0'));
 // console.log(test.getRating('1.6.0'));
