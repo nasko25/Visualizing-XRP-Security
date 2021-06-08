@@ -5,7 +5,7 @@ import { NodePorts, NodePortsProtocols } from './models/node'
 import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import ValidatorAssessment from './models/validator_assessment';
-import { ValidatorStatistics } from '../validator_trust_assessor';
+import { ValidatorStatistics } from '../validator_monitor';
 import Logger from '../logger'
 import e from 'express'
 var mysql = require('mysql');
@@ -226,6 +226,13 @@ export function getValidatorsStatistics(): Promise<ValidatorStatistics[]> {
     const query = "SELECT * FROM validator_statistics;";
 
     return send_select_request(query);
+}
+
+export function insertValidatorsStatistics(validatorsStatistics: ValidatorStatistics[]) {
+    const query = "INSERT INTO validator_statistics VALUES (public_key, total, missed) ?;";
+    const vals = validatorsStatistics.map(validatorStats => [validatorStats.public_key, validatorStats.total, validatorStats.missed]);
+
+    return send_insert_request_vals(query, vals);
 }
 
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import config from './config/config.json';
 import Logger from './logger';
 import { Validator } from './validators';
+import { ValidatorStatistics } from './validator_monitor';
 import { getValidatorsStatistics, insertValidatorsAssessments } from './db_connection/db_helper';
 import ValidatorAssessment from "./db_connection/models/validator_assessment";
 
@@ -17,12 +17,6 @@ interface ValidatorResponse {
     unl: boolean | string,
 }
 
-export interface ValidatorStatistics {
-    public_key: string,
-    total: number,
-    missed: number
-}
-
 // A class that computes the trust metric for the validator nodes
 export default class ValidatorTrustAssessor {
 
@@ -35,13 +29,11 @@ export default class ValidatorTrustAssessor {
 
     // run the validator trust metric assessor
     // once indicates whether to run it once or (if false or not set) to schedule it every calculation_interval minutes
-    run(once?: boolean) {
+    run() {
         Logger.info("Starting the Validator nodes Trust Assessor.");
         // fetch the data for the validators
         getValidatorsStatistics().then((validators: ValidatorStatistics[]) => {
-            console.log(validators)
             this.assessScores(validators).then((assessments: ValidatorAssessment[]) => {
-                console.log(assessments)
                 // assessments should be defined and cannot be empty
                 if (assessments !== undefined && assessments.length !== 0) {
                     insertValidatorsAssessments(assessments).then(() => {
@@ -56,14 +48,7 @@ export default class ValidatorTrustAssessor {
         }).catch(err => {
             Logger.error(`The Validator nodes Trust Assessor could not calculate the trust score for all nodes: ${err}`);
         })
-        .finally(() => this.schedule(once));
-    }
 
-    schedule(once?: boolean) {
-        if (!once) {
-            Logger.info(`Scheduling a validator trust assessment after ${this.calculation_interval} minutes.`);
-            setTimeout(this.run, this.calculation_interval * 1000 * 60);
-        }
     }
 
     assessScores(validators: ValidatorStatistics[]): Promise<ValidatorAssessment[]> {

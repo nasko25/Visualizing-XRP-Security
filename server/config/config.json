@@ -3,6 +3,6 @@
     "useIPStack" : false,
     "__comment": "Access key used for the ipstack geoip lookup (TODO more info in the readme)",
     "accessKey": "1f7dce5f41b09991c3b932423e359995",
-    "_comment_": "API endpoint used to fetch data for the validator node, like 'missed' and 'total' ledgers",
-    "validators_api_endpoint": "https://data.xrpl.org/v1/network/validators"
+    "_comment_": "Ripple websockets API endpoint used to fetch data for the validator nodes, like 'missed' and 'total' ledgers",
+    "validators_api_endpoint": "wss://xrpl.ws/"
 }
