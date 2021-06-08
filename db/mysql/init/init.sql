@@ -31,7 +31,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `validator` (
   `public_key` VARCHAR(80) NOT NULL,
-  `unl` BOOLEAN NOT NULL DEFAULT FALSE,         -- is the validator part of the official Ripple UNL list
+  `unl` BOOLEAN NULL DEFAULT FALSE,             -- is the validator part of the official Ripple UNL list
   `missed_ledgers` INT NULL,                    -- number of ledgers not validated for the last 24 hours
   PRIMARY KEY (`public_key`),
   UNIQUE INDEX `public_key_UNIQUE` (`public_key` ASC) VISIBLE)

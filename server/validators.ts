@@ -18,7 +18,7 @@ import https from "https";
 interface Validator_List_Result {
     manifest: string;
     blob: string;
-    public_key: string;
+    validation_public_key: string;
     signature: string;
     version: number;
 }
@@ -31,7 +31,7 @@ interface Validator_List_Result {
 interface Validator_Data {
     sequence: number;
     expiration: number;
-    validators: Validator[];
+    validators: { validation_public_key: string }[];
 }
 
 export interface Validator {
@@ -188,6 +188,6 @@ export default class ValidatorIdentifier {
         let decoded: Validator_Data = JSON.parse(decode(valData.blob));
 
         // Extract the list of validator keys
-        return decoded.validators.map((val) => val.public_key);
+        return decoded.validators.map((val) => val.validation_public_key);
     }
 }

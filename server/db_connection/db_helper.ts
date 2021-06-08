@@ -19,20 +19,19 @@ var connection = mysql.createConnection({
 })
 
 export const insertNode = (node: CrawlerNode): Promise<void> => {
-    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.port + '\', \'' +
         node.version + '\', \'' +
         node.pubkey + '\', \'' +
-        node.uptime + '\', \'' +
-        node.publisher + '\') AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime;';
+        node.uptime + '\') AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime;';
 
     return send_insert_request(insert_node_query);
 }
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULL(new.publisher, \'undefined\';";
+    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULLIF(new.publisher, \'undefined\');";
     var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, (node.publisher == undefined ? null : node.publisher)]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
@@ -58,7 +57,7 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
 
 export const updateVersionUptimeAndPublisher = (node: CrawlerNode) => {
     const update_node_query = "UPDATE node SET rippled_version = ?, uptime = ?, publisher = ? WHERE public_key = ?";
-    const vals = [node.version, node.uptime, node.publisher, node.pubkey];
+    const vals = [node.version, node.uptime, node.publisher === undefined ? null : node.publisher, node.pubkey];
 
     return send_insert_request_vals(update_node_query, vals);
 };
@@ -207,7 +206,7 @@ export function insertValidators(validators: Validator[]) {
     const query = "INSERT INTO validator (public_key, unl, missed_ledgers) VALUES ? AS new ON DUPLICATE KEY UPDATE unl=new.unl, missed_ledgers=new.missed_ledgers;";
     const vals = validators.map(validator => [validator.public_key, validator.unl, validator.missed_ledgers]);
 
-    return send_insert_request_vals(query, vals);
+    return send_insert_request_vals(query, [vals]);
 }
 
 export function getValidators(): Promise<Validator[]> {
@@ -216,7 +215,7 @@ export function getValidators(): Promise<Validator[]> {
 }
 
 export function insertValidatorsAssessments(assessments: ValidatorAssessment[]) {
-    const query = "INSERT INTO validator_assessment VALUES (public_key, trust_metric_version, score) ? AS new ON DUPLICATE KEY UPDATE trust_metric_version=new.trust_metric_version, score=new.score;";
+    const query = "INSERT INTO validator_assessment (public_key, trust_metric_version, score) VALUES ? AS new ON DUPLICATE KEY UPDATE trust_metric_version=new.trust_metric_version, score=new.score;";
     const vals = assessments.map(assessment => [assessment.public_key, assessment.trust_metric_version, assessment.score]);
 
     return send_insert_request_vals(query, vals);
@@ -229,7 +228,7 @@ export function getValidatorsStatistics(): Promise<ValidatorStatistics[]> {
 }
 
 export function insertValidatorsStatistics(validatorsStatistics: ValidatorStatistics[]) {
-    const query = "INSERT INTO validator_statistics VALUES (public_key, total, missed) ?;";
+    const query = "INSERT INTO validator_statistics (public_key, total, missed) VALUES ?;";
     const vals = validatorsStatistics.map(validatorStats => [validatorStats.public_key, validatorStats.total, validatorStats.missed]);
 
     return send_insert_request_vals(query, vals);
