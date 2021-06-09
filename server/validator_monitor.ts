@@ -31,9 +31,8 @@ export class ValidatorMonitor {
     //  update the database (in minutes)
     readonly INTERVAL: number = 0.2;
 
-    readonly validatedLedgers = new Map<string, Set<string>>();        // map format: validator_hash:<set of ledgers that it approved>
-    canonicalLedgers: string[] = []
-    readonly canonicalLedgersTotal: string[] = [];
+    readonly validatedLedgers = new Map<string, Map<string, number>>();        // map format: validator_hash:{ <set of ledgers that it approved>, <date when the data was acquired>
+    canonicalLedgers: { ledger_hash: string, timestamp: number }[] = [];
 
     constructor(eventEmitter: EventEmitter) {
         this.eventEmitter = eventEmitter;
@@ -66,15 +65,14 @@ export class ValidatorMonitor {
         api.connect().then(() => {
             api.connection.on('ledgerClosed', (event: any) => {
                 //console.log("Canonical ledger is", event.ledger_hash)
-                this.canonicalLedgers.push(event.ledger_hash);
-                this.canonicalLedgersTotal.push(event.ledger_hash);
+                this.canonicalLedgers.push({ ledger_hash: event.ledger_hash, timestamp: Date.now() });
             })
 
             api.connection.on('validationReceived', (event: any) => {
                 if (this.validatedLedgers.get(event.master_key)) {
-                    this.validatedLedgers.get(event.master_key)?.add(event.ledger_hash);
+                    this.validatedLedgers.get(event.master_key)?.set(event.ledger_hash, Date.now());
                 } else {
-                    this.validatedLedgers.set(event.master_key, new Set([event.ledger_hash]))
+                    this.validatedLedgers.set(event.master_key, new Map([ [event.ledger_hash, Date.now()] ]))
                 }
 
                 //if (event.master_key === ripple1_hash) {
@@ -109,54 +107,66 @@ export class ValidatorMonitor {
     // clear the cached information every `INTERVAL` minutes and fire an event for the ValidatorTrustAssessor to recalculate
     //  the nodes' scores
     run() {
+        const oneMinAgo = Date.now() - (1 * 60 * 1000);
+        const threeMinsAgo = Date.now() - (3 * 60 * 1000);
+        const fiveMinsAgo = Date.now() - (5 * 60 * 1000);
+        const canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp < oneMinAgo && ledger.timestamp > threeMinsAgo).map(ledger => ledger.ledger_hash);
+        this.canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp >= fiveMinsAgo);
+        const total = canonicalLedgers.length;
         // TODO only validators public keys are needed
-        // TODO encode the public keys of the validator nodes to base58 before adding them to the database
         getValidators().then(validators => {
             const validator_statistics = validators.map(validator => {
-                const total = this.canonicalLedgers.length;
                 // for the `missed` ledgers, we need to calculate the difference between the validated ledgers for a given validator public key (validatedLedgers.get(validator.public_key))
                 //  and the canonical ledgers.
                 //  The difference should include both canonical ledgers that were not approved by a given validator, AND approved ledgers that are not canonical.
-                const validatedLedgers = this.validatedLedgers.get(validator.public_key);
-                let missed = total;
+                const validatedLedgers: string[] = [];
+                //let missed = total;
 
-
-                if (validatedLedgers !== undefined) {
-                    const validatedLedgersArray = Array.from(validatedLedgers);
-                    missed = validatedLedgersArray.filter(l => !this.canonicalLedgers.includes(l) && !this.canonicalLedgersTotal.includes(l))
-                        .concat(this.canonicalLedgers.filter(l => !validatedLedgersArray.includes(l) )).length;
+                if (this.validatedLedgers.has(validator.public_key)) {
+                    this.validatedLedgers.get(validator.public_key)
+                        ?.forEach((value, key, map) => {
+                            if (value < oneMinAgo && value > threeMinsAgo) {
+                                validatedLedgers.push(key);
+                            }
+                            if (value <= fiveMinsAgo) {
+                                map.delete(key);
+                                if (map.size === 0) this.validatedLedgers.delete(validator.public_key);
+                            }
+                        });
                 }
+                // TODO add a field in the validator assessment table that indicates validators that validate on the mainnet
+                const missed = validatedLedgers.filter(l => !canonicalLedgers.includes(l) && (this.canonicalLedgers.filter(ledger => ledger.ledger_hash === l).length !== 0))
+                    .concat(canonicalLedgers.filter(l => !validatedLedgers.includes(l) && (this.validatedLedgers.has(validator.public_key) ? !this.validatedLedgers.get(validator.public_key)?.has(l) : true ) )).length;
 
                 return <ValidatorStatistics> {
                     public_key: validator.public_key,
                     total: total,
                     missed: missed
-                }
+                };
             })
 
             // clear the cached ledgers
-            this.validatedLedgers.clear();
-            this.canonicalLedgers = [];
+            //this.validatedLedgers.clear();
+            //this.canonicalLedgers = [];
 
-            // now insert the statistics in the database
-            insertValidatorsStatistics(validator_statistics)
-                .catch((err: Error) => {
-                    Logger.error(`Cannot insert the computed validators statistics to the database: ${err}`);
-                })
-                .finally(() => {
-
-                    // clear the cached ledgers
-                    //this.validatedLedgers.clear();
-                    //this.canonicalLedgers = [];
-
-                    // schedule the same procedure again after `INTERVAL` minutes
-                    this.schedule();
-                });
+            // now insert the statistics in the database (if there are any to be inserted)
+            if (validator_statistics.length !== 0) {
+                insertValidatorsStatistics(validator_statistics)
+                    .catch((err: Error) => {
+                        Logger.error(`Cannot insert the computed validators statistics to the database: ${err}`);
+                    });
+            }
 
         }).catch((err: Error) => {
             Logger.error(`Could not get the validator public keys from the database: ${err}`)
-        });
+        }).finally(() => {
+            // clear the cached ledgers
+            //this.validatedLedgers.clear();
+            //this.canonicalLedgers = [];
 
+            // schedule the same procedure again after `INTERVAL` minutes
+            this.schedule();
+        });
 
     }
 }
