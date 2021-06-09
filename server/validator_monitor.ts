@@ -33,6 +33,7 @@ export class ValidatorMonitor {
 
     readonly validatedLedgers = new Map<string, Set<string>>();        // map format: validator_hash:<set of ledgers that it approved>
     canonicalLedgers: string[] = []
+    readonly canonicalLedgersTotal: string[] = [];
 
     constructor(eventEmitter: EventEmitter) {
         this.eventEmitter = eventEmitter;
@@ -66,6 +67,7 @@ export class ValidatorMonitor {
             api.connection.on('ledgerClosed', (event: any) => {
                 //console.log("Canonical ledger is", event.ledger_hash)
                 this.canonicalLedgers.push(event.ledger_hash);
+                this.canonicalLedgersTotal.push(event.ledger_hash);
             })
 
             api.connection.on('validationReceived', (event: any) => {
@@ -120,8 +122,9 @@ export class ValidatorMonitor {
 
 
                 if (validatedLedgers !== undefined) {
-                    missed = validatedLedgers.filter(l => !this.canonicalLedgers.includes(l))
-                        .concat(this.canonicalLedgers.filter(l => !validatedLedgers.includes(l) )).length;
+                    const validatedLedgersArray = Array.from(validatedLedgers);
+                    missed = validatedLedgersArray.filter(l => !this.canonicalLedgers.includes(l) && !this.canonicalLedgersTotal.includes(l))
+                        .concat(this.canonicalLedgers.filter(l => !validatedLedgersArray.includes(l) )).length;
                 }
 
                 return <ValidatorStatistics> {
@@ -131,6 +134,10 @@ export class ValidatorMonitor {
                 }
             })
 
+            // clear the cached ledgers
+            this.validatedLedgers.clear();
+            this.canonicalLedgers = [];
+
             // now insert the statistics in the database
             insertValidatorsStatistics(validator_statistics)
                 .catch((err: Error) => {
@@ -139,8 +146,8 @@ export class ValidatorMonitor {
                 .finally(() => {
 
                     // clear the cached ledgers
-                    this.validatedLedgers.clear();
-                    this.canonicalLedgers = [];
+                    //this.validatedLedgers.clear();
+                    //this.canonicalLedgers = [];
 
                     // schedule the same procedure again after `INTERVAL` minutes
                     this.schedule();
