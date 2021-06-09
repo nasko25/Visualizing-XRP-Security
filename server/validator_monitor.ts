@@ -28,7 +28,7 @@ export class ValidatorMonitor {
 
     // how often the information gathered from the ValidatorMonitor should be used to
     //  update the database (in minutes)
-    readonly INTERVAL: number = 61;
+    readonly INTERVAL: number = 0.2;
 
     readonly validatedLedgers = new Map<string, string[]>();        // map format: validator_hash:<list of ledgers that it approved>
     canonicalLedgers: string[] = []

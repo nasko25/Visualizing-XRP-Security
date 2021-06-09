@@ -37,10 +37,10 @@ if(process.argv[2]=="crawler"){
     //portScanner.on('close', (code) => {
     //    console.log(`portscanner process exited with code ${code}`);
     //});
-    //var validator = exec.fork(__dirname+"/app.js",["validator"]);
-    //validator.on('close', (code) => {
-    //    console.log(`validator process exited with code ${code}`);
-    //});
+    var validator = exec.fork(__dirname+"/app.js",["validator"]);
+    validator.on('close', (code) => {
+        console.log(`validator process exited with code ${code}`);
+    });
     //var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
     //crawler.on('close', (code) => {
     //    console.log(`crawler process exited with code ${code}`);

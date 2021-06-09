@@ -6,6 +6,7 @@ import {
     insertNodeValidatorConnections,
     insertValidators,
 } from "./db_connection/db_helper";
+import { encodeNodePublic } from 'ripple-address-codec';
 import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from "https";
 
@@ -188,6 +189,6 @@ export default class ValidatorIdentifier {
         let decoded: Validator_Data = JSON.parse(decode(valData.blob));
 
         // Extract the list of validator keys
-        return decoded.validators.map((val) => val.validation_public_key);
+        return decoded.validators.map((val) => encodeNodePublic(Buffer.from(val.validation_public_key, "hex")));
     }
 }
