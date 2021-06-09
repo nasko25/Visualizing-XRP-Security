@@ -188,9 +188,9 @@ export default class SecurityMetric {
     }
 
     setABCPower(a?: number, b?: number, c?: number){
-        if(a) this.a = a;
-        if(b) this.b = b;
-        if(c) this.c = c;
+        if(a) this.a1 = a;
+        if(b) this.b1 = b;
+        if(c) this.c1 = c;
         return this;
     }
 
