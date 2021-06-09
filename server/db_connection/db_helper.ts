@@ -19,7 +19,7 @@ var connection = mysql.createConnection({
 })
 
 export const insertNode = (node: CrawlerNode): Promise<void> => {
-    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn,rippled_version, public_key, uptime) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.port + '\', \'' +
         node.version + '\', \'' +
@@ -31,7 +31,7 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULLIF(new.publisher, \'undefined\');";
+    var insert_nodes_query = "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULLIF(new.publisher, \'undefined\');";
     var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, (node.publisher == undefined ? null : node.publisher)]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));

@@ -134,8 +134,8 @@ export class ValidatorMonitor {
                             }
                         });
                 }
-                // TODO add a field in the validator assessment table that indicates validators that validate on the mainnet
-                const missed = validatedLedgers.filter(l => !canonicalLedgers.includes(l) && (this.canonicalLedgers.filter(ledger => ledger.ledger_hash === l).length !== 0))
+                // TODO add a field in the validator assessment table that indicates validators that validate on mainnet
+                const missed = validatedLedgers.filter(l => !canonicalLedgers.includes(l) && (this.canonicalLedgers.filter(ledger => ledger.ledger_hash === l).length === 0))
                     .concat(canonicalLedgers.filter(l => !validatedLedgers.includes(l) && (this.validatedLedgers.has(validator.public_key) ? !this.validatedLedgers.get(validator.public_key)?.has(l) : true ) )).length;
 
                 return <ValidatorStatistics> {
