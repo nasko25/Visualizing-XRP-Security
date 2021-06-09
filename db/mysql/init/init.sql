@@ -110,7 +110,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 USE db;
 CREATE TABLE IF NOT EXISTS `validator_statistics` (
-    `id` INT NOT NULL AUTO_INCREMENT,
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `public_key` VARCHAR(80) NOT NULL,
     `total` INT NOT NULL,                           -- total validated ledgers
     `missed` INT NOT NULL,                          -- missed validated ledgers

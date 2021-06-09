@@ -10,6 +10,7 @@ const ripple1_node = 'wss://s1.ripple.com'
 const ripple2_node = 'wss://s2.ripple.com'
 //const ripple3_node = 'wss://xrpl.ws/'
 const ripple3_node = config.validators_api_endpoint;
+//const ripple3_node = 'wss://s.devnet.rippletest.net';
 const ripple1_hash = "nHUPAdpS7GdfeisdtHE5YiSUcUJ8VhtHP2o4yWNQcsXfE89WKHMN"
 const ripple2_hash = "nHUZoRNnFqxiLrXyydtLapFJxZMUxgTuGg9624Pdg4med73xNSP2"
 
@@ -30,7 +31,7 @@ export class ValidatorMonitor {
     //  update the database (in minutes)
     readonly INTERVAL: number = 0.2;
 
-    readonly validatedLedgers = new Map<string, string[]>();        // map format: validator_hash:<list of ledgers that it approved>
+    readonly validatedLedgers = new Map<string, Set<string>>();        // map format: validator_hash:<set of ledgers that it approved>
     canonicalLedgers: string[] = []
 
     constructor(eventEmitter: EventEmitter) {
@@ -69,9 +70,9 @@ export class ValidatorMonitor {
 
             api.connection.on('validationReceived', (event: any) => {
                 if (this.validatedLedgers.get(event.master_key)) {
-                    this.validatedLedgers.get(event.master_key)?.push(event.ledger_hash);
+                    this.validatedLedgers.get(event.master_key)?.add(event.ledger_hash);
                 } else {
-                    this.validatedLedgers.set(event.master_key, [event.ledger_hash])
+                    this.validatedLedgers.set(event.master_key, new Set([event.ledger_hash]))
                 }
 
                 //if (event.master_key === ripple1_hash) {
@@ -116,6 +117,7 @@ export class ValidatorMonitor {
                 //  The difference should include both canonical ledgers that were not approved by a given validator, AND approved ledgers that are not canonical.
                 const validatedLedgers = this.validatedLedgers.get(validator.public_key);
                 let missed = total;
+
 
                 if (validatedLedgers !== undefined) {
                     missed = validatedLedgers.filter(l => !this.canonicalLedgers.includes(l))
