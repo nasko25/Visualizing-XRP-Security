@@ -30,13 +30,17 @@ export type NodeInfo = {
     uptime: number
 }
 
+/**
+ * Ports is a string of all the port numbers, divided by a comma
+ * Protocols is a string of all the protocols, divided by a comma
+ */
 export type NodeInfoDB = {
     public_key: string,
     IP: string,
     rippled_version: string,
     uptime: number,
-    ports: number[],
-    protocols: string[],
+    ports: string,
+    protocols: string,
     longtitude: number,
     latitude: number,
     timestamp: string

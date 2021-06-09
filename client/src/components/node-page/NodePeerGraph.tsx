@@ -28,10 +28,10 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
     }
 
     componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
-        console.log(prevProps);
-        console.log(prevState);
+        // console.log(prevProps);
+        // console.log(prevState);
         if(this.props.public_key !== prevProps.public_key || this.props.peers != prevProps.peers){
-            console.log(this.props.public_key + "\n" + prevProps.public_key + "\n", this.props.peers, prevProps.peers);
+            // console.log(this.props.public_key + "\n" + prevProps.public_key + "\n", this.props.peers, prevProps.peers);
             this.createNetwork();
         }
     }

@@ -22,8 +22,8 @@ const mockNodeInfo: NodeInfoDB = {
     IP: "bruh",
     latitude: 42,
     longtitude: 42,
-    ports: [42],
-    protocols: ["HTTP"],
+    ports: "42",
+    protocols: "HTTP",
     rippled_version: '1.6.0',
     timestamp: "never",
     uptime: 42

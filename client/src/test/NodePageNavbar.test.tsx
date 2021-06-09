@@ -1,18 +1,33 @@
 import { createBrowserHistory, History } from 'history';
-import { Peer, NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
-import { shallow, mount } from 'enzyme';
-import React, { KeyboardEvent } from "react";
-import { fireEvent, screen, getByText, getByTestId } from '@testing-library/react';
+import React from "react";
+import { fireEvent, screen, getByText, getByTestId} from '@testing-library/react';
 import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";
 import NodePageNavbar from '../components/node-page/NodePageNavbar';
 
+const NodePageNavbarPropsMock = {
+    history: createBrowserHistory(),
+    onSearch: (e: React.KeyboardEvent<HTMLInputElement>) => { 
+        if(e.key === "Enter")
+            console.log('Search');
+    },
+    searchID: "search"
+}
 
 let container: HTMLElement | null = null;
 beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement("div");
     document.body.appendChild(container);
+
+    // Render the NodePageNavbar
+    act(() => {
+        render(<NodePageNavbar
+            onSearch={NodePageNavbarPropsMock.onSearch}
+            history={NodePageNavbarPropsMock.history}
+            searchID={NodePageNavbarPropsMock.searchID}>
+            </NodePageNavbar>, container);
+    });
 });
 
 afterEach(() => {
@@ -25,21 +40,7 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-const NodePageNavbarPropsMock = {
-    history: createBrowserHistory(),
-    onSearch: (e: React.KeyboardEvent<HTMLInputElement>) => { console.log('Search') },
-    searchID: "search"
-}
-
 test('All 3 buttons and Search Bar are present in DOM', () => {
-
-    // Render the NodePageNavbar
-    act(() => {
-        render(<NodePageNavbar
-            onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
-            searchID={NodePageNavbarPropsMock.searchID}></NodePageNavbar>, container);
-    });
 
     var buttonValidators = null;
     var buttonStock = null;
@@ -63,14 +64,6 @@ test('All 3 buttons and Search Bar are present in DOM', () => {
 
 test('Validators button triggers correct onClick event', () => {
 
-    // Render the NodePageNavbar
-    act(() => {
-        render(<NodePageNavbar
-            onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
-            searchID={NodePageNavbarPropsMock.searchID}></NodePageNavbar>, container);
-    });
-
     var buttonValidators: HTMLButtonElement | null = null;
 
     // Get the button from the DOM
@@ -83,7 +76,7 @@ test('Validators button triggers correct onClick event', () => {
     expect(buttonValidators).not.toBeNull();
     expect(buttonValidators).toBeTruthy();
 
-    if (buttonValidators !== null){
+    if (buttonValidators !== null) {
         // Simulate button click
         act(() => {
             buttonValidators?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -91,18 +84,10 @@ test('Validators button triggers correct onClick event', () => {
         // Check that the history has updated
         expect(NodePageNavbarPropsMock.history.location.pathname).toEqual('/validators');
     }
-    
+
 });
 
 test('Stock button triggers correct onClick event', () => {
-
-    // Render the NodePageNavbar
-    act(() => {
-        render(<NodePageNavbar
-            onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
-            searchID={NodePageNavbarPropsMock.searchID}></NodePageNavbar>, container);
-    });
 
     var buttonStock: HTMLButtonElement | null = null;
 
@@ -115,7 +100,7 @@ test('Stock button triggers correct onClick event', () => {
     expect(buttonStock).not.toBeNull();
     expect(buttonStock).toBeTruthy();
 
-    if (buttonStock !== null){
+    if (buttonStock !== null) {
         // Simulate button click
         act(() => {
             buttonStock?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -126,14 +111,6 @@ test('Stock button triggers correct onClick event', () => {
 });
 
 test('About button triggers correct onClick event', () => {
-
-    // Render the NodePageNavbar
-    act(() => {
-        render(<NodePageNavbar
-            onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
-            searchID={NodePageNavbarPropsMock.searchID}></NodePageNavbar>, container);
-    });
 
     var buttonAbout: HTMLButtonElement | null = null;
 
@@ -146,7 +123,7 @@ test('About button triggers correct onClick event', () => {
     expect(buttonAbout).not.toBeNull();
     expect(buttonAbout).toBeTruthy();
 
-    if (buttonAbout !== null){
+    if (buttonAbout !== null) {
         // Simulate button click
         act(() => {
             buttonAbout?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -167,32 +144,23 @@ test('Search event is triggered correctly', () => {
 
     console.log = jest.fn();
 
-    // Render the NodePageNavbar
-    act(() => {
-        render(<NodePageNavbar
-            onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
-            searchID={NodePageNavbarPropsMock.searchID}></NodePageNavbar>, container);
-    });
-
     const onSearchSpy = jest.spyOn(NodePageNavbarPropsMock, "onSearch");
-
-    var search: HTMLInputElement | null= null;
+    var search: HTMLInputElement | null = null;
 
     // Get the buttons from the DOM
     if (container !== null) {
         search = (getByTestId(container, "search") as HTMLInputElement);
     }
 
-    let btuh = null;
     act(() => {
-        btuh = search?.dispatchEvent(new KeyboardEvent('keypress', {'key': 'Enter'}));
+        if (search !== null) {
+            fireEvent.keyPress(search, { key: 'Enter', keyCode: 13, which: 13 });
+            fireEvent.keyPress(search, { key: 'a', keyCode: 13, which: 13 });
+            fireEvent.keyPress(search, { key: 'Enter', keyCode: 13, which: 13 });
+        }
     });
 
-    console.log(btuh);
-
-    // Assert that all the buttons are present
     expect(search).toBeTruthy();
-    expect(onSearchSpy).toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalled();
+    // The mock search function just console.logs "Search" when Enter is pressed
+    expect(console.log).toHaveBeenCalledTimes(2);
 });
