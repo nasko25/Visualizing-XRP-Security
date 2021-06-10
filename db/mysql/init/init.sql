@@ -112,8 +112,8 @@ USE db;
 CREATE TABLE IF NOT EXISTS `validator_statistics` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `public_key` VARCHAR(80) NOT NULL,
-    `total` INT NOT NULL,                           -- total validated ledgers
-    `missed` INT NOT NULL,                          -- missed validated ledgers
+    `total` INT NOT NULL DEFAULT 0,                           -- total validated ledgers
+    `missed` INT NOT NULL DEFAULT 0,                          -- missed validated ledgers
     `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),

@@ -6,6 +6,7 @@ import { Connection } from './models/connection'
 import { SecurityAssessment } from './models/security_assessment'
 import ValidatorAssessment from './models/validator_assessment';
 import { ValidatorStatistics } from '../validator_monitor';
+import { ValidatorStatisticsTotal } from '../validator_trust_assessor';
 import Logger from '../logger'
 import e from 'express'
 var mysql = require('mysql');
@@ -221,10 +222,42 @@ export function insertValidatorsAssessments(assessments: ValidatorAssessment[]) 
     return send_insert_request_vals(query, [vals]);
 }
 
-export function getValidatorsStatistics(): Promise<ValidatorStatistics[]> {
-    const query = "SELECT * FROM validator_statistics;";
+// this function will return the hourly validators statistics grouped by the node's public key
+// so it returns an array of { public_key: string, hourly_stats: [{ missed: number, total: number }] }
+export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
+    const query = "SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) as missed FROM validator_statistics GROUP BY public_key;";
 
-    return send_select_request(query);
+    // send the query and parse the results because they will be returned like this:
+    //  {
+    //      public_key: 'nHUvzia57LRXr9zqnYpyFUFeKvis2tqn4DkXBVGSppt5M4nNq43C',
+    //      total: '0,0,0,0,0,3,6,9,12',
+    //      missed: '0,0,0,0,0,0,0,0,0'
+    //  }
+    return new Promise(function (resolve, reject) {
+        connection.query(
+            query,
+            function (err: Error, results: ValidatorStatistics[], fields: JSON) {
+                if (err) {
+                    reject(err);
+                } else {
+                    const validatorStatisticsTotal: ValidatorStatisticsTotal[] = [];
+                    results.forEach(row => {
+                        validatorStatisticsTotal.push(<ValidatorStatisticsTotal> {
+                            public_key: row.public_key,
+                            missed: row.missed.toString().split(",").map(value => {
+                                return Number(value);
+                            }),
+                            total: row.total.toString().split(",").map(value => {
+                                return Number(value);
+                            })
+                        });
+                    });
+                    //resolve(JSON.parse(JSON.stringify(validatorStatisticsTotal)));
+                    resolve(validatorStatisticsTotal);
+                }
+            }
+        );
+    });
 }
 
 export function insertValidatorsStatistics(validatorsStatistics: ValidatorStatistics[]) {

@@ -17,6 +17,16 @@ interface ValidatorResponse {
     unl: boolean | string,
 }
 
+// validator statistics grouped by public key
+// so for every node `total` and `missed` will contain an array
+// of numbers containing all information in the database
+// TODO make it only take the data from the last month
+export interface ValidatorStatisticsTotal {
+    public_key: string,
+    total: number[],
+    missed: number[]
+}
+
 // A class that computes the trust metric for the validator nodes
 export default class ValidatorTrustAssessor {
 
@@ -32,7 +42,7 @@ export default class ValidatorTrustAssessor {
     run() {
         Logger.info("Starting the Validator nodes Trust Assessor.");
         // fetch the data for the validators
-        getValidatorsStatistics().then((validators: ValidatorStatistics[]) => {
+        getValidatorsStatistics().then((validators: ValidatorStatisticsTotal[]) => {
             this.assessScores(validators).then((assessments: ValidatorAssessment[]) => {
                 // assessments should be defined and cannot be empty
                 if (assessments !== undefined && assessments.length !== 0) {
@@ -51,13 +61,13 @@ export default class ValidatorTrustAssessor {
 
     }
 
-    assessScores(validators: ValidatorStatistics[]): Promise<ValidatorAssessment[]> {
-        return Promise.all(validators.map((validator: ValidatorStatistics) => {
+    assessScores(validators: ValidatorStatisticsTotal[]): Promise<ValidatorAssessment[]> {
+        return Promise.all(validators.map((validator: ValidatorStatisticsTotal) => {
             return this.assessScore(validator);
         }));
     }
 
-    assessScore(validator: ValidatorStatistics): Promise<ValidatorAssessment> {
+    assessScore(validator: ValidatorStatisticsTotal): Promise<ValidatorAssessment> {
         console.log(validator);
         return new Promise(() => {
             return {
