@@ -149,9 +149,11 @@ function repeated_crawl() {
 
 function start_validator_identification() {
     Logger.info("Starting validator identification")
-    let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
+    let valIden: ValidatorIdentifier = new ValidatorIdentifier(100);
     valIden.run();
 }
+
+start_validator_identification();
 
 
 

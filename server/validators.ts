@@ -78,22 +78,28 @@ export default class ValidatorIdentifier {
             return;
         }
 
-        let splice = nodes.splice(0, this.validatorBatchCount);
-
         Logger.info(
             "VI: Checking batch from a total of " + nodes.length + " nodes ..."
         );
 
+        let splice = nodes.splice(0, this.validatorBatchCount);
+
+
+        let promises: Array<Promise<[string, string[]]>> = [];
+
+                        // Create an array of Promise objects for all requests
+        splice.forEach(node => {
+            let publishers: string[] = JSON.parse(node.publishers);
+            publishers.map((publisher : string ) => promises.push(this.promiseWrapper(
+            node.IP,
+            publisher,
+            node.public_key
+            )))
+        });
+
         axios
             .all(
-                // Create an array of Promise objects for all requests
-                splice.map((node) =>
-                    this.promiseWrapper(
-                        node.IP,
-                        node.publisher,
-                        node.public_key
-                    )
-                )
+                promises
             )
             .then(
                 // Response is an array of tuples (node_key, val_keys)
@@ -163,7 +169,7 @@ export default class ValidatorIdentifier {
     get_validator_list(ip: string, publisher_key: string) {
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
-            { httpsAgent: agent, timeout: 6000 }
+            { httpsAgent: agent, timeout: 30000 }
         );
     }
 

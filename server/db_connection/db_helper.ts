@@ -32,8 +32,8 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publisher=NULLIF(new.publisher, \'undefined\');";
-    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, (node.publisher == undefined ? null : node.publisher)]);
+    var insert_nodes_query = "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, \'undefined\'), rippled_version=new.rippled_version, uptime=new.uptime, publishers=NULLIF(new.publisher, \'undefined\');";
+    var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, (node.publishers === undefined || node.publishers.length === 0 ? null : JSON.stringify(node.publishers)) ]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_nodes_query, vals);
@@ -57,8 +57,8 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
 }
 
 export const updateVersionUptimeAndPublisher = (node: CrawlerNode) => {
-    const update_node_query = "UPDATE node SET rippled_version = ?, uptime = ?, publisher = ? WHERE public_key = ?";
-    const vals = [node.version, node.uptime, node.publisher === undefined ? null : node.publisher, node.pubkey];
+    const update_node_query = "UPDATE node SET rippled_version = ?, uptime = ?, publishers = ? WHERE public_key = ?";
+    const vals = [node.version, node.uptime, node.publishers === undefined || node.publishers.length === 0? null : JSON.stringify(node.publishers), node.pubkey];
 
     return send_insert_request_vals(update_node_query, vals);
 };
@@ -199,7 +199,7 @@ function send_insert_request_vals(request: string, vals: any): Promise<void> {
 }
 
 export function getIpAddresses() {
-    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined" and publisher is not null';
+    const get_ip_addresses = 'SELECT IP, public_key, publishers FROM node WHERE IP is not null and IP <> "undefined" and publishers <> "undefined" and publishers is not null';
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 

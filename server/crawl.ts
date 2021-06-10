@@ -19,7 +19,7 @@ interface Node {
     version: string;
     pubkey: string;
     uptime: Number;
-    publisher?: string,
+    publishers?: Array<string>,
     // this variable indicates whether the node was visited by the cralwer
     // if the node was visited, its information should no longer be updated, because it will have been taken from the
     // node itself rather than from the node's peers
@@ -28,7 +28,7 @@ interface Node {
 
 // Wait for at most 3 seconds when making an HTTP request to obtain a node's peers
 // If the node does not respond after 3 seconds, it is assumed that we cannot retrieve its peer from the peer crawler API
-const TIMEOUT_GET_REQUEST = 3000
+const TIMEOUT_GET_REQUEST = 30000
 
 const normalizePublicKey = function(publicKey: string) {
     if (publicKey.length > 50 && publicKey[0] === 'n')
@@ -106,6 +106,7 @@ class Crawler {
                 // get the ssl certificate for the server
                 // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
+                
 
                 // Initialize initial node
                 let node: Node = {
@@ -114,7 +115,7 @@ class Crawler {
                                     version: "rippled-" + response.data.server.build_version,
                                     pubkey: normalizePublicKey(response.data.server.pubkey_node),
                                     uptime: response.data.server.uptime,
-                                    publisher: response.data.unl.publisher_lists[0].pubkey_publisher,
+                                    publishers: response.data.unl.publisher_lists.map((list : {pubkey_publisher: string}) => list.pubkey_publisher),
                                     _visited: true
                                  };
 
@@ -152,7 +153,7 @@ class Crawler {
                                     n._visited = true;
                                     n.version = "rippled-" + response.data.server.build_version;
                                     n.uptime = response.data.server.uptime;
-                                    n.publisher = response.data.unl.publisher_lists[0].pubkey_publisher;
+                                    n.publishers = response.data.unl.publisher_lists.map((list : any) => list.pubkey_publisher);
                                     updateVersionUptimeAndPublisher(n).catch((err: Error) => {
                                         Logger.error(err.message);
                                     });;

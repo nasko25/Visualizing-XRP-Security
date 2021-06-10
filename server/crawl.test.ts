@@ -159,7 +159,7 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
         version: "rippled-1.7.0",
         pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
         uptime: 1234567,
-        publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+        publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
         _visited: true
     };
     expect(insertNodeMock).toHaveBeenCalledTimes(1);
@@ -277,7 +277,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         },
         // the initial node's peer
@@ -287,7 +287,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         }
     ];
@@ -307,7 +307,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     // this node will not have been visited yet
     insertedNodes[0]._visited =true;
     insertedNodes[1]._visited = false;
-    insertedNodes[1].publisher = undefined;
+    insertedNodes[1].publishers = undefined;
 
 
     // there should be a connection between the initial node and its peer inserted in the database
@@ -387,7 +387,7 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         },
         // the initial node's peer
@@ -498,7 +498,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         },
         // the initial node's peer
@@ -671,7 +671,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         },
         // the initial node's peer
@@ -681,7 +681,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734",
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
             _visited: true
         },
         {
@@ -755,9 +755,9 @@ test("test crawl() for nodes with many peers", async () => {
     expect(insertConnectionMock).toHaveBeenCalledTimes(14);
 
     // save the initial node's peer publisher because after this node is visited, it will have a publisher
-    const peerNodePublisher = insertedNodes[1].publisher;
+    const peerNodePublisher = insertedNodes[1].publishers;
     insertedNodes[1]._visited = false;
-    insertedNodes[1].publisher = undefined;
+    insertedNodes[1].publishers = undefined;
     expect(insertConnectionMock).toHaveBeenNthCalledWith(1, insertedNodes[0], insertedNodes[1]);
     expect(insertConnectionMock).toHaveBeenNthCalledWith(2, insertedNodes[1], insertedNodes[0]);
 
@@ -769,7 +769,7 @@ test("test crawl() for nodes with many peers", async () => {
 
     // retrieve the initial node's peer's publisher from the cache, because after it is visited and an http get request is sent to it, it will have a publisher
     insertedNodes[1]._visited = true;
-    insertedNodes[1].publisher = peerNodePublisher;
+    insertedNodes[1].publishers = peerNodePublisher;
     expect(insertConnectionMock).toHaveBeenNthCalledWith(7, insertedNodes[1], insertedNodes[4]);
     expect(insertConnectionMock).toHaveBeenNthCalledWith(8, insertedNodes[4], insertedNodes[1]);
 
