@@ -27,10 +27,6 @@ type NodePageNavbarProps = {
  */
 export default class NodePageNavbar extends Component<NodePageNavbarProps>{
 
-    constructor(props: NodePageNavbarProps){
-        super(props);
-    }
-
     render(){
         return(<Grid
             style={{ width: "100%", height: "100%" }}

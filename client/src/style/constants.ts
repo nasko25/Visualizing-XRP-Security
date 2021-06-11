@@ -1,7 +1,8 @@
 const COLORS = {
     main: "#383838",
     button: "#212529",
-    nav: "#1a1a1a"
+    nav: "#1a1a1a",
+    green: "#19FF83"
 }
 
 const SETUP = {

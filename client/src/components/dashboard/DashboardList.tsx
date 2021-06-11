@@ -21,10 +21,10 @@ export default class DashboardList extends Component<DashboardListProps> {
         jsonVariable[selected] = {background: 'white'}
         this.highligth = jsonVariable;
 
-        if (selected != "") {
-            let temp = [this.props.arrNodesData.find(node => node.public_key == selected)]
+        if (selected !== "") {
+            let temp = [this.props.arrNodesData.find(node => node.public_key === selected)]
             nodes = temp.concat(nodes.filter(n => {
-                if (n.public_key != temp[0].public_key) {
+                if (n.public_key !== temp[0].public_key) {
                     return n;
                 }
             }));

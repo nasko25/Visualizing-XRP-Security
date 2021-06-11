@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, DataChart, Grid, Grommet, Header, Heading, List, Menu } from 'grommet';
 import NodePeerGraph from "./NodePeerGraph";
-import { More } from "grommet-icons";
 import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
@@ -48,6 +47,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI_node = this.queryAPI_node.bind(this);
         this.parseURL = this.parseURL.bind(this);
         this.historyListener = this.historyListener.bind(this);
+        this.handleAPIError = this.handleAPIError.bind(this);
 
         this.historyListener();
     }
@@ -65,7 +65,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @param some any
      */
     componentDidUpdate(prevProps: NodePageProps, prevState: NodePageState, some: any) {
-        if (prevState.public_key != this.state.public_key) {
+        if (prevState.public_key !== this.state.public_key) {
             this.getNodeInfo();
         }
     }
@@ -79,7 +79,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     historyListener() {
         this.props.history.listen((location) => {
             let public_key_from_url = location.search.split("?public_key=")[1];
-            if (this.state.public_key != public_key_from_url) {
+            if (this.state.public_key !== public_key_from_url) {
                 this.setState({ public_key: public_key_from_url });
             }
         });
@@ -94,6 +94,26 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     /**
+     * Pass this function to the catch block of the Promise returned from 
+     * axios.get; It should handle the different possible errors accordingly
+     * @param error The error 
+     */
+    handleAPIError(error: any): void {
+        if (error.response) {
+            // error in the response
+            console.log(`Received an error response:`);
+            console.log(error.response);
+        } else if (error.request) {
+            // client never received a response, or request never left
+            console.log(`Server did not respond: `);
+            console.log(error.request);
+        } else {
+            // anything else
+            console.log(error.message);
+        }
+    }
+
+    /**
      * Fetch information for the node's peers from the server
      * @param public_key The public_key of the node
      * @returns 
@@ -105,9 +125,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
             }
             this.setState({ peers: peers });
-        }).catch((error) => {
-            console.log('Encountered error:', error.response);
-        });
+        }).catch(this.handleAPIError);
     }
 
     /**
@@ -116,23 +134,17 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * @returns 
      */
     queryAPI_node(public_key: string) {
-        console.log(window.location.hostname);
         return axios.get("http://" + window.location.hostname + ":8080/node/info?public_key=" + public_key)
             .then((res) => {
-                console.log(res);
-                console.log(res.data);
                 if (res.data.length === 0) {
-                    console.log('empty')
                     return;
                 }
 
                 var info: NodeInfoDB = res.data[0];
                 var ports: Port[] = [];
-                if (info.ports !== null && info.protocols !== null) {
+                if (info.ports !== null && info.protocols !== null && info.ports !== "''" && info.protocols !== "''") {
                     var infoPorts: string[] = info.ports.split(',');
-                    console.log('info ports', infoPorts);
                     var infoProtocols: string[] = info.ports.split(',');
-                    console.log('info protocols', infoProtocols);
                     if (info.ports) {
                         for (var i = 0; i < info.ports.length; i++) {
                             ports.push({ port_number: parseInt(infoPorts[i]), service: infoProtocols[i], version: "Not Implemented yet" })
@@ -146,9 +158,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         uptime: info.uptime,
                         ports: ports,
                     });
-            }).catch((error) => {
-                console.log('Encountered error:', error.response);
-            });
+            }).catch(this.handleAPIError);
     }
 
     getNodeInfo() {
@@ -165,10 +175,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         return (
             <DataChart
                 data={this.state.historical_scores}
-                series={['date', { property: 'score' }]}
+                series={[{ property: 'date', label: "Date" }, { property: 'score', label: "Security score" }]}
                 chart={[
-                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
-                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
+                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%', color: COLORS.green },
+                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%', color: COLORS.green }
                 ]}
                 guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
                 size={{ width: "fill" }}
@@ -193,9 +203,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         var ports = [];
         var thisPorts = this.state.ports;
         for (var i = 0; i < thisPorts.length; i++) {
-            ports.push({port_number: thisPorts[i].port_number, service: thisPorts[i].service});
+            ports.push({ port_number: thisPorts[i].port_number, service: thisPorts[i].service });
         }
-        if(ports.length === 0){
+        if (ports.length === 0) {
             return "No information available"
         }
         return (<List
@@ -204,7 +214,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             primaryKey="port_number"
             secondaryKey="service"
 
-            data = {ports}
+            data={ports}
         >
 
         </List>);
@@ -270,6 +280,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                     graph. */}
                 <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                     <Grid
+                        fill
                         style={{ width: "100%", height: "100%" }}
                         rows={["1/2", "1/2"]}
                         columns={["1/2", "1/2"]}
