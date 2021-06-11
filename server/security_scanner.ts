@@ -71,7 +71,7 @@ class Security_Scanner {
             const finish = new EventEmitter();
             finish.on('done', ()=>{
                 if(!this.update_finished){
-                    
+                    finish.removeAllListeners();
                     this.update_finished=true;
                     this.run(once);
                 }
@@ -110,6 +110,5 @@ class Security_Scanner {
         };
     }
 
-    
 }
 export default Security_Scanner;

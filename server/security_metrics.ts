@@ -38,6 +38,17 @@ export default class SecurityMetric {
         this.listOfVersionsBuffer = new Map();
         this.listOfVersions = new Map();
         
+        if(cutoff!=undefined) this.cutoff = cutoff;
+        if(roundToDecimals!=undefined) this.decimal_to_round_to = roundToDecimals;
+        if(a_power!=undefined) this.a1 = a_power;
+        if(b_power!=undefined) this.b1 = b_power;
+        if(c_power!=undefined) this.c1 = c_power;
+        if(a_quadr!=undefined) this.a_quadr = a_quadr;
+        if(b_quadr!=undefined) this.b_quadr = b_quadr;
+        if(c_quadr!=undefined) this.c_quadr = c_quadr;
+        if(weeks_gp!=undefined) this.weeks_grace_period = weeks_gp;
+        if(prts_gn!=undefined) this.ports_grace_number = prts_gn;
+
         // this.listOfVersions.set('1.7.2',0);
         // this.listOfVersions.set('1.7.0',1);
         // this.listOfVersions.set('1.6.0',2);
@@ -55,10 +66,10 @@ export default class SecurityMetric {
 
     rateVersionBasedOnRelease(difference: number, evalFunction:(x:number, a?: number, b?: number, c?: number, cutoff?: number, decimals?: number)=>number): number {
         if(difference>=0){
-            return evalFunction(difference,this.a1,this.b1,this.c1,-1000,2)
+            return evalFunction(difference,this.a1,this.b1,this.c1,this.cutoff,this.decimal_to_round_to)
             //return index == undefined ? -1000 : Math.max(-1000, 100-100*(a*(Math.pow(b,index.index))+c))
         }else{
-            return -1000;
+            return this.cutoff;
         }
         
     }
