@@ -114,6 +114,25 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     /**
+     * Parses the port information from the NodeInfo query
+     * @param info The data of the response
+     * @returns The port list, in the format as in this.props
+     */
+    parsePorts(info: NodeInfoDB): Port[]{
+        var ports: Port[] = [];
+        if (info.ports !== null && info.protocols !== null && info.ports !== "''" && info.protocols !== "''") {
+            var infoPorts: string[] = info.ports.split(',');
+            var infoProtocols: string[] = info.protocols.split(',');
+            if (info.ports) {
+                infoPorts.forEach((port, i) => {
+                    ports.push({ port_number: parseInt(port), service: infoProtocols[i], version: "Not Implemented yet" })
+                });
+            }
+        }
+        return ports;
+    }
+
+    /**
      * Fetch information for the node's peers from the server
      * @param public_key The public_key of the node
      * @returns 
@@ -139,18 +158,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 if (res.data.length === 0) {
                     return;
                 }
-
                 var info: NodeInfoDB = res.data[0];
-                var ports: Port[] = [];
-                if (info.ports !== null && info.protocols !== null && info.ports !== "''" && info.protocols !== "''") {
-                    var infoPorts: string[] = info.ports.split(',');
-                    var infoProtocols: string[] = info.ports.split(',');
-                    if (info.ports) {
-                        for (var i = 0; i < info.ports.length; i++) {
-                            ports.push({ port_number: parseInt(infoPorts[i]), service: infoProtocols[i], version: "Not Implemented yet" })
-                        }
-                    }
-                }
+
+                var ports: Port[] = this.parsePorts(info);
                 this.setState(
                     {
                         IP: info.IP,
