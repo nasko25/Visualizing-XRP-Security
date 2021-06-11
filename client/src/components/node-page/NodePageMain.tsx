@@ -5,8 +5,9 @@ import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 import { humanizeUptime } from '../../helper';
-import NodePageNavbar from "../NavigationBar";
-import { COLORS, SETUP } from '../../style/constants'
+import NavigationBar from "../NavigationBar";
+import { COLORS, SETUP } from '../../style/constants';
+import HistoricalChart from "../HistoricalChart";
 
 
 /**
@@ -18,10 +19,6 @@ import { COLORS, SETUP } from '../../style/constants'
  */
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     
-    // This is passed onto the NodePageNavbar as a prop for 
-    // the id of the Search TextInput element.
-    searchID: string = "node-page-search-bar";
-
     constructor(props: NodePageProps) {
         super(props);
 
@@ -40,9 +37,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
          * Binding the class methods to the 'this' keyword for the class
          */
         this.getNodeInfo = this.getNodeInfo.bind(this);
-        this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
         this.preparePortList = this.preparePortList.bind(this);
-        this.createDataChart = this.createDataChart.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
         this.queryAPI_peers = this.queryAPI_peers.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
@@ -192,37 +187,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI_peers(this.state.public_key);
     }
 
-    /**
-     * Creates the historical chart, using Grommet's DataChart
-     * @returns 
-     */
-    createDataChart() {
-        return (
-            <DataChart
-                data={this.state.historical_scores}
-                series={[{ property: 'date', label: "Date" }, { property: 'score', label: "Security score" }]}
-                chart={[
-                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%', color: COLORS.green },
-                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%', color: COLORS.green }
-                ]}
-                guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
-                size={{ width: "fill" }}
-                axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
-                detail
-            />
-        );
-    };
-
-    /**
-     * Event Handler for the Search Bar
-     */
-    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
-        if (e.code === "Enter") {
-            let text: string = (document.getElementById(this.searchID) as HTMLInputElement).value;
-            this.props.history.push('/node?public_key=' + text);
-        }
-    }
-
     preparePortList() {
         var ports = [];
         var thisPorts = this.state.ports;
@@ -301,7 +265,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 style={{ width: "100%", height: "100%" }}>
 
                 <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
-                    <NodePageNavbar title={'Node Page'} onSearch={this.onKeyPressSearch} searchID={this.searchID}></NodePageNavbar>
+                    <NavigationBar title={'Node Page'}></NavigationBar>
                 </Header>
                 {/* We split the main part of the application in a 2x2 grid with 3 components,
                     the one on the left show information about the node and its peers, the top
@@ -335,9 +299,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 {this.createPeerList()}
                             </Box>
                         </Box>
+                        {/* The historical scores chart */}
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {this.createDataChart()}
+                            <HistoricalChart historical_scores={this.state.historical_scores}/>
                         </Box>
                     </Grid>
                 </main>

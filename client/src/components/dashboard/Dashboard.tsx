@@ -7,7 +7,7 @@ import { Box, Grid, Grommet, Header, Heading, List } from 'grommet';
 import { History } from 'history';
 import { COLORS, SETUP } from '../../style/constants';
 import Loader from "../Loader";
-import NodePageNavbar from "../NavigationBar";
+import NavigationBar from "../NavigationBar";
 
 export type DashboardProps = {
     history: History
@@ -85,8 +85,7 @@ export default class Dashboard extends Component<DashboardProps> {
         return (
             <Grommet style={{ height: '100%', width: '100%' }}>
                 <Header style={{ width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav }}>
-                    {/* <DashboardNavbar history={this.props.history} /> */}
-                    <NodePageNavbar title="Dashboard" onSearch={() => {}} searchID=""></NodePageNavbar>
+                    <NavigationBar title="Dashboard"></NavigationBar>
                 </Header>
                 <div className='DashboardMain' style={{ width: '100%', height: `${100 - SETUP.header_height}%` }}>
                     <Grid

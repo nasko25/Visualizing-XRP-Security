@@ -11,9 +11,7 @@ import '../style/NodePage.css'
  * search query is typed.
  */
 type NodePageNavbarProps = {
-    title: string,
-    onSearch: (e: React.KeyboardEvent<HTMLInputElement>) => void,
-    searchID: string
+    title: string
 }
 
 /**
@@ -21,7 +19,25 @@ type NodePageNavbarProps = {
  * It has buttons to navigate through the website, as well
  * as a search bar, which expects a public_key.
  */
-export default class NodePageNavbar extends Component<NodePageNavbarProps>{
+export default class NavigationBar extends Component<NodePageNavbarProps>{
+
+    constructor(props: NodePageNavbarProps){
+        super(props);
+
+        this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
+    }
+
+    searchID: string = "node-page-search-bar";
+
+    /**
+     * Event Handler for the Search Bar
+     */
+     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
+        if (e.code === "Enter") {
+            let text: string = (document.getElementById(this.searchID) as HTMLInputElement).value;
+            window.location.href = `/node?public_key=${text}`;
+        }
+    }
 
     render(){
         return(<Grid
@@ -82,14 +98,14 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                 direction="row"
                 justify="center"
                 background={COLORS.button}
-                margin={{ left: "1%", right: "2%" }}
+                margin={{ left: "4%", right: "5%" }}
                 >
                 <TextInput
-                    onKeyPress={this.props.onSearch}
+                    onKeyPress={this.onKeyPressSearch}
                     icon={<Search />}
                     textAlign="center"
                     placeholder="Search Public Key"
-                    id={this.props.searchID}
+                    id={this.searchID}
                     data-testid="search"
                 />
             </Box>
