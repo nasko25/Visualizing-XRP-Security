@@ -74,7 +74,9 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
 }
 
 export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
-    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ;'
+
+    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? AS new ON DUPLICATE KEY UPDATE public_key=new.public_key, metric_version=new.metric_version, score=new.score;';
+
     return send_insert_request_vals(insert_sa_query, security_assessments);
 }
 

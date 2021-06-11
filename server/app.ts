@@ -23,18 +23,29 @@ if (process.argv[2] == "crawler") {
     repeated_crawl();
 
 } else if (process.argv[2] == "portScanner") {
-    process.on('start', () => {
-        Logger.info("PORT SCANNER STARTED 21")
-        startPortScanner().catch((e) => {
-            console.log(`PortScanner exited with the exception: ${e}.`);
-        })
+    var ranBefore = false;
+    process.on('message', (data) => {
+        if(data && data=='start' && !ranBefore){
+            ranBefore=false;
+            Logger.info("PORT SCANNER STARTED 21")
+            startPortScanner().catch((e) => {
+                console.log(`PortScanner exited with the exception: ${e}.`);
+            })
+        }
     });
 } else if (process.argv[2] == "validator") {
-    Logger.info("VALIDATOR STARTED 29")
-    start_validator_identification();
-
     var ble = new Security_Scanner(2);
-    ble.start();
+    
+    process.on('message', (data)=>{
+        if(data && data=='start'){
+            // Logger.info("VALIDATOR STARTED 29")
+                // start_validator_identification();
+            Logger.info("STARTING SECURITY ANALYSIS")
+            ble.start();
+        }
+    });
+    
+   
 } else if (process.argv[2] == "api") {
     const app = express();
     app.use(cors());
@@ -53,14 +64,25 @@ if (process.argv[2] == "crawler") {
     });
 } else {
     var firstTimeCrawl: boolean = true;
-    //Preparations for a for bomb:
 
+
+    //Preparations for a for bomb:
+    var crawlerup = true;
+    var portUp = true;
+    var valdiatorUp = true;
+    var apiUp = true;
+    
     //Starts the crawler service
     var crawler = exec.fork(__dirname + "/app.js", ["crawler"]);
     crawler.on('close', (code) => {
         console.log(`crawler process exited with code ${code}`);
     });
 
+    //Starts the api service
+    var api = exec.fork(__dirname + "/app.js", ["api"]);
+    api.on('close', (code) => {
+        console.log(`API process exited with code ${code}`);
+    });
 
 
 
@@ -70,30 +92,31 @@ if (process.argv[2] == "crawler") {
         console.log(`validator process exited with code ${code}`);
     });
 
-
-
-    //Starts the api service
-    var api = exec.fork(__dirname + "/app.js", ["api"]);
-    api.on('close', (code) => {
-        console.log(`API process exited with code ${code}`);
-    });
-
-    crawler.on('finish',()=>{
-        if(firstTimeCrawl){
-            firstTimeCrawl=false;
-                //Starts the portscanner service
-                var portScanner = exec.fork(__dirname + "/app.js", ["portScanner"]);
-                portScanner.on('close', (code) => {
-                    console.log(`portscanner process exited with code ${code}`);
-                });
+    validator.on('message',(data)=>{
+        Logger.info(data);
+        if(data && data == 'finished'){
+            Logger.info("val proc finish")
+            api.send('upd');
         }
+    })
 
-        validator.send('crwldn');
+    //Starts the portscanner service
+    var portScanner = exec.fork(__dirname + "/app.js", ["portScanner"]);
+    portScanner.on('close', (code) => {
+        console.log(`portscanner process exited with code ${code}`);
     });
 
-    validator.on('finish',()=>{
-        api.send('updt');
-    })
+    crawler.on('message',(data)=>{
+        console.log(data)
+        if(data && data == 'crwrldn'){
+            if(firstTimeCrawl){
+                firstTimeCrawl=false;
+                portScanner.send('start');
+            }
+
+            validator.send('start');
+        }
+    });
 
 }
 
@@ -125,7 +148,10 @@ function repeated_crawl() {
     });
 
     // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
-    setTimeout(() => new GeoLocate().locate(), 30 * 1000);
+    setTimeout(() =>{
+        (<any> process).send('crwrldn')
+         new GeoLocate().locate()
+        }, 30 * 1000);
     setTimeout(repeated_crawl, config.crawler_interva * 60000);
 }
 

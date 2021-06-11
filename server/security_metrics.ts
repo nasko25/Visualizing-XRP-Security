@@ -127,7 +127,7 @@ export default class SecurityMetric {
                         })
                         //this.updateListOfVersions(2, i, prev);
                         this.listOfVersions = this.listOfVersionsBuffer;
-                        console.log(this.listOfVersions)
+                        console.log("finished updating")
                         evntEmit.emit('done');
                         setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
 
