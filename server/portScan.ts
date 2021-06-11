@@ -56,11 +56,14 @@ interface Node {
 class PortScan {
     shortScanList: NodePorts[];
     nmapInterface: NmapInterface;
-    constructor() {
-        this.nmapInterface = new NmapInterface();
+    constructor(nmmpintrf: NmapInterface) {
+        this.nmapInterface = nmmpintrf;
         this.shortScanList = [];
     }
 
+    setList(lst: NodePorts[]){
+        this.shortScanList = lst;
+    }
     /**
      * getRandomDate is used to schedule the next batch of scans in a pseudo random manner for the next day
      * @param increaseInDays how many days from now should the returned date be
@@ -68,10 +71,10 @@ class PortScan {
      */
     getRandomDate(increaseInDays: number) {
         var datetime = new Date();
-        //datetime.setDate(datetime.getDate()+increaseInDays);
-        //datetime.setHours(Math.floor(Math.random()*23));
-        //datetime.setMinutes(Math.floor(Math.random()*60));
-        datetime.setMinutes(datetime.getMinutes() + 2);
+        datetime.setDate(datetime.getDate()+increaseInDays);
+        datetime.setHours(Math.floor(Math.random()*23));
+        datetime.setMinutes(Math.floor(Math.random()*60));
+        //datetime.setMinutes(datetime.getMinutes() + 2);
         console.log("NEXT SCAN FOR " + datetime);
         return datetime;
     }
@@ -263,6 +266,7 @@ class PortScan {
                 TIMEOUT_SHORT_SCAN,
                 portsToCheck
             );
+            //Checks if the scan succeed
             if (out1 != null && out1 && out1.up) {
                 var i: number = 0;
                 if (out1.openPorts.length > 0) {
@@ -290,7 +294,7 @@ class PortScan {
             console.log("Second scan")
 
             var out2 = await this.nmapInterface.topPortsScan(this.normaliseIP(listOfNodes[ip].ip), TIMEOUT_SHORT_SCAN, T_LEVEL_SHORT, TOP_PORTS);
-            //console.log("done " + out2);
+            //Checks if the scan succeed
             if (out2 != null && out2 && out2.up) {
                 var i: number = 0;
                 if (flag == 0) {
@@ -336,9 +340,15 @@ class PortScan {
         });
     }
 
+    /**
+     * The second version of the short scan. Runs several short scans as defined by {@link MAX_SHORT_SCANS}
+     * @param ip the index of the node from the list we should start from in this batch
+     * @returns void promise
+     */
     async shortScanver2(ip: number) {
         if (ip >= this.shortScanList.length) {
             this.scheduleAShortScanver2();
+            //console.log("finished batch")
             return;
         }
 
@@ -355,7 +365,9 @@ class PortScan {
         }
         //this pattern is from the Geo Locator. We need to wait for this batch to complete before issuing the next one.
         Promise.all(promiseArr).then((value: boolean[]) => {
-            console.log(value);
+            //True if success, false otherwise
+            //console.log(value);
+            //recursive call to this function with the incremented ip count.
             this.shortScanver2(ip);
         });
     }
@@ -365,9 +377,7 @@ class PortScan {
 
     start() {
         Logger.info("PORT SCANNER STARTED")
-        // dbCon.getNodesNonNullPort((result)=>{
-        //   this.shortScan(result).then(()=>this.scheduleAShortScan())
-        // });
+
         if(DO_LONG_SCAN){
             dbCon.getNodesNonNullPort().then((result) => {
                 this.shortScanList = result;
@@ -381,6 +391,7 @@ class PortScan {
                 Logger.error(err.message);
             });
         }else{
+            //If we aren't doing a long scan, get all nodes and run short scan on it
             dbCon.getAllNodesForPortScan().then(( result) => {
                 this.shortScanList = result;
                 this.shortScanver2(0);

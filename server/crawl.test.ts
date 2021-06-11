@@ -776,7 +776,7 @@ test("test crawl() if the database is unresponsive", async () => {
     expect(insertConnectionMock).toHaveBeenCalledTimes(4);
     // the logger should have been called 7 times (once for each rejected promise)
     expect(Logger.error).toHaveBeenCalledTimes(7);
-
+    
     spy.mockRestore();
     console.log = console_log;
 });
