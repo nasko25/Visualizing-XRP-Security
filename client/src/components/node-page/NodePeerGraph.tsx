@@ -4,6 +4,7 @@ import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
 import { DataSet } from 'vis-data';
 import "./NodePage.css";
 import { Peer } from "./NodePageTypes";
+import Loader from "../Loader";
 
 /**
  * Component that visualizes the peer connections of a Node
@@ -29,10 +30,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
     }
 
     componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
-        // console.log(prevProps);
-        // console.log(prevState);
         if(this.props.public_key !== prevProps.public_key || this.props.peers !== prevProps.peers){
-            // console.log(this.props.public_key + "\n" + prevProps.public_key + "\n", this.props.peers, prevProps.peers);
             this.createNetwork();
         }
     }
@@ -189,17 +187,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                     data-testid="peer-network" >
                 </div>
 
-                <div id="loader" data-testid="loader" style={{ position: "absolute", top: "40%" }} >
-                    <img width="10%"
-                        style={{
-                            animation: `spin 3s linear infinite`,
-                            marginLeft: "auto",
-                            marginRight: "auto"
-                        }}
-                        alt=""
-                        src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
-                    ></img>
-                </div>
+                <Loader top={40}/>
 
                 <Button
                     style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}

@@ -5,7 +5,7 @@ import "./NodePage.css";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
 import { humanizeUptime } from '../../helper';
-import NodePageNavbar from "./NodePageNavbar";
+import NodePageNavbar from "../NavigationBar";
 import { COLORS, SETUP } from '../../style/constants'
 
 
@@ -16,16 +16,17 @@ import { COLORS, SETUP } from '../../style/constants'
  * a statistical chart and an info box.
  * 
  */
-
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
-
+    
+    // This is passed onto the NodePageNavbar as a prop for 
+    // the id of the Search TextInput element.
     searchID: string = "node-page-search-bar";
+
     constructor(props: NodePageProps) {
         super(props);
 
         this.state = {
             public_key: this.parseURL(),
-            location: this.props.history.location,
             IP: "",
             peers: [],
             trust_score: 0,
@@ -52,9 +53,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.historyListener();
     }
 
+    /**
+     * Fetch all the needed information  from the server,
+     * once the component has mounted.
+     */
     componentDidMount() {
         this.getNodeInfo();
     }
+
     /**
      * Everytime we change the public_key in the state, 
      * we should make a request for information from the server
@@ -171,6 +177,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             }).catch(this.handleAPIError);
     }
 
+    /**
+     * Fetch all needed information from the server.
+     * This method sends 2 requests - one for the basic
+     * node information and one for the peers.
+     */
     getNodeInfo() {
         var history: HistoricalScore[] = [];
         for (var i = 1; i <= 30; i++) {
@@ -181,6 +192,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.queryAPI_peers(this.state.public_key);
     }
 
+    /**
+     * Creates the historical chart, using Grommet's DataChart
+     * @returns 
+     */
     createDataChart() {
         return (
             <DataChart
@@ -193,7 +208,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
                 size={{ width: "fill" }}
                 axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
-                legend
                 detail
             />
         );
@@ -272,6 +286,11 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         return list;
     }
 
+    /**
+     * A callback we pass to the NodePageGraph component
+     * that handles what happens when a node on it is clicked
+     * @param public_key 
+     */
     nodeOnClick(public_key: string) {
         this.props.history.push("/node?public_key=" + public_key);
     }
@@ -282,7 +301,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 style={{ width: "100%", height: "100%" }}>
 
                 <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
-                    <NodePageNavbar history={this.props.history} onSearch={this.onKeyPressSearch} searchID={this.searchID}></NodePageNavbar>
+                    <NodePageNavbar title={'Node Page'} onSearch={this.onKeyPressSearch} searchID={this.searchID}></NodePageNavbar>
                 </Header>
                 {/* We split the main part of the application in a 2x2 grid with 3 components,
                     the one on the left show information about the node and its peers, the top
@@ -292,8 +311,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                     <Grid
                         fill
                         style={{ width: "100%", height: "100%" }}
-                        rows={["1/2", "1/2"]}
-                        columns={["1/2", "1/2"]}
+                        rows={["60%", "40%"]}
+                        columns={["50%", "50%"]}
                         areas={[
                             { name: 'peers_network', start: [1, 0], end: [1, 0] },
                             { name: 'stats', start: [0, 0], end: [0, 1] },

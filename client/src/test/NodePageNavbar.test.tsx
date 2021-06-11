@@ -3,7 +3,7 @@ import React from "react";
 import { fireEvent, screen, getByText, getByTestId} from '@testing-library/react';
 import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";
-import NodePageNavbar from '../components/node-page/NodePageNavbar';
+import NodePageNavbar from '../components/NavigationBar';
 
 const NodePageNavbarPropsMock = {
     history: createBrowserHistory(),
@@ -23,8 +23,8 @@ beforeEach(() => {
     // Render the NodePageNavbar
     act(() => {
         render(<NodePageNavbar
+            title="title"
             onSearch={NodePageNavbarPropsMock.onSearch}
-            history={NodePageNavbarPropsMock.history}
             searchID={NodePageNavbarPropsMock.searchID}>
             </NodePageNavbar>, container);
     });

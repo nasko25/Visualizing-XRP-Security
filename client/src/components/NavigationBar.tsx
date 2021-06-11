@@ -1,21 +1,17 @@
-import { Grid, Heading, Box, Text, TextInput } from "grommet";
+import { Grid, Box, TextInput, Text } from "grommet";
 import { Search } from "grommet-icons"
 import { Component } from "react";
-import Button from 'react-bootstrap/Button'
-import { History } from 'history';
-import { COLORS } from '../../style/constants'
+import { COLORS } from '../style/constants'
+import '../style/NodePage.css'
 
-/**
- * The history represents the Browser history and is used for navigating
- * between the different pages.
- * 
+/** 
  * The onSearch is a function which should handle the searching functionality
  * 
  * The searchID is the element id of the Input where the 
  * search query is typed.
  */
 type NodePageNavbarProps = {
-    history: History,
+    title: string,
     onSearch: (e: React.KeyboardEvent<HTMLInputElement>) => void,
     searchID: string
 }
@@ -23,15 +19,15 @@ type NodePageNavbarProps = {
 /**
  * This component displays the Navigation bar on the Node page
  * It has buttons to navigate through the website, as well
- * as a search bar
+ * as a search bar, which expects a public_key.
  */
 export default class NodePageNavbar extends Component<NodePageNavbarProps>{
 
     render(){
         return(<Grid
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: "100%", height: "100%", color: "white" }}
             rows={["1"]}
-            columns={["1/5", "1/5", "1/5", "1/5", "1/5"]}
+            columns={["12.5%", "12.5%", "12.5%", "12.5%", "50%"]}
             areas={[
                 { name: 'heading', start: [0, 0], end: [0, 0] },
                 { name: 'button_stock', start: [1, 0], end: [1, 0] },
@@ -41,55 +37,43 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
             ]}>
 
             {/* The heading. */}
-            <Heading margin="2%" gridArea="heading" alignSelf="center" size="small">Node Page</Heading>
+            <Box 
+                gridArea="heading"
+                alignSelf="center"
+                justify="center"
+                style={{width: "100%", height: "100%"}}
+                >
+                <Text style={{fontWeight: "bold", fontSize: "x-large"}}>{this.props.title}</Text>
+            </Box>
 
             {/* The Button for returning to the main page. */}
             <Box
-                height="80%"
                 gridArea="button_stock"
                 justify="center"
                 alignSelf="center"
-                margin="2%">
-                <Button
-                    variant="dark"
-                    onClick={() => this.props.history.push("/")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
-                    data-testid="stock-button" >
-                    <Text size="large" weight="bold" >Stock</Text>
-                </Button>
+                style={{width: "100%", height: "100%"}}
+                >
+                <a className='onPage' href='/'>Stock Nodes</a>
             </Box>
 
             {/* The Button for going to the validator page. */}
             <Box
-                height="80%"
                 gridArea="button_validator"
                 justify="center"
                 alignSelf="center"
-                margin="2%">
-                <Button
-                    variant="dark"
-                    onClick={() => this.props.history.push("/validators")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
-                    data-testid="validators-button" >
-                    <Text size="large" weight="bold">Validators</Text>
-                </Button>
+                style={{width: "100%", height: "100%"}}
+                >
+                <a href='/validators'>Validator Nodes</a>
             </Box>
 
             {/* The Button for going to the about page. */}
             <Box
-                height="80%"
                 gridArea="button_about"
                 justify="center"
                 alignSelf="center"
-                margin="2%">
-                <Button
-                    className=""
-                    variant="dark"
-                    onClick={() => this.props.history.push("/about")}
-                    style={{ width: "80%", height: "80%", alignSelf: "center" }}
-                    data-testid="about-button" >
-                    <Text size="large" weight="bold">About</Text>
-                </Button>
+                style={{width: "100%", height: "100%"}}
+                >
+                <a href='/about'>About</a>
             </Box>
 
             {/* The Search Bar */}
@@ -98,7 +82,8 @@ export default class NodePageNavbar extends Component<NodePageNavbarProps>{
                 direction="row"
                 justify="center"
                 background={COLORS.button}
-                margin={{ left: "1%", right: "3%" }}>
+                margin={{ left: "1%", right: "2%" }}
+                >
                 <TextInput
                     onKeyPress={this.props.onSearch}
                     icon={<Search />}

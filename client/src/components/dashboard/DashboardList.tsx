@@ -10,8 +10,13 @@ export type DashboardListProps = {
     history: History
 }
 
+/**
+ * A component that visualizes the list on the Stock Dashboard Page
+ * It contains a DataTable with the fields public_key, rippled_version,
+ * uptime and security_score.
+ */
 export default class DashboardList extends Component<DashboardListProps> {
-    highligth = {};
+    highlight = {};
 
     render() {
         let nodes = this.props.arrNodesData;
@@ -19,8 +24,9 @@ export default class DashboardList extends Component<DashboardListProps> {
 
         var jsonVariable: any = {};
         jsonVariable[selected] = {background: 'white'}
-        this.highligth = jsonVariable;
+        this.highlight = jsonVariable;
 
+        // Check if a node on the map has been selected and highlight it in the list
         if (selected !== "") {
             let temp = [this.props.arrNodesData.find(node => node.public_key === selected)]
             nodes = temp.concat(nodes.filter(n => {
@@ -31,7 +37,6 @@ export default class DashboardList extends Component<DashboardListProps> {
         }
 
         return (
-
             <div className='table-outer'>
                 <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
                     <Box style={{height: '100%', width: '100%'}}>
@@ -57,7 +62,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     sortable: true
                                 },
                                 {
-                                    property: 'securityScore',
+                                    property: 'security_score',
                                     header: <Text><b>Security Score</b></Text>,
                                     size: '10%',
                                     align: 'start'
@@ -67,7 +72,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 public_key: node.public_key,
                                 rippled_version: node.rippled_version,
                                 uptime: humanizeUptime(node.uptime),
-                                securityScore: node.trustScore
+                                security_score: node.trust_score
                             }))}
                             step={10}
                             size='large'
@@ -80,7 +85,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 vertical: "xsmall"
                             }}
                             style={{scrollbarWidth: 'none', height: '100%'}}
-                            rowProps= { this.highligth }
+                            rowProps= { this.highlight }
                             border={{
                                 color: 'white',
                                 side: 'bottom',

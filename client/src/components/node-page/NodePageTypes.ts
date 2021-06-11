@@ -15,7 +15,6 @@ export type NodePageState = {
     ports: Port[],
     historical_scores: HistoricalScore[],
     uptime: number
-    location: LocationDescriptor
 }
 
 // How the info should be passed around
