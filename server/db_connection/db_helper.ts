@@ -365,8 +365,6 @@ export function insertValidatorsStatistics(
 }
 
 export function insertNodeValidatorConnections(cons: Map<string, Set<string>>) {
-    console.log(cons.size);
-
     let query = "INSERT IGNORE INTO node_validator VALUES ";
     let nEntries = 0;
     let count = 0;
@@ -393,8 +391,6 @@ export function insertNodeValidatorConnections(cons: Map<string, Set<string>>) {
             });
         }
     });
-
-    console.log(query);
 
     return send_insert_request(query);
 }

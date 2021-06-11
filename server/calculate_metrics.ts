@@ -8,19 +8,18 @@ export function calculateSMA(scores: SecurityAssessment[]): number{
     scores.forEach((x: SecurityAssessment) => {
         sum += x.score;
     });
-    console.log("bruh");
     return sum/scores.length;
 
 }
 
 //Exponential moving average
 //More recent days have higher weight
-export function calculateEMA(scores: SecurityAssessment[]): number{
+export function calculateEMA(scores: number[]): number{
 
     var ema: number = 0;
     if(scores.length == 0){
         return 0;
     }
     var multiplier: number = 2 / (scores.length);
-    return multiplier * scores[0].score + (1 - multiplier) * calculateEMA(scores.slice(1, scores.length));
+    return multiplier * scores[0] + (1 - multiplier) * calculateEMA(scores.slice(1, scores.length));
 }

@@ -4,6 +4,7 @@ import { Validator } from './validators';
 import { ValidatorStatistics } from './validator_monitor';
 import { getValidatorsStatistics, insertValidatorsAssessments } from './db_connection/db_helper';
 import ValidatorAssessment from "./db_connection/models/validator_assessment";
+import { calculateEMA } from './calculate_metrics';
 
 // this is the format of the validator json object returned from Ripple's API
 interface ValidatorResponse {
@@ -46,6 +47,7 @@ export default class ValidatorTrustAssessor {
             this.assessScores(validators).then((assessments: ValidatorAssessment[]) => {
                 // assessments should be defined and cannot be empty
                 if (assessments !== undefined && assessments.length !== 0) {
+                    console.log(assessments)
                     insertValidatorsAssessments(assessments).then(() => {
                         Logger.info("Valildator nodes trust assessment successfully stored in the database.");
                     }).catch(err => {
@@ -54,9 +56,11 @@ export default class ValidatorTrustAssessor {
                 } else {
                     Logger.info("There are no assessments that can be saved to the database.");
                 }
+            }).catch(err => {
+                Logger.error(`The Validator nodes Trust Assessor could not calculate the trust score for all nodes: ${err}`);
             });
         }).catch(err => {
-            Logger.error(`The Validator nodes Trust Assessor could not calculate the trust score for all nodes: ${err}`);
+            Logger.error(`The Validator nodes Trust Assessor could not get the validators' statistics from the database: ${err}`);
         })
 
     }
@@ -68,13 +72,23 @@ export default class ValidatorTrustAssessor {
     }
 
     assessScore(validator: ValidatorStatisticsTotal): Promise<ValidatorAssessment> {
-        console.log(validator);
-        return new Promise(() => {
-            return {
-                public_key: "",
-                trust_metric_version: 0,
-                score: 0
-            };
+        return new Promise((resolve, reject) => {
+            if (validator.missed.length !== validator.total.length) {
+                Logger.error(`One or more ${validator.missed.length > validator.total.length ? "total" : "missed" } ledger hourly statistics for validator with public_key = ${validator.public_key} are missing.`);
+                resolve( <ValidatorAssessment> {
+                    public_key: validator.public_key
+                });
+            }
+            const hourlyScores = validator.missed.map((missed, index) => {
+                return (1 - (missed / validator.total[index]));
+            });
+            // TODO score is NaN
+            const score = calculateEMA(hourlyScores);
+            resolve({
+                public_key: validator.public_key,
+                trust_metric_version: 1.0,
+                score: score
+            });
         });
     }
 

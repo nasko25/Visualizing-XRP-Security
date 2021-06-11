@@ -123,7 +123,6 @@ export default class ValidatorIdentifier {
                         }
 
                         // console.log("vals length: " + vals.length);
-                        
 
                         vals.forEach((valKey) => {
                             this.validators_set.add(valKey);
@@ -133,8 +132,6 @@ export default class ValidatorIdentifier {
                     Logger.info(
                         "VI: Adding of validator keys to maps completed!"
                     );
-
-                    Logger.info(this.validators_set.size);
 
                     // Put in database
                     insertValidators(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}))

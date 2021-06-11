@@ -164,6 +164,7 @@ export class ValidatorMonitor {
             //this.validatedLedgers.clear();
             //this.canonicalLedgers = [];
 
+            this.eventEmitter.emit("validationMonitoringDone");
             // schedule the same procedure again after `INTERVAL` minutes
             this.schedule();
         });
