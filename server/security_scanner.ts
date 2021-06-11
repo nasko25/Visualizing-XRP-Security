@@ -13,6 +13,7 @@ class Security_Scanner {
     scan_interval: number = 10;
     security_calculator: SecurityMetric = new SecurityMetric();
     update_finished: boolean = false;
+
     /* 
     Constructor
 
@@ -20,6 +21,7 @@ class Security_Scanner {
     */
     constructor(scan_interval: number, security_calculator?: SecurityMetric) {
         this.scan_interval = scan_interval;
+   
         if(security_calculator) this.security_calculator = security_calculator;
     }
   
@@ -50,7 +52,8 @@ class Security_Scanner {
                             Logger.error(`SS: Storing failed: ${err.message}`);
                         })
                         .finally(() => {
-                            Logger.info("Scheduling 50")
+                            Logger.info("Scheduling 50");
+                            (<any> process).send('finish');
                             this.schedule(once);
                         });
                 });
@@ -60,6 +63,7 @@ class Security_Scanner {
             })
             .finally(() => {
                 Logger.info("Scheduling 58")
+                
                 this.schedule(once);
             });
     }

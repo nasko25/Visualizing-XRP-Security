@@ -56,13 +56,20 @@ export default function setupClientAPIEndpoints(app: Express) {
     var nodeCache: Map<string, Node> = new Map();
 
     // A function that independently updates the cache periodically once per a longer period
-    async function cacheUpdater() {
-        updateCache().then(() => setTimeout(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES * 60 * 1000));
-    }
+    // async function cacheUpdater() {
+    //     updateCache().then(() => setTimeout(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES * 60 * 1000));
+    // }
 
 
     // Initialization of the cache
-    cacheUpdater();
+    // cacheUpdater();
+
+    
+    updateCache();
+    process.on('updt',()=>{
+        console.log("message received");
+        updateCache();
+    })
 
     async function updateCache() {
         return new Promise(resolve => {
