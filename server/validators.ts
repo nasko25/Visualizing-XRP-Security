@@ -97,13 +97,13 @@ export default class ValidatorIdentifier {
             )))
         });
 
-        axios
+        Promise
             .all(
                 promises
             )
             .then(
                 // Response is an array of tuples (node_key, val_keys)
-                axios.spread((...res) => {
+                (res) => {
                     // Add the validator keys to the main Validators Map
                     // Add the validator keys to the Node -> Validators Map
                     Logger.info("VI: Adding validator keys to maps ...");
@@ -169,7 +169,7 @@ export default class ValidatorIdentifier {
                             this.node_validators.clear();
                             this.identify_validators_for_batch(nodes);
                         });
-                })
+                }
             )
             .catch((error: Error) => {
                 Logger.error("VI: Batch checking failed: " + error.message);
