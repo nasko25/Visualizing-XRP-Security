@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `node` (
   `portRunningOn` VARCHAR(7) NULL,
   `ports` VARCHAR(3000) NULL,
   `protocols` VARCHAR(3000) NULL,
-  `publisher` VARCHAR(80) NULL,
+  `publishers` VARCHAR(200) NULL,
   `longtitude` DOUBLE NULL,
   `latitude` DOUBLE NULL,
   `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -47,7 +47,7 @@ const agent = new https.Agent({
 
 export default class ValidatorIdentifier {
     validators_set: Set<string> = new Set();
-    node_validators: Map<string, string[]> = new Map();
+    node_validators: Map<string, Set<string>> = new Map();
     validatorBatchCount: number = 10;
 
     constructor(validatorBatchCount?: number) {
@@ -112,8 +112,18 @@ export default class ValidatorIdentifier {
                         let key: string = tuple[0];
                         let vals: string[] = tuple[1];
 
-                        if (vals.length > 1)
-                            this.node_validators.set(key, vals);
+                        if (vals.length > 1) {
+                            let prev = this.node_validators.get(key);
+                            if (prev === undefined) {
+                                prev = new Set();
+                            }
+                            vals.forEach(val => prev?.add(val));
+
+                            this.node_validators.set(key, prev);
+                        }
+
+                        // console.log("vals length: " + vals.length);
+                        
 
                         vals.forEach((valKey) => {
                             this.validators_set.add(valKey);
@@ -123,6 +133,8 @@ export default class ValidatorIdentifier {
                     Logger.info(
                         "VI: Adding of validator keys to maps completed!"
                     );
+
+                    Logger.info(this.validators_set.size);
 
                     // Put in database
                     insertValidators(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}))
@@ -169,7 +181,7 @@ export default class ValidatorIdentifier {
     get_validator_list(ip: string, publisher_key: string) {
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
-            { httpsAgent: agent, timeout: 30000 }
+            { httpsAgent: agent, timeout: 6000 }
         );
     }
 
