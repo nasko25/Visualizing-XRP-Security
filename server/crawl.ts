@@ -28,7 +28,7 @@ interface Node {
 
 // Wait for at most 3 seconds when making an HTTP request to obtain a node's peers
 // If the node does not respond after 3 seconds, it is assumed that we cannot retrieve its peer from the peer crawler API
-const TIMEOUT_GET_REQUEST = 30000
+const TIMEOUT_GET_REQUEST = 3000
 
 const normalizePublicKey = function(publicKey: string) {
     if (publicKey.length > 50 && publicKey[0] === 'n')
