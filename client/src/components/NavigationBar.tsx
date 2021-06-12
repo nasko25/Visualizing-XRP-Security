@@ -10,7 +10,7 @@ import '../style/NodePage.css'
  * The searchID is the element id of the Input where the 
  * search query is typed.
  */
-type NodePageNavbarProps = {
+type NavigationBarProps = {
     title: string
 }
 
@@ -19,9 +19,9 @@ type NodePageNavbarProps = {
  * It has buttons to navigate through the website, as well
  * as a search bar, which expects a public_key.
  */
-export default class NavigationBar extends Component<NodePageNavbarProps>{
+export default class NavigationBar extends Component<NavigationBarProps>{
 
-    constructor(props: NodePageNavbarProps){
+    constructor(props: NavigationBarProps) {
         super(props);
 
         this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
@@ -32,15 +32,15 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
     /**
      * Event Handler for the Search Bar
      */
-     onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
+    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>): void {
         if (e.code === "Enter") {
             let text: string = (document.getElementById(this.searchID) as HTMLInputElement).value;
             window.location.href = `/node?public_key=${text}`;
         }
     }
 
-    render(){
-        return(<Grid
+    render() {
+        return (<Grid
             style={{ width: "100%", height: "100%", color: "white" }}
             rows={["1"]}
             columns={["12.5%", "12.5%", "12.5%", "12.5%", "50%"]}
@@ -53,13 +53,13 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
             ]}>
 
             {/* The heading. */}
-            <Box 
+            <Box
                 gridArea="heading"
                 alignSelf="center"
                 justify="center"
-                style={{width: "100%", height: "100%"}}
-                >
-                <Text style={{fontWeight: "bold", fontSize: "x-large"}}>{this.props.title}</Text>
+                style={{ width: "100%", height: "100%" }}
+            >
+                <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>{this.props.title}</Text>
             </Box>
 
             {/* The Button for returning to the main page. */}
@@ -67,9 +67,9 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
                 gridArea="button_stock"
                 justify="center"
                 alignSelf="center"
-                style={{width: "100%", height: "100%"}}
-                >
-                <a className='onPage' href='/'>Stock Nodes</a>
+                style={{ width: "100%", height: "100%" }}
+            >
+                <a className='onPage' href='/' data-testid="stock-ref">Stock Nodes</a>
             </Box>
 
             {/* The Button for going to the validator page. */}
@@ -77,9 +77,9 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
                 gridArea="button_validator"
                 justify="center"
                 alignSelf="center"
-                style={{width: "100%", height: "100%"}}
-                >
-                <a href='/validators'>Validator Nodes</a>
+                style={{ width: "100%", height: "100%" }}
+            >
+                <a href='/validators' data-testid="validators-ref">Validator Nodes</a>
             </Box>
 
             {/* The Button for going to the about page. */}
@@ -87,9 +87,9 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
                 gridArea="button_about"
                 justify="center"
                 alignSelf="center"
-                style={{width: "100%", height: "100%"}}
-                >
-                <a href='/about'>About</a>
+                style={{ width: "100%", height: "100%" }}
+            >
+                <a href='/about' data-testid="about-ref">About</a>
             </Box>
 
             {/* The Search Bar */}
@@ -99,7 +99,7 @@ export default class NavigationBar extends Component<NodePageNavbarProps>{
                 justify="center"
                 background={COLORS.button}
                 margin={{ left: "4%", right: "5%" }}
-                >
+            >
                 <TextInput
                     onKeyPress={this.onKeyPressSearch}
                     icon={<Search />}

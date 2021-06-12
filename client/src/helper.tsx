@@ -1,6 +1,5 @@
 import { Duration } from 'luxon';
 
-
 /**
      * We receive the uptime of nodes in seconds.
      * This methods converts it into the format:
