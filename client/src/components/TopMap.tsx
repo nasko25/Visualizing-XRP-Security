@@ -93,7 +93,7 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     // Create a new map with the provided popup 
     createNewMap = (popup: JSX.Element | null) => {
-        return <MapContainer className='map' center={this.state.latlng} zoom={3}>
+        return <MapContainer className='map' center={this.state.latlng} zoom={3} data-testid='dashboard-map'>
             {/* Layers */}
             <TileLayer
                 url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
