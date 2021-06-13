@@ -59,7 +59,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 justify="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>{this.props.title}</Text>
+                <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>{this.props.title}</Text>
             </Box>
 
             {/* The Button for returning to the main page. */}
@@ -71,9 +71,9 @@ export default class NavigationBar extends Component<NavigationBarProps>{
             >
                 {
                     this.props.title !== "Dashboard" ?
-                        <a className='onPage' href='/' data-testid="stock-ref">Stock Nodes</a>
+                        <a className='onPage' href='/' data-testid="stock-ref" style={{userSelect: 'none'}}>Stock Nodes</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>Stock Nodes</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Stock Nodes</Text>
                     
                 }
             </Box>
@@ -87,9 +87,9 @@ export default class NavigationBar extends Component<NavigationBarProps>{
             >
                 {
                     this.props.title !== "Validators" ?
-                        <a href='/validators' data-testid="validators-ref">Validator Nodes</a>
+                        <a href='/validators' data-testid="validators-ref" style={{userSelect: 'none'}}>Validator Nodes</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>Validator Nodes</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Validator Nodes</Text>
                 }
             </Box>
 
@@ -102,9 +102,9 @@ export default class NavigationBar extends Component<NavigationBarProps>{
             >
                 {
                     this.props.title !== "About Page" ?
-                        <a href='/about' data-testid="about-ref">About</a>
+                        <a href='/about' data-testid="about-ref" style={{userSelect: 'none'}}>About</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>About</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>About</Text>
                 }
             </Box>
             
