@@ -17,12 +17,11 @@ export type DashboardProps = {
  * A component that displays the Stock Node Dashboard
  */
 export default class Dashboard extends Component<DashboardProps> {
-    // list needs to check whether selected is null
-    // dashboard will have a function that will be passed down to topmap
-    // said function will update the state when an onclick event is triggered
-    // state is updated to have the public key of the node clicked on
 
     timer = undefined;
+    /**
+     * Local state
+     */
     state = {
         nodes: [],
         selected: "",
@@ -33,11 +32,18 @@ export default class Dashboard extends Component<DashboardProps> {
         super(props);
         this.state = { nodes: [], selected: "", loaded: false };
 
+        /**
+         * Binding the class methods to the 'this' keyword so that it can be used inside them
+         */
         this.refresh_data = this.refresh_data.bind(this);
         this.selectNode = this.selectNode.bind(this);
         this.getData = this.getData.bind(this);
     }
 
+    /**
+     * Fetches all needed information from the server and start a timeout to refresh the data
+     * once the component has been mounted.
+     */
     componentDidMount() {
         this.refresh_data();
     }
@@ -46,11 +52,20 @@ export default class Dashboard extends Component<DashboardProps> {
         clearInterval(this.timer);
     }
 
+    /**
+     * Changes the public key in the state to the public key of a selected node on the map
+     * @param pub_key The public key of the selected node on the map
+     */
     selectNode(pub_key: string) {
         this.setState({ selected: pub_key });
         console.log("PUB KEY UPDATED : " + this.state.selected);
     }
 
+    /**
+     * Fetches all needed data from the server by creating an http request to the required endpoint
+     * Changes the loaded flag in state once the request has been processed and information has been received.
+     * @returns An array with the nodes given by the http response
+     */
     getData() {
         return axios.get("http://" + window.location.hostname + ":8080/node/get-all-nodes").then(response => {
             console.log(response.data);
@@ -62,12 +77,20 @@ export default class Dashboard extends Component<DashboardProps> {
         });
     }
 
+    /**
+     * Calls a function to fetch all needed data from the server and sets a timeout to refresh the data
+     * every X minutes
+     */
     refresh_data() {
         this.getData();
         console.log("Node info updated...");
         setTimeout(this.refresh_data, 300000);
     }
 
+    /**
+     * Creates the list containing general information regarding the network
+     * @returns The list
+     */
     createGenInfo() {
         return <List
             style={{ width: "70%", height: "70%", alignSelf: "center" }}
