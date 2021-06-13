@@ -4,6 +4,9 @@ import { Grommet, DataTable, Text, Box} from "grommet";
 import { History } from 'history';
 import { humanizeUptime } from '../../helper';
 
+/**
+ * Props passed down by parent component
+ */
 export type DashboardListProps = {
     arrNodesData: Array<any>,
     selected: string,
@@ -18,7 +21,11 @@ export type DashboardListProps = {
 export default class DashboardList extends Component<DashboardListProps> {
     highlight = {};
 
-    render() {
+    /**
+     * If a node on the map has been selected then said node is higlighted in the list
+     * @returns An array containing all nodes and the selected one at the beginning
+     */
+    select() {
         let nodes = this.props.arrNodesData;
         let selected: string = this.props.selected;
 
@@ -35,7 +42,11 @@ export default class DashboardList extends Component<DashboardListProps> {
                 }
             }));
         }
+        return nodes;
+    }
 
+    render() {
+        let nodes = this.select();
         return (
             <div className='table-outer'>
                 <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
