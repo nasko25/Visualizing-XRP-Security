@@ -95,7 +95,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 horizontal: "medium",
                                 vertical: "xsmall"
                             }}
-                            style={{scrollbarWidth: 'none', height: '100%'}}
+                            style={{scrollbarWidth: 'none', height: '100%', userSelect: 'none'}}
                             rowProps= { this.highlight }
                             border={{
                                 color: 'white',

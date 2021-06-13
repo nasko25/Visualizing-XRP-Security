@@ -113,44 +113,44 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                 background={COLORS.button}
                             >
                                 <DataTable
-                            columns={[
-                                {
-                                    property: 'public_key',
-                                    header: <Text><b>Public Key</b></Text>,
-                                    size: '100%',
-                                    search: true,
-                                    primary: true
-                                }
-                            ]}
-                        
-                            data={[
-                                {
-                                    public_key: 'Key'
-                                },
-                                {
-                                    public_key: 'Key'
-                                }, 
-                                {
-                                    public_key: 'Key'
-                                }
-                            ]}
-                            step={10}
-                            size='large'
-                            onClickRow={({datum}) => {
-                                console.log(datum.public_key);
-                                // this.updateList(datum.public_key);
-                            }}
-                            pad= {{
-                                horizontal: "medium",
-                                vertical: "xsmall"
-                            }}
-                            style={{scrollbarWidth: 'none', height: '100%'}}
-                            border={{
-                                color: 'white',
-                                side: 'bottom',
-                                size: '1px',
-                            }}
-                        />
+                                    columns={[
+                                        {
+                                            property: 'public_key',
+                                            header: <Text><b>Public Key</b></Text>,
+                                            size: '100%',
+                                            search: true,
+                                            primary: true
+                                        }
+                                    ]}
+                                
+                                    data={[
+                                        {
+                                            public_key: 'Key'
+                                        },
+                                        {
+                                            public_key: 'Key'
+                                        }, 
+                                        {
+                                            public_key: 'Key'
+                                        }
+                                    ]}
+                                    step={10}
+                                    size='large'
+                                    onClickRow={({datum}) => {
+                                        console.log(datum.public_key);
+                                        // this.updateList(datum.public_key);
+                                    }}
+                                    pad= {{
+                                        horizontal: "medium",
+                                        vertical: "xsmall"
+                                    }}
+                                    style={{scrollbarWidth: 'none', height: '100%', userSelect: 'none'}}
+                                    border={{
+                                        color: 'white',
+                                        side: 'bottom',
+                                        size: '1px',
+                                    }}
+                                />
                             </Box>
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
