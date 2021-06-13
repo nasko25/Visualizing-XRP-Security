@@ -246,7 +246,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 return b.score - a.score;
             })}
             border={false}
-            alignSelf="center" />;
+            alignSelf="center"
+            onClickItem={(peer: any) => {
+                this.props.history.push("/node?public_key=" + peer.item.public_key);
+            }}/>;
         return list;
     }
 
