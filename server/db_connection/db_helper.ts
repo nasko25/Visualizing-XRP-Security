@@ -17,7 +17,7 @@ var connection = mysql.createConnection({
 })
 
 export const insertNode = (node: CrawlerNode): Promise<void> => {
-    var insert_node_query: string = 'INSERT INTO node (IP, port,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.port + '\', \'' +
         node.version + '\', \'' +
@@ -30,7 +30,7 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     // TODO nodes are never removed from the database
-    var insert_nodes_query = "INSERT INTO node (IP, port, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
+    var insert_nodes_query = "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=new.IP, rippled_version=new.rippled_version, uptime=new.uptime, publisher=new.publisher;";
     var vals = nodes.map(node => [node.ip, node.port, node.version, node.pubkey, node.uptime, node.publisher]);
 
     // connection.query(query, [vals], create_query_callback_no_return(callback));
@@ -115,12 +115,12 @@ export function getAllSecurityAssessments(): Promise<SecurityAssessment[]> {
 
 // [ "port:protocol", "port:protocol" ] 
 export function getNodesNonNullPort(): Promise<NodePorts[]> {
-    var get_nodes_non_null = 'SELECT public_key, port, ip, ports FROM node WHERE ports IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ports IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 
 export function getAllNodesForPortScan(): Promise<NodePorts[]> {
-    var get_nodes_non_null = 'SELECT public_key, port, ip, ports FROM node WHERE ip IS NOT NULL;';
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ip IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 

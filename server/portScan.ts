@@ -255,7 +255,7 @@ class PortScan {
             var flag = 0;
             var success1 = false;
             var success2 = false;
-            var portsToCheck=listOfNodes[ip].port;
+            var portsToCheck=listOfNodes[ip].portRunningOn;
             //var portsToCheck = "";
             if(listOfNodes[ip].ports && listOfNodes[ip].ports!=null && listOfNodes[ip].ports!=""){
                 portsToCheck+=","+listOfNodes[ip].ports;
@@ -421,10 +421,10 @@ export default PortScan;
 //DEBUG DATA:
 
 const data: NodePorts[] = [
-    { ip: "194.35.86.10", public_key: "pk", ports: "404", port: "51235" },
-    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23", port: "51325" },
-    { ip: "91.12.98.74", public_key: "pk", ports: "42,23", port: "51235" },
-    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "", port: "51325" },
+    { ip: "194.35.86.10", public_key: "pk", ports: "404", portRunningOn: "51235" },
+    { ip: "::ffff:95.217.36.126", public_key: "pk", ports: "42,23", portRunningOn: "51325" },
+    { ip: "91.12.98.74", public_key: "pk", ports: "42,23", portRunningOn: "51235" },
+    { ip: "::ffff:35.184.126.128", public_key: "pk", ports: "", portRunningOn: "51325" },
 ];
 const data2: NodePortsNull[] = [
     { ip: "::ffff:35.184.126.128", public_key: "pk" },
