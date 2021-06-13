@@ -69,7 +69,13 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a className='onPage' href='/' data-testid="stock-ref">Stock Nodes</a>
+                {
+                    this.props.title !== "Dashboard" ?
+                        <a className='onPage' href='/' data-testid="stock-ref">Stock Nodes</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>Stock Nodes</Text>
+                    
+                }
             </Box>
 
             {/* The Button for going to the validator page. */}
@@ -79,7 +85,12 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a href='/validators' data-testid="validators-ref">Validator Nodes</a>
+                {
+                    this.props.title !== "Validators" ?
+                        <a href='/validators' data-testid="validators-ref">Validator Nodes</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>Validator Nodes</Text>
+                }
             </Box>
 
             {/* The Button for going to the about page. */}
@@ -89,7 +100,12 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a href='/about' data-testid="about-ref">About</a>
+                {
+                    this.props.title !== "About Page" ?
+                        <a href='/about' data-testid="about-ref">About</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>About</Text>
+                }
             </Box>
 
             {/* The Search Bar */}
