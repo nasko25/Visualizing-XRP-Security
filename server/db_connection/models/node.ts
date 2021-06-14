@@ -7,7 +7,8 @@ export interface Node {
     uptime: number,
     longtitude?: number,
     latitude?: number,
-    publisher: string
+    publisher: string,
+    ports?: string;
 }
 
 export interface NodePorts {

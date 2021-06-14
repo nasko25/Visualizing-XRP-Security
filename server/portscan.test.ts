@@ -31,14 +31,6 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-function bbb(ip: string){
-    if(ip.startsWith("::ffff:")){
-        console.log("haha")
-        ip=ip.substring(7);
-        console.log(ip)
-    }
-    return ip;
-}
 //172.26.0.1 Funny little IP
 
 test("test normalizeIP function", () => {

@@ -14,8 +14,6 @@ export function power_function(x: number, a?: number, b?: number, c?: number, cu
     return Math.max(cutoff,round_to_decimals(100-100*(a*(Math.pow(b,x))+c), decimals)) 
 }
 
-
-
 export function quadratic_function(x: number, a?: number, b?: number, c?: number, cutoff?: number, decimals?: number){
     if(cutoff==undefined) cutoff=def_cutoff;
     if(a==undefined) a=-0.005;
@@ -23,9 +21,11 @@ export function quadratic_function(x: number, a?: number, b?: number, c?: number
     if(c==undefined) c=1;
     if(decimals==undefined) decimals=def_decimals;
     
-    return Math.max(cutoff,100*((a*(x*x))+b*x+c));
+    return Math.max(cutoff,round_to_decimals(100*((a*(x*x))+b*x+c),decimals));
 }
+
 export function round_to_decimals(x: number, decimals: number){
+    
     return Math.round((x+Number.EPSILON)*Math.pow(10,decimals))/Math.pow(10,decimals)
 } 
 

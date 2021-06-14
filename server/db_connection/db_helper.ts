@@ -74,8 +74,9 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
 }
 
 export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
-    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ;'
-    return send_insert_request_vals(insert_sa_query, security_assessments);
+
+    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ON DUPLICATE KEY UPDATE public_key=VALUES(public_key), metric_version=VALUES(metric_version), score=VALUES(score);';
+    return send_insert_request_vals(insert_sa_query, [security_assessments.map(assesment => [assesment.public_key, `${assesment.metric_version}`, `${assesment.score}`])]);
 }
 
 export function insertPorts(node: NodePortsProtocols): Promise<void> {

@@ -1,6 +1,86 @@
 {
+    "___comment_vl": "Controls the amount of output the application gives. From 0 to 5, where 0 is no output, 5 is all the output (useful for debugging)",
+    "VERBOSE_LEVEL": 2,
+
+
     "_comment": "set useIpStack to true if you want to make an http request to ipstack to resolve the geolocation of an IP address with their API",
     "useIPStack" : false,
+
+
     "__comment": "access key used for the ipstack geoip lookup (TODO more info in the readme)",
-    "accessKey": "1f7dce5f41b09991c3b932423e359995"
+    "accessKey": "1f7dce5f41b09991c3b932423e359995",
+
+    "__comment_Crawler_interval": "Minutes we wait before we start next network crawl. GIVEN IN MINUTES",
+    "crawler_interva": 5,
+
+    "___comment_": "How aggressive is our Short Scan. Defines the T-Level of the NMAP scan",
+    "T_LEVEL_SHORT": 3,
+
+
+    "_comment__": "How aggressive is our Long Scan. Defines the T-Level of the NMAP scan",
+    "T_LEVEL_LONG": 2,
+
+
+    "_comment___": "Affects how many short scans are ran at the same time. Effectively controls the number of NMAP processes running at the same time",
+    "MAX_SHORT_SCANS": 3,
+
+
+    "_comment____": "Affects how many ip addresses are fed to NMAP for the long scan",
+    "MAX_LONG_SCANS": 4,
+
+
+    "__comment__": "How many minutes we wait before doing the next long scan",
+    "MINUTES_BETWEEN_LONG_SCANS": 10,
+
+
+    "__comment_": "How many days do we wait until next short scan",
+    "DAYS_BETWEEN_SHORT_SCANS": 2,
+
+
+    "_comment_": "When do we timeout on a short scan, i.e. after what period of time does the NMAP process truncate.",
+    "_comment_tss_": "Suffix can be m (for minutes, ex. 20m - 20 minutes),    h (for hours ex. 10h - 10 hours)",
+    "TIMEOUT_SHORT_SCAN": "20m",
+
+
+    "__comment___": "When do we timeout on a Long scan, i.e. after what period of time does the NMAP process truncate.",
+    "_comment_tls_": "Suffix can be m (for minutes, ex. 20m - 20 minutes),    h (for hours ex. 10h - 10 hours)",
+    "TIMEOUT_LONG_SCAN": "24h",
+
+
+    "__comment____": "For the short scan we check the top N ports (defined by this variable)",
+    "TOP_PORTS": 2000,
+
+
+    "___comment": "Do or do not long scans... There is no try.",
+    "DO_LONG_SCAN": false,
+
+
+    "_MAIN_COMMENT_": "FOLLOWING SECIONT REFERS TO THE STOCK NODE CALCULATIONS",
+    
+    "__comment_pow_": "Following three variables refer to the parameters in 100 - 100*(a*(b^x)-c) where x is difference in weeks between today and the version after",
+    "a_pow": 1.1,
+    "b_pow": 1.05,
+    "c_pow": -1.1,
+
+    "__comment_quadr_": "Following three variables refer to the parameters in 100*(a*(x^2) + b*x + c) where x is the number of open ports",
+    "a_quadr": -0.005,
+    "b_quadr": -0.2,
+    "c_quadr": 1,
+
+    "_comment_hours_": "How many hours between each check if a new version is released",
+    "hours_til_next_version_check": 2,
+
+    "_comment_grace_week_": "How many weeks grace period we give each version",
+    "weeks_grace_period": 2,
+    
+    "_comment_grace_ports": "How many ports we allow open before we start punishing",
+    "ports_grace_number": 1,
+
+    "_comment_cutoff_": "The cutoff of our functions",
+    "cutoff": -1000,
+
+    "_comment_decimals_": "Controls to how many decimals we will round in our calculations",
+    "decimals_to_round_to": 2
+
+
 }
