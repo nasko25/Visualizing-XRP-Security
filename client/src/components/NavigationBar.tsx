@@ -59,7 +59,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 justify="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <Text style={{ fontWeight: "bold", fontSize: "x-large" }}>{this.props.title}</Text>
+                <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>{this.props.title}</Text>
             </Box>
 
             {/* The Button for returning to the main page. */}
@@ -69,7 +69,13 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a className='onPage' href='/' data-testid="stock-ref">Stock Nodes</a>
+                {
+                    this.props.title !== "Dashboard" ?
+                        <a className='onPage' href='/' data-testid="stock-ref" style={{userSelect: 'none'}}>Stock Nodes</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Stock Nodes</Text>
+                    
+                }
             </Box>
 
             {/* The Button for going to the validator page. */}
@@ -79,7 +85,12 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a href='/validators' data-testid="validators-ref">Validator Nodes</a>
+                {
+                    this.props.title !== "Validators" ?
+                        <a href='/validators' data-testid="validators-ref" style={{userSelect: 'none'}}>Validator Nodes</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Validator Nodes</Text>
+                }
             </Box>
 
             {/* The Button for going to the about page. */}
@@ -89,17 +100,24 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 alignSelf="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <a href='/about' data-testid="about-ref">About</a>
+                {
+                    this.props.title !== "About Page" ?
+                        <a href='/about' data-testid="about-ref" style={{userSelect: 'none'}}>About</a>
+                        :
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>About</Text>
+                }
             </Box>
-
+            
             {/* The Search Bar */}
-            <Box gridArea="search"
+            {
+                this.props.title !== "Dashboard" && this.props.title !== "About Page" ?
+                <Box gridArea="search"
                 alignSelf="center"
                 direction="row"
                 justify="center"
                 background={COLORS.button}
                 margin={{ left: "4%", right: "5%" }}
-            >
+                >
                 <TextInput
                     onKeyPress={this.onKeyPressSearch}
                     icon={<Search />}
@@ -108,7 +126,17 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                     id={this.searchID}
                     data-testid="search"
                 />
-            </Box>
+                </Box>
+                :
+                <Box gridArea="search"
+                alignSelf="center"
+                direction="row"
+                justify="center"
+                background={COLORS.button}
+                margin={{ left: "4%", right: "5%" }}
+                >
+                </Box>
+            }
         </Grid>)
     }
 }

@@ -239,14 +239,17 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     createPeerList() {
         let list = <List
-            style={{ alignSelf: "center" }}
+            style={{ alignSelf: "center", userSelect: 'none' }}
             primaryKey="public_key"
             secondaryKey="score"
             data={this.state.peers.sort((a, b) => {
                 return b.score - a.score;
             })}
             border={false}
-            alignSelf="center" />;
+            alignSelf="center"
+            onClickItem={(peer: any) => {
+                this.props.history.push("/node?public_key=" + peer.item.public_key);
+            }}/>;
         return list;
     }
 
