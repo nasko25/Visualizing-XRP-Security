@@ -34,7 +34,7 @@ interface PeerList {
  * @returns - boolean
  */
 function is_key_present(key: String, res: Response): boolean {
-    if (key) {
+    if (key && key !== 'undefined') {
         return true;
     }
     Logger.error(ERROR_KEY_NOT_FOUND);
@@ -91,10 +91,8 @@ export default function setupClientAPIEndpoints(app: Express) {
                     }
                     nodeCache.clear();
                     nodeCache = interm;
-
                 }).catch((err: Error) => {
                     Logger.error(err.message);
-                    //res.status(400).send(err.message);
                 });
 
                 // //DEBUG:
@@ -108,13 +106,9 @@ export default function setupClientAPIEndpoints(app: Express) {
                 // nodeCache.clear();
                 // nodeCache = interm;
                 // resolve(nodeCacheAll);
-
-
             }
             release();
         });
-
-
     }
 
     app.get('/node/score-peers', (req, res) => {
@@ -171,16 +165,16 @@ export default function setupClientAPIEndpoints(app: Express) {
     //     }
 
 
-    // // app.get('/last-modifications', (req, res) => {
+    // app.get('/last-modifications', (req, res) => {
 
-    // //     Logger.info("Received request for checking the last modification timestamps.");
-    // //     res.send(JSON.stringify({
-    // //         LAST_CRAWL: LAST_CRAWL,
-    // //         LAST_SEC_SCAN: LAST_SEC_SCAN,
-    // //         LAST_TRUST_SCAN: LAST_TRUST_SCAN
-    // //     }));
+    //     Logger.info("Received request for checking the last modification timestamps.");
+    //     res.send(JSON.stringify({
+    //         LAST_CRAWL: LAST_CRAWL,
+    //         LAST_SEC_SCAN: LAST_SEC_SCAN,
+    //         LAST_TRUST_SCAN: LAST_TRUST_SCAN
+    //     }));
 
-    // // });
+    // });
 
     //     const public_key: string = String(req.query.public_key);
     //     if (is_key_present(public_key, res)) {
@@ -213,10 +207,7 @@ export default function setupClientAPIEndpoints(app: Express) {
         Logger.info('Received request for the peer connections of a node.');
 
         let public_key: string = String(req.query.public_key);
-        if (public_key === null) {
-            Logger.error(ERROR_KEY_NOT_FOUND);
-            res.status(404).send(ERROR_KEY_NOT_FOUND);
-        } else {
+        if (is_key_present(public_key, res)){
             if (cacheExpiry < new Date()) {
                 changeCache(null);
                 peerCache.clear();
@@ -236,27 +227,25 @@ export default function setupClientAPIEndpoints(app: Express) {
                     });
                 }
             }
-
         }
     });
 
-    // app.get('/node/history', (req, res) => {
-    //     Logger.info('Received request for the history of security analysis of a node.');
+    app.get('/node/history', (req, res) => {
+        Logger.info('Received request for the history of security analysis of a node.');
 
-    //     const public_key: String = String(req.query.public_key);
-    //     if (public_key === null) {
-    //         Logger.error(ERROR_KEY_NOT_FOUND);
-    //         res.status(400).send(ERROR_KEY_NOT_FOUND);
-    //     }
-    //     else {
-    //         const duration: number = req.query.duration ?  Number(req.query.duration) : 30;
+        const public_key: String = String(req.query.public_key);
 
-    //         getHistoricalData(function (result): void{
-    //             res.send(JSON.stringify(result));
-    //         }, public_key, duration);
-    //     }
+        if(is_key_present(public_key, res)){
+            const duration: number = req.query.duration ?  Number(req.query.duration) : 30;
 
-    // });
+            getHistoricalData(public_key, duration)
+                .then((results) => {
+                    res.send(JSON.stringify(results));
+                }).catch((err) => {
+                    Logger.error(`Error in getting historical data + ${err.message}`);
+                });
+        }
+    });
 
     // app.get('/validator/history', (req, res) => {
     //     Logger.info('Received request for the history of trust analysis of a validator.');

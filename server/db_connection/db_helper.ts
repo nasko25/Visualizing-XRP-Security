@@ -1,11 +1,10 @@
-import { Node, NodePortsNull, NodeIpKeyPublisher } from './models/node'
-import { Node as CrawlerNode } from "../crawl"
-import { NodePorts, NodePortsProtocols } from './models/node'
-import { Connection } from './models/connection'
-import { SecurityAssessment } from './models/security_assessment'
+import { Node, NodePortsNull, NodeIpKeyPublisher } from './models/node';
+import { Node as CrawlerNode } from "../crawl";
+import { NodePorts, NodePortsProtocols } from './models/node';
+import { Connection } from './models/connection';
+import { SecurityAssessment } from './models/security_assessment';
 import { ValidatorAssessment } from './models/validator_assessment';
-import Logger from '../logger'
-import e from 'express'
+import Logger from '../logger';
 var mysql = require('mysql');
 
 var connection = mysql.createConnection({
@@ -60,7 +59,7 @@ export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode)
         end_node.pubkey + '\') AS new ON DUPLICATE KEY UPDATE start_node = new.start_node, end_node = new.end_node;';
     // connection.query(insert_connection_query, create_query_callback_no_return(callback));
     return send_insert_request(insert_connection_query);
-    
+
 }
 
 export function insertSecurityAssessment(security_assessment: SecurityAssessment): Promise<void> {
@@ -81,11 +80,11 @@ export function insertSecurityAssessments(security_assessments: SecurityAssessme
 }
 
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
-    Logger.info("adding "+ node.ports +
-    ', protocols = ' + node.protocols +
-    ' where public_key = ' + node.public_key + ';')
-    if(node.protocols=="") node.protocols="\'\'"
-    if(node.ports=="") node.ports="\'\'"
+    Logger.info("adding " + node.ports +
+        ', protocols = ' + node.protocols +
+        ' where public_key = ' + node.public_key + ';')
+    if (node.protocols == "") node.protocols = "\'\'"
+    if (node.ports == "") node.ports = "\'\'"
     const insert_ports_query = 'UPDATE node SET ports = ?, protocols = ? where public_key = ?;';
     const vals: string[] = [node.ports, node.protocols, node.public_key];
     return send_insert_request_vals(insert_ports_query, vals);
@@ -104,7 +103,7 @@ export function getAllNodesWithoutLocation(): Promise<{ IP: string }[]> {
     return send_select_request<{ IP: string }>(get_all_nodes_without_location_query);
 }
 
-export function getAllConnections():  Promise<Connection[]> {
+export function getAllConnections(): Promise<Connection[]> {
     var get_all_connections_query = 'SELECT * FROM connection;';
     // connection.query(get_all_nodes_query, create_query_callback(callback));
     return send_select_request<Connection>(get_all_connections_query);
@@ -132,16 +131,20 @@ export function getNullPortNodes(): Promise<NodePortsNull[]> {
 }
 
 export function getHistoricalData(public_key: String, duration: Number): Promise<SecurityAssessment[]> {
-    var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' +
-        public_key +
-        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
-    Logger.info(get_historical_data);
+    var get_historical_data = 'SELECT * FROM security_assessment WHERE public_key = \"' + public_key +
+        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY);`;
+    // Logger.info(get_historical_data);
     return send_select_request<SecurityAssessment>(get_historical_data);
 }
 
 export function getNodeOutgoingPeers(public_key: string): Promise<Connection[]> {
     const get_node_outgoing_peers = "SELECT end_node FROM connection WHERE start_node=\"" + public_key + "\";";
     return send_select_request<Connection>(get_node_outgoing_peers);
+}
+
+export function getPeersWithScores(public_key: string): Promise<Connection[]> {
+    const get_peers_with_scores = "SELECT * FROM (SELECT end_node FROM connection WHERE start_node = /'" + public_key + "/') AS peers JOIN security_assessment ON peers.end_node = security_assessment.public_key;"
+    return send_select_request<Connection>(get_peers_with_scores);
 }
 
 export function getValidatorHistoricalData(public_key: string, duration: number): Promise<ValidatorAssessment[]> {
@@ -215,7 +218,7 @@ export function insertValidators(keys: Map<string, null>) {
 
     let currentCount = 0;
     keys.forEach((val, key) => {
-        query = query + `("${key}")` ;
+        query = query + `("${key}")`;
         currentCount++;
         if (currentCount !== count) {
             query += ",";
