@@ -78,7 +78,7 @@ export default class ValidatorTrustAssessor {
                     public_key: validator.public_key
                 });
             }
-            var hourlyScores = validator.missed.map((missed, index) => {
+            var scores = validator.missed.map((missed, index) => {
                 if (validator.total[index] === 0)
                     return 0;
                 return (1 - (missed / validator.total[index]));
@@ -90,17 +90,17 @@ export default class ValidatorTrustAssessor {
 
             // get index of first non-zero hourly score
             let index = 0;
-            for (var i = 0; i < hourlyScores.length; i++) {
-                if (hourlyScores[i] === 0)
+            for (var i = 0; i < scores.length; i++) {
+                if (scores[i] === 0)
                     continue;
                 index = i;
                 break;
             }
-            // remove the first n zeroes from hourlyScores
-            hourlyScores = hourlyScores.slice(index)
+            // remove the first n zeroes from the daily/hourly scores
+            scores = scores.slice(index)
 
             // calculate the score and return it
-            const score = calculateEMA(hourlyScores);
+            const score = calculateEMA(scores);
             resolve({
                 public_key: validator.public_key,
                 trust_metric_version: 1.0,

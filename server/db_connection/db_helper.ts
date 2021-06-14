@@ -301,6 +301,9 @@ export function insertValidatorsAssessments(
 // this function will return the hourly validators statistics grouped by the node's public key
 // so it returns an array of { public_key: string, hourly_stats: [{ missed: number, total: number }] }
 export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
+    // the getStatistics() sql procedure will get the hourly statistics of each validator, grouped by the validator's key
+    // if there is more that 7 days worth of data, getStatistics() will sum the `total` and `missed` variables and group them to provide
+    // a daily instead of hourly score
     const query = "call getStatistics();";
     //const query = "call db.getStatistics();";
     //const query = "SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) as missed FROM validator_statistics GROUP BY public_key;";
