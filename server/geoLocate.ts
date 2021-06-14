@@ -61,7 +61,7 @@ class GeoLocate {
                     timeout: 8000
                 })
                 if (response.status == 200) {
-                    return [response.data.latitude, response.data.longitude];
+                    return [response.data.longitude, response.data.latitude];
                 }
                 throw new Error('response was not 200');    //sad moments here
             } catch (err) {
