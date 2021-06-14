@@ -5,6 +5,7 @@ import { ValidatorStatistics } from './validator_monitor';
 import { getValidatorsStatistics, insertValidatorsAssessments } from './db_connection/db_helper';
 import ValidatorAssessment from "./db_connection/models/validator_assessment";
 import { calculateEMA } from './calculate_metrics';
+import { EventEmitter } from 'events';
 
 // this is the format of the validator json object returned from Ripple's API
 interface ValidatorResponse {
@@ -31,11 +32,11 @@ export interface ValidatorStatisticsTotal {
 // A class that computes the trust metric for the validator nodes
 export default class ValidatorTrustAssessor {
 
-    // how often a trust score has to be computed in minutes
-    readonly calculation_interval: number;
+    readonly eventEmitter: EventEmitter;
 
-    constructor(calculation_interval = 61) {
-        this.calculation_interval = calculation_interval;
+    constructor(eventEmitter: EventEmitter) {
+        this.eventEmitter = eventEmitter;
+        this.eventEmitter.on("validationMonitoringDone", () => this.run());
     }
 
     // run the validator trust metric assessor

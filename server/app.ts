@@ -48,10 +48,10 @@ if(process.argv[2]=="crawler"){
 
     // TODO the validator monitor should emit an event when it is done, and the trust assessor needs to listen for that event
     //  and start only when it is emitted
-    let trustAssessor = new ValidatorTrustAssessor();
-    trustAssessor.run();
+    const eventEmitter = new EventEmitter();
+    let trustAssessor = new ValidatorTrustAssessor(eventEmitter);
 
-    //new ValidatorMonitor(new EventEmitter());
+    new ValidatorMonitor(eventEmitter);
 
     const app = express();
     app.use(cors());
