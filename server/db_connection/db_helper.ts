@@ -90,7 +90,7 @@ export function insertPorts(node: NodePortsProtocols): Promise<void> {
 }
 
 export function getAllNodes(): Promise<Node[]> {
-    var get_all_nodes_query = 'SELECT * FROM node;';
+    var get_all_nodes_query = 'SELECT * FROM node WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW();';
     return send_select_request<Node>(get_all_nodes_query);
 }
 
