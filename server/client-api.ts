@@ -2,7 +2,7 @@
 import { Express, Response } from 'express'
 import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getNodeOutgoingPeers, getValidatorHistoricalData } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getNodeOutgoingPeers, getPeersWithScores, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -212,7 +212,7 @@ export default function setupClientAPIEndpoints(app: Express) {
                 changeCache(null);
                 peerCache.clear();
 
-                getNodeOutgoingPeers(public_key).then((results) => {
+                getPeersWithScores(public_key).then((results) => {
                     peerCache.set(public_key, results);
                     res.send(JSON.stringify(results));
                 });
@@ -221,7 +221,7 @@ export default function setupClientAPIEndpoints(app: Express) {
                 if (peerCache.has(public_key)) {
                     res.send(JSON.stringify(peerCache.get(public_key)))
                 } else {
-                    getNodeOutgoingPeers(public_key).then((results) => {
+                    getPeersWithScores(public_key).then((results) => {
                         peerCache.set(public_key, results);
                         res.send(JSON.stringify(results));
                     });

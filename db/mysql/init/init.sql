@@ -48,12 +48,12 @@ PRIMARY KEY (`start_node`, `end_node`),
   UNIQUE INDEX `connection_id_UNIQUE` (`connection_id` ASC) VISIBLE,
   FOREIGN KEY (`start_node`)
     REFERENCES `node` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   FOREIGN KEY (`end_node`)
     REFERENCES `node` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 

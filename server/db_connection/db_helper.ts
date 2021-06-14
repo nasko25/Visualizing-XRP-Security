@@ -142,7 +142,8 @@ export function getNodeOutgoingPeers(public_key: string): Promise<Connection[]> 
 }
 
 export function getPeersWithScores(public_key: string): Promise<Connection[]> {
-    const get_peers_with_scores = "SELECT * FROM (SELECT end_node FROM connection WHERE start_node = /'" + public_key + "/') AS peers JOIN security_assessment ON peers.end_node = security_assessment.public_key;"
+    const get_peers_with_scores = "SELECT end_node, metric_version, score FROM (SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers JOIN security_assessment ON peers.end_node = security_assessment.public_key;"
+    console.log(get_peers_with_scores);
     return send_select_request<Connection>(get_peers_with_scores);
 }
 
