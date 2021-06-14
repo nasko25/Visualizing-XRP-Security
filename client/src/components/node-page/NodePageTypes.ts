@@ -15,7 +15,6 @@ export type NodePageState = {
     ports: Port[],
     historical_scores: HistoricalScore[],
     uptime: number
-    location: LocationDescriptor
 }
 
 // How the info should be passed around
@@ -30,13 +29,17 @@ export type NodeInfo = {
     uptime: number
 }
 
+/**
+ * Ports is a string of all the port numbers, divided by a comma
+ * Protocols is a string of all the protocols, divided by a comma
+ */
 export type NodeInfoDB = {
     public_key: string,
     IP: string,
     rippled_version: string,
     uptime: number,
-    ports: number[],
-    protocols: string[],
+    ports: string,
+    protocols: string,
     longtitude: number,
     latitude: number,
     timestamp: string
@@ -56,4 +59,8 @@ export type Peer = {
 export type HistoricalScore = {
     date: string,
     score: number
+}
+
+export type PeerNodeDB = {
+    end_node: string
 }

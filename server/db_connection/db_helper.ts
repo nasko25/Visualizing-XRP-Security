@@ -17,7 +17,7 @@ var connection = mysql.createConnection({
 })
 
 export const insertNode = (node: CrawlerNode): Promise<void> => {
-    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.port + '\', \'' +
         node.version + '\', \'' +
@@ -91,7 +91,7 @@ export function insertPorts(node: NodePortsProtocols): Promise<void> {
 }
 
 export function getAllNodes(): Promise<Node[]> {
-    var get_all_nodes_query = 'SELECT * FROM node;';
+    var get_all_nodes_query = 'SELECT * FROM node WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW();';
     return send_select_request<Node>(get_all_nodes_query);
 }
 
