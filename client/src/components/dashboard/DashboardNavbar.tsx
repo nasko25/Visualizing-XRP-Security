@@ -1,7 +1,6 @@
 import { Grid, Heading, Box, Text } from "grommet";
 import { Component } from "react";
 import Button from 'react-bootstrap/Button'
-import { Link } from "react-router-dom";
 import { History } from 'history';
 
 export type DashboardNavbarProps = {
@@ -33,6 +32,7 @@ export default class DashboardNavbar extends Component<DashboardNavbarProps> {
                         variant="dark"
                         style={{ width: "80%", height: "80%", alignSelf: "center" }} 
                         onClick={() => this.props.history.push('/validators')}
+                        data-testid="validators-button"
                         >
                         <Text contentEditable="false" size="large" weight="bold">Validators</Text>
                     </Button>
@@ -48,6 +48,7 @@ export default class DashboardNavbar extends Component<DashboardNavbarProps> {
                         variant="dark"
                         style={{ width: "80%", height: "80%", alignSelf: "center" }} 
                         onClick={() => this.props.history.push('/about')}
+                        data-testid="about-button"
                         >
                         <Text contentEditable="false" size="large" weight="bold">About</Text>
                     </Button>

@@ -1,21 +1,11 @@
 import { Grommet, Header, Grid, Box, Heading, DataChart, DataTable, List, Text } from "grommet";
 import { Component } from "react";
-import ValidatorPageNav, { ValidatorPageNavProps } from './ValidatorPageNav';
+import NavigationBar from "../NavigationBar";
 import { History } from 'history';
 import { HistoricalScore } from './../node-page/NodePageTypes';
 import axios from 'axios';
-
-
-var SETUP = {
-    header_height: 7.5,
-    hd_bgnd: '#C3C3C3',
-}
-
-var COLORS = {
-    main: "#383838",
-    button: "#212529",
-    nav: "#1a1a1a"
-}
+import { SETUP, COLORS } from "../../style/constants";
+import HistoricalChart from "../HistoricalChart";
 
 export type ValidatorPageMainProps = {
     history: History;
@@ -67,25 +57,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
     
     }
 
-    createDataChart() {
-        return (
-            <DataChart
-                data={this.state.historical_scores}
-                series={['date', { property: 'score' }]}
-                chart={[
-                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
-                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
-                ]}
-                guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
-                size={{ width: "fill" }}
-                axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
-                legend
-                detail
-            />
-        );
-    };
-
-
     // TODO
     // Update setting state according to response once endpoint it implemented
     
@@ -99,7 +70,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         return(
             <Grommet style={{height: '100%', width: '100%'}}>
                 <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
-                    <ValidatorPageNav history={this.props.history}/>
+                    <NavigationBar title="Validators"></NavigationBar>
                 </Header>
 
                 <div className='ValidatorPageMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
@@ -142,49 +113,49 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                 background={COLORS.button}
                             >
                                 <DataTable
-                            columns={[
-                                {
-                                    property: 'public_key',
-                                    header: <Text><b>Public Key</b></Text>,
-                                    size: '100%',
-                                    search: true,
-                                    primary: true
-                                }
-                            ]}
-                        
-                            data={[
-                                {
-                                    public_key: 'Key'
-                                },
-                                {
-                                    public_key: 'Key'
-                                }, 
-                                {
-                                    public_key: 'Key'
-                                }
-                            ]}
-                            step={10}
-                            size='large'
-                            onClickRow={({datum}) => {
-                                console.log(datum.public_key);
-                                // this.updateList(datum.public_key);
-                            }}
-                            pad= {{
-                                horizontal: "medium",
-                                vertical: "xsmall"
-                            }}
-                            style={{scrollbarWidth: 'none', height: '100%'}}
-                            border={{
-                                color: 'white',
-                                side: 'bottom',
-                                size: '1px',
-                            }}
-                        />
+                                    columns={[
+                                        {
+                                            property: 'public_key',
+                                            header: <Text><b>Public Key</b></Text>,
+                                            size: '100%',
+                                            search: true,
+                                            primary: true
+                                        }
+                                    ]}
+                                
+                                    data={[
+                                        {
+                                            public_key: 'Key'
+                                        },
+                                        {
+                                            public_key: 'Key'
+                                        }, 
+                                        {
+                                            public_key: 'Key'
+                                        }
+                                    ]}
+                                    step={10}
+                                    size='large'
+                                    onClickRow={({datum}) => {
+                                        console.log(datum.public_key);
+                                        // this.updateList(datum.public_key);
+                                    }}
+                                    pad= {{
+                                        horizontal: "medium",
+                                        vertical: "xsmall"
+                                    }}
+                                    style={{scrollbarWidth: 'none', height: '100%', userSelect: 'none'}}
+                                    border={{
+                                        color: 'white',
+                                        side: 'bottom',
+                                        size: '1px',
+                                    }}
+                                />
                             </Box>
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {this.createDataChart()}
+                            <HistoricalChart historical_scores={this.state.historical_scores}/>
                         </Box>
                     </Grid>
                 </div>

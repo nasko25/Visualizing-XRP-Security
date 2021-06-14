@@ -16,7 +16,7 @@ var connection = mysql.createConnection({
 })
 
 export const insertNode = (node: CrawlerNode): Promise<void> => {
-    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn,rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
+    var insert_node_query: string = 'INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES (NULLIF(\'' +
         node.ip + '\', \'undefined\'), \'' +
         node.port + '\', \'' +
         node.version + '\', \'' +

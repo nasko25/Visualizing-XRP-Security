@@ -1,40 +1,49 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
-import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network/standalone";
+import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
+import { DataSet } from 'vis-data';
 import "./NodePage.css";
 import { Peer } from "./NodePageTypes";
-import { unmountComponentAtNode } from "react-dom";
-import { History } from 'history';
+import Loader from "../Loader";
 
 /**
  * Component that visualizes the peer connections of a Node
  * Each peer is colored according to their trust score
  */
 
-type NodePeerGraphProps = {
+export type NodePeerGraphProps = {
     public_key: string,
     peers: Peer[],
     on_node_click: (public_key: string) => void,
-    history: History
 }
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
-    networkRef: React.RefObject<HTMLDivElement>;
-    loadRef: React.RefObject<HTMLDivElement>;
     network: Network | null = null;
 
     constructor(props: NodePeerGraphProps) {
         super(props);
-        this.networkRef = React.createRef();
-        this.loadRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
         this.hideLoad = this.hideLoad.bind(this);
         this.getColor = this.getColor.bind(this);
+        this.onNodeClick = this.onNodeClick.bind(this); 
     }
 
-    componentDidUpdate() {
-        this.createNetwork();
+    componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
+        if(this.props.public_key !== prevProps.public_key || this.props.peers !== prevProps.peers){
+            this.createNetwork();
+        }
+    }
+
+    onNodeClick = (properties: any, nodes: DataSetNodes) => {
+        var ids = properties.nodes;
+        var clickedNodes: Object[] = nodes.get(ids);
+
+        if (clickedNodes.length >= 1) {
+            var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
+            var public_key: string = JSON.stringify(n.title).slice(1, -1);
+            this.props.on_node_click(public_key);
+        }
     }
 
     /**
@@ -140,7 +149,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         var nodes: DataSetNodes = new DataSet(nodesArr);
         var edges: DataSetEdges = new DataSet(edgesArr);
 
-        const container: any = this.networkRef.current;
+        const container: any = document.getElementById('peer-network');
         const data = {
             nodes: nodes,
             edges: edges,
@@ -159,14 +168,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
         const network = new Network(container, data, options);
         network.on("click", (properties) => {
-            var ids = properties.nodes;
-            var clickedNodes: Object[] = nodes.get(ids);
-
-            if (clickedNodes.length >= 1) {
-                var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
-                var public_key: string = JSON.stringify(n.title).slice(1, -1);
-                this.props.on_node_click(public_key);
-            }
+            this.onNodeClick(properties, nodes);
         });
 
         network.once("stabilized", (params) => {
@@ -181,24 +183,17 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
                 <div className="peer-network"
                     style={{ width: "100%", height: "84%", position: "relative" }}
-                    ref={this.networkRef} >
+                    id='peer-network'
+                    data-testid="peer-network" >
                 </div>
 
-                <div id="loader" style={{ position: "absolute", top: "40%" }} >
-                    <img width="10%"
-                        style={{
-                            animation: `spin 3s linear infinite`,
-                            marginLeft: "auto",
-                            marginRight: "auto"
-                        }}
-                        src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"}
-                    ></img>
-                </div>
+                <Loader top={40}/>
 
                 <Button
                     style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
                     onClick={this.createNetwork}
+                    data-testid="refresh-peers"
                 >Reshuffle Peers</Button>
             </div>
         );

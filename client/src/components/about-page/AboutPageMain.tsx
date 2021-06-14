@@ -1,79 +1,14 @@
-import { Grommet, Header, Grid, Box, Text, Heading, Paragraph } from "grommet";
-import DashboardNavbar from '../dashboard/DashboardNavbar';
+import { Grommet, Header, Grid, Box} from "grommet";
+import NavigationBar from '../NavigationBar';
 import React from "react";
-import { History } from 'history';
-import Button from 'react-bootstrap/Button'
+import { SETUP, COLORS } from '../../style/constants'
 
-type AboutPageProps = {
-    history: History
-}
-
-type AboutPageState = {
-
-}
-
-var SETUP = {
-    header_height: 7.5,
-    hd_bgnd: '#C3C3C3',
-}
-
-var COLORS = {
-    main: "#383838",
-    button: "#212529",
-    nav: "#1a1a1a"
-}
-
-export default class AboutPageMain extends React.Component<AboutPageProps, AboutPageState> {
-
-    constructor(props: AboutPageProps) {
-        super(props);
-    }
+export default class AboutPageMain extends React.Component {
 
     render() {
         return <Grommet style={{ width: "100%", height: "100%" }}>
             <Header style={{ width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav }}>
-                <Grid
-                    style={{ width: "100%", height: "100%" }}
-                    rows={["1"]}
-                    columns={["1/2", "1/4", "1/4"]}
-                    areas={[
-                        { name: 'title', start: [0, 0], end: [0, 0] },
-                        { name: 'button_stock', start: [1, 0], end: [1, 0] },
-                        { name: 'button_validator', start: [2, 0], end: [2, 0] }
-                    ]}
-                >
-                    <Heading margin="2%" gridArea="title" alignSelf="center" size="small" color='#f8f8f8'>CISELab</Heading>
-
-                    <Box
-                        height="80%"
-                        gridArea="button_stock"
-                        justify="center"
-                        alignSelf="center"
-                        margin="2%">
-                        <Button
-                            variant="dark"
-                            style={{ width: "80%", height: "80%", alignSelf: "center" }}
-                            onClick={() => this.props.history.push('/')}
-                        >
-                            <Text contentEditable="false" size="large" weight="bold">Stock nodes</Text>
-                        </Button>
-                    </Box>
-
-                    <Box
-                        height="80%"
-                        gridArea="button_validator"
-                        justify="center"
-                        alignSelf="center"
-                        margin="2%">
-                        <Button
-                            variant="dark"
-                            style={{ width: "80%", height: "80%", alignSelf: "center" }}
-                            onClick={() => this.props.history.push('/validator')}
-                        >
-                            <Text contentEditable="false" size="large" weight="bold">Validators</Text>
-                        </Button>
-                    </Box>
-                </Grid>
+                <NavigationBar title={'About Page'}></NavigationBar>
             </Header>
             <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                 <Grid
@@ -140,7 +75,7 @@ export default class AboutPageMain extends React.Component<AboutPageProps, About
                                 <p>
                                     Validator Nodes are responsible for determining the next Ledger Version in the blockchain.
                                     This is done on the basis of consensus between the Validators' votes. Learn more about the
-                                    consensus protocol <a href=''>here</a>.
+                                    consensus protocol <a href='https://xrpl.org/intro-to-consensus.html'>here</a>.
                                     Our Validator page provides an overview of Validators with information such as
                                     associated domain and trust score.
                                 </p>
