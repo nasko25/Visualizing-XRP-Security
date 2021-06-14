@@ -79,10 +79,28 @@ export default class ValidatorTrustAssessor {
                     public_key: validator.public_key
                 });
             }
-            const hourlyScores = validator.missed.map((missed, index) => {
+            var hourlyScores = validator.missed.map((missed, index) => {
+                if (validator.total[index] === 0)
+                    return 0;
                 return (1 - (missed / validator.total[index]));
             });
-            // TODO score is NaN
+            // because of the way the hourly statistics are computed, there will always be some prepended zeroes
+            // that are added when the validator monitor is first started
+            // these zeroes have to be removed from the score
+
+
+            // get index of first non-zero hourly score
+            let index = 0;
+            for (var i = 0; i < hourlyScores.length; i++) {
+                if (hourlyScores[i] === 0)
+                    continue;
+                index = i;
+                break;
+            }
+            // remove the first n zeroes from hourlyScores
+            hourlyScores = hourlyScores.slice(index)
+
+            // calculate the score and return it
             const score = calculateEMA(hourlyScores);
             resolve({
                 public_key: validator.public_key,
