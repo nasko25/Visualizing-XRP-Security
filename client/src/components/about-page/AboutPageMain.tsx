@@ -21,7 +21,7 @@ export default class AboutPageMain extends React.Component {
                     align='center'
                 >
                     <Box round="1%" margin={{ top: "2%", left: "2%", right: "2%", bottom: "2%" }} gridArea="general" background={COLORS.main}>
-                        <Box align='center' margin={{ top: "2%", left: "10%", right: "10%", bottom: "1%" }}>
+                        <Box align='center' margin={{ top: "2%", left: "10%", right: "10%", bottom: "1%" }} data-testid='p1'>
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>What is this website?</h1>
                             <p style={{ width: '100%', height: '100%' }}>
                                 Our aim is to present important information about the security and trustability
@@ -33,7 +33,7 @@ export default class AboutPageMain extends React.Component {
                                 Have fun and keep expolring. :)
                             </p>
                         </Box>
-                        <Box align='center' margin={{ top: "3%", left: "10%", right: "10%", bottom: "3%" }}>
+                        <Box align='center' margin={{ top: "3%", left: "10%", right: "10%", bottom: "3%" }} data-testid='p2'>
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>Who is this website for?</h1>
                             <p>
                                 This tool's primary audience is operators of Nodes on the network.
@@ -44,7 +44,7 @@ export default class AboutPageMain extends React.Component {
                                 and learn about it.
                             </p>
                         </Box>
-                        <Box align='center' margin={{ top: "1%", left: "10%", right: "10%", bottom: "3%" }}>
+                        <Box align='center' margin={{ top: "1%", left: "10%", right: "10%", bottom: "3%" }} data-testid='p3'>
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>A note on security</h1>
                             <p>
                                 We have developed a security metric, which measures how secure a particular Node is.
@@ -61,7 +61,7 @@ export default class AboutPageMain extends React.Component {
                                 { name: 'validator', start: [1, 0], end: [1, 0] },
                                 { name: 'node', start: [2, 0], end: [2, 0] },
                             ]}>
-                            <Box gridArea="stock" align='center' margin={{ top: "2%", left: "6%", right: "3%", bottom: "3%" }}>
+                            <Box gridArea="stock" align='center' margin={{ top: "2%", left: "6%", right: "3%", bottom: "3%" }} data-testid='p4'>
                                 <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Stock Node page</h1>
                                 <p>
                                     Stock Nodes are responsible for relaying client transactions throughout the network
@@ -70,7 +70,7 @@ export default class AboutPageMain extends React.Component {
                                     as well as a map that shows their geo-locations.
                                 </p>
                             </Box>
-                            <Box gridArea="validator" align='center' margin={{ top: "2%", left: "3%", right: "3%", bottom: "3%" }}>
+                            <Box gridArea="validator" align='center' margin={{ top: "2%", left: "3%", right: "3%", bottom: "3%" }} data-testid='p5'>
                                 <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Validator Node page</h1>
                                 <p>
                                     Validator Nodes are responsible for determining the next Ledger Version in the blockchain.
@@ -80,7 +80,7 @@ export default class AboutPageMain extends React.Component {
                                     associated domain and trust score.
                                 </p>
                             </Box>
-                            <Box gridArea="node" align='center' margin={{ top: "2%", left: "3%", right: "6%", bottom: "3%" }}>
+                            <Box gridArea="node" align='center' margin={{ top: "2%", left: "3%", right: "6%", bottom: "3%" }} data-testid='p6'>
                                 <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>The Node page</h1>
                                 <p>
                                     Here you can find more in-depth information about each Node.
