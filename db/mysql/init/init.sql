@@ -129,3 +129,16 @@ ENGINE = InnoDB;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+DELIMITER $$
+CREATE PROCEDURE db.getStatistics()
+    BEGIN
+        IF (SELECT MAX(DATE(timestamp)) - MIN(DATE(timestamp)) from validator_statistics) < 7
+        THEN
+            SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) AS missed FROM validator_statistics GROUP BY public_key;
+        ELSE
+            SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) AS missed FROM (SELECT public_key, SUM(total) AS total, SUM(missed) AS missed FROM validator_statistics GROUP BY public_key, DATE(timestamp)) AS sums GROUP BY public_key;
+        END IF;
+    END;$$
+
+DELIMITER ;

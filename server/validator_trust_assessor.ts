@@ -47,7 +47,6 @@ export default class ValidatorTrustAssessor {
             this.assessScores(validators).then((assessments: ValidatorAssessment[]) => {
                 // assessments should be defined and cannot be empty
                 if (assessments !== undefined && assessments.length !== 0) {
-                    console.log(assessments)
                     insertValidatorsAssessments(assessments).then(() => {
                         Logger.info("Valildator nodes trust assessment successfully stored in the database.");
                     }).catch(err => {

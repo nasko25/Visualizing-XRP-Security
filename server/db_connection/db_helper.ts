@@ -301,8 +301,9 @@ export function insertValidatorsAssessments(
 // this function will return the hourly validators statistics grouped by the node's public key
 // so it returns an array of { public_key: string, hourly_stats: [{ missed: number, total: number }] }
 export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
-    const query =
-        "SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) as missed FROM validator_statistics GROUP BY public_key;";
+    const query = "call getStatistics();";
+    //const query = "call db.getStatistics();";
+    //const query = "SELECT public_key, GROUP_CONCAT(total) AS total, GROUP_CONCAT(missed) as missed FROM validator_statistics GROUP BY public_key;";
 
     // send the query and parse the results because they will be returned like this:
     //  {
@@ -315,7 +316,7 @@ export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
             query,
             function (
                 err: Error,
-                results: ValidatorStatistics[],
+                results: ValidatorStatistics[][],
                 fields: JSON
             ) {
                 if (err) {
@@ -323,7 +324,7 @@ export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
                 } else {
                     const validatorStatisticsTotal: ValidatorStatisticsTotal[] =
                         [];
-                    results.forEach((row) => {
+                    results[0].forEach((row) => {
                         validatorStatisticsTotal.push(<
                             ValidatorStatisticsTotal
                         >{
