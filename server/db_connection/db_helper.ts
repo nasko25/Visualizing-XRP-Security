@@ -4,6 +4,7 @@ import { NodePorts, NodePortsProtocols } from './models/node';
 import { Connection } from './models/connection';
 import { SecurityAssessment } from './models/security_assessment';
 import { ValidatorAssessment } from './models/validator_assessment';
+import { PeerToSend } from '../client-api';
 import Logger from '../logger';
 var mysql = require('mysql');
 
@@ -141,20 +142,82 @@ export function getNodeOutgoingPeers(public_key: string): Promise<Connection[]> 
     return send_select_request<Connection>(get_node_outgoing_peers);
 }
 
-export function getPeersWithScores(public_key: string): Promise<Connection[]> {
-    const get_peers_with_scores = "SELECT end_node, metric_version, score FROM (SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers JOIN security_assessment ON peers.end_node = security_assessment.public_key;"
+export function getPeersWithScores(public_key: string): Promise<PeerToSend[]> {
+    const get_peers_with_scores = "SELECT " +
+                                  "end_node as public_key, metric_version, score, timestamp " +
+                                  "FROM " +
+                                  "(SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers " +
+                                  "JOIN security_assessment ON peers.end_node = security_assessment.public_key " + 
+                                  "where timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);"
     console.log(get_peers_with_scores);
-    return send_select_request<Connection>(get_peers_with_scores);
+    return send_select_request<PeerToSend>(get_peers_with_scores);
 }
 
 export function getValidatorHistoricalData(public_key: string, duration: number): Promise<ValidatorAssessment[]> {
-    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
+    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY);`;
     return send_select_request<ValidatorAssessment>(get_validator_history);
 }
 
 export function getNode(public_key: string): Promise<Node[]> {
     const get_node = `SELECT * FROM node WHERE public_key=\'` + public_key + `\';`;
     return send_select_request<Node>(get_node);
+}
+
+export function getIpAddresses() {
+    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
+    return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
+}
+
+export function insertValidators(keys: Map<string, null>) {
+    let query = "INSERT IGNORE INTO validator VALUES ";
+    let count = keys.size;
+
+    if (count === 0) {
+        return new Promise((res, rej) => rej(new Error("validator list was empty")));
+    }
+
+    let currentCount = 0;
+    keys.forEach((val, key) => {
+        query = query + `("${key}")`;
+        currentCount++;
+        if (currentCount !== count) {
+            query += ",";
+        }
+        else query += ";";
+    });
+    return send_insert_request(query);
+}
+
+export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
+    let query = "INSERT IGNORE INTO node_validator VALUES ";
+    let nEntries = 0;
+    let count = 0;
+    cons.forEach(vals => {
+        nEntries += vals.length;
+    });
+
+    if (nEntries === 0) {
+        return new Promise((res, rej) => rej(new Error("node-validator list was empty")));
+    }
+
+    cons.forEach((vals, node) => {
+        for (let valKey of vals) {
+            query += `("${node}", "${valKey}")`;
+            count++;
+            if (nEntries === count) {
+                query += ";"
+            } else {
+                query += ","
+            }
+        }
+    });
+
+    return send_insert_request(query);
+}
+
+export function emptyConnectionTable(): Promise<void> {
+    let emtpy_connection_table_query = "TRUNCATE TABLE connection;";
+    return send_insert_request(emtpy_connection_table_query);
 }
 
 function send_select_request<T>(request: string): Promise<T[]> {
@@ -201,57 +264,4 @@ function send_insert_request_vals(request: string, vals: any): Promise<void> {
             }
         )
     })
-}
-
-export function getIpAddresses() {
-    const get_ip_addresses = 'SELECT IP, public_key, publisher FROM node WHERE IP is not null and IP <> "undefined" and publisher <> "undefined"';
-    return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
-}
-
-export function insertValidators(keys: Map<string, null>) {
-    let query = "INSERT IGNORE INTO validator VALUES ";
-    let count = keys.size;
-
-    if (count === 0) {
-        return new Promise((res, rej) => rej(new Error("validator list was empty")));
-    }
-
-    let currentCount = 0;
-    keys.forEach((val, key) => {
-        query = query + `("${key}")`;
-        currentCount++;
-        if (currentCount !== count) {
-            query += ",";
-        }
-        else query += ";";
-    });
-    return send_insert_request(query);
-}
-
-
-export function insertNodeValidatorConnections(cons: Map<string, string[]>) {
-    let query = "INSERT IGNORE INTO node_validator VALUES ";
-    let nEntries = 0;
-    let count = 0;
-    cons.forEach(vals => {
-        nEntries += vals.length;
-    });
-
-    if (nEntries === 0) {
-        return new Promise((res, rej) => rej(new Error("node-validator list was empty")));
-    }
-
-    cons.forEach((vals, node) => {
-        for (let valKey of vals) {
-            query += `("${node}", "${valKey}")`;
-            count++;
-            if (nEntries === count) {
-                query += ";"
-            } else {
-                query += ","
-            }
-        }
-    });
-
-    return send_insert_request(query);
 }

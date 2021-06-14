@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
-import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
+import { DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
 import { DataSet } from 'vis-data';
 import "./NodePage.css";
 import { Peer } from "./NodePageTypes";
@@ -26,11 +26,11 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         this.createNetwork = this.createNetwork.bind(this);
         this.hideLoad = this.hideLoad.bind(this);
         this.getColor = this.getColor.bind(this);
-        this.onNodeClick = this.onNodeClick.bind(this); 
+        this.onNodeClick = this.onNodeClick.bind(this);
     }
 
     componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
-        if(this.props.public_key !== prevProps.public_key || this.props.peers !== prevProps.peers){
+        if (this.props.public_key !== prevProps.public_key || this.props.peers !== prevProps.peers) {
             this.createNetwork();
         }
     }
@@ -72,24 +72,27 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
      * @returns The color
      */
     getColor(score: number): string {
-        if (score > 1){
+        if (score > 100) {
             // Bad if it happens
             return 'blue';
         }
-        if (score >= 0.9) {
+        if (score >= 90) {
             // Green
             return 'rgb(0, 255, 0)';
         }
-        else if (score >= 0.8) {
+        else if (score >= 80) {
             // Yellow
             return 'rgb(255, 255, 0)';
-        } else if (score >= 0.7) {
+        } else if (score >= 70) {
             // Orange
             return 'rgb(255, 120, 0)';
+        } else if (score >= 50) {
+            // Orange
+            return 'rgb(255, 0, 0)';
         }
         else {
             // Red
-            return 'rgb(256, 0, 0)';
+            return 'rgb(150, 0, 0)';
         }
     }
 
@@ -187,7 +190,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                     data-testid="peer-network" >
                 </div>
 
-                <Loader top={40}/>
+                <Loader top={40} />
 
                 <Button
                     style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}

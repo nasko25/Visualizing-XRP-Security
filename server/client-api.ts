@@ -18,8 +18,15 @@ const MINUTES_BEFORE_CACHE_EXPIRES: number = 1;
     This file exports a function which takes an Express object
 and adds a couple of endpoints to it. These are the endpoints
 meant for use by the Web Client of the application.
-
 */
+
+export type PeerToSend = {
+    public_key: string,
+    score: number,
+    timestamp: Date,
+    metric_version: string
+}
+
 interface PeerList {
     peers: Connection[];
     timestamp: Date;
@@ -52,7 +59,7 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     // The cache objects: For requests for all nodes | peers of a node | information about a node
     var nodeCacheAll: Node[] = [];
-    var peerCache: Map<string, Connection[]> = new Map();
+    var peerCache: Map<string, PeerToSend[]> = new Map();
     var nodeCache: Map<string, Node> = new Map();
    
     // A function that independently updates the cache periodically once per a longer period
@@ -139,19 +146,6 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     });
 
-    // app.get('/node/peers', (req, res) => {
-    //     Logger.info('Received request for the peer connections of a node.');
-
-    //     let public_key: string = String(req.query.public_key);
-
-    //     if (is_key_present(public_key, res)) {
-    //         getNodeOutgoingPeers(public_key).then((results) => {
-    //             res.send(JSON.stringify(results));
-    //         }).catch((err: Error) => {
-    //             Logger.error(err.message);
-    //             res.status(400).send(err.message);
-
-
     //     const public_key: String = String(req.query.public_key);
     //     if (is_key_present(public_key, res)) {
     //         const duration: number = req.query.duration ? Number(req.query.duration) : 30;
@@ -188,10 +182,6 @@ export default function setupClientAPIEndpoints(app: Express) {
     //         });
 
 
-    // app.get('/node/score-peers', (req, res) => {
-    //     Logger.info("Received request for the security assessment score and peer connections of a node.");
-    // });
-
     // app.get('/node/score', (req, res) => {
     //     var pub_key = req.query;
     //     var public_key: String = String(req.query.public_key);
@@ -213,18 +203,34 @@ export default function setupClientAPIEndpoints(app: Express) {
                 peerCache.clear();
 
                 getPeersWithScores(public_key).then((results) => {
-                    peerCache.set(public_key, results);
-                    res.send(JSON.stringify(results));
+                    let to_send = new Map<string, PeerToSend>();
+                    results.forEach((peer) => {
+                        let dict_peer = to_send.get(peer.public_key);
+                        if(dict_peer && dict_peer !== undefined){
+                            if(dict_peer.timestamp > peer.timestamp){
+                                to_send.set(peer.public_key, peer);    
+                            }
+                        } else {
+                            to_send.set(peer.public_key, peer);
+                        }
+                    });
+                    peerCache.set(public_key, Array.from(to_send.values()));
+                    Logger.info(Array.from(to_send.values()));
+                    res.send(JSON.stringify(Array.from(to_send.values())));
+                }).catch((err) => {
+                    Logger.error(err);
                 });
 
             } else {
                 if (peerCache.has(public_key)) {
-                    res.send(JSON.stringify(peerCache.get(public_key)))
+                    res.send(JSON.stringify(peerCache.get(public_key)));
                 } else {
                     getPeersWithScores(public_key).then((results) => {
                         peerCache.set(public_key, results);
                         res.send(JSON.stringify(results));
-                    });
+                    }).catch((err) => {
+                        Logger.error(err);
+                    });;
                 }
             }
         }

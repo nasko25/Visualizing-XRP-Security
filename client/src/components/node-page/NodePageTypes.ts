@@ -53,7 +53,8 @@ export type Port = {
 
 export type Peer = {
     public_key: string,
-    score: number
+    score: number,
+    timestamp: Date
 }
 
 export type HistoricalScore = {
@@ -62,5 +63,8 @@ export type HistoricalScore = {
 }
 
 export type PeerNodeDB = {
-    end_node: string
+    public_key: string,
+    metric_version: string,
+    score: number,
+    timestamp: Date
 }
