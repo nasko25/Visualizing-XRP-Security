@@ -40,7 +40,7 @@ export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
 // insert longitude and latitude for a given ip address
 // the function expects a tuple of longitude and latitude
 export function insertLocation(loc: number[], ip: string): Promise<void> {
-    const insert_location_query = 'UPDATE node SET longtitude = ?, latitude = ? where IP = ?;'
+    const insert_location_query = 'UPDATE node SET latitude = ?, longtitude = ? where IP = ?;'
     const vals = loc.map(coordinate => {
         // if the location is not known, save it as null
         // otherwise, convert it to a string (because longitude and latitude are numbers)
