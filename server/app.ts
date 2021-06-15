@@ -38,14 +38,12 @@ if (process.argv[2] == "crawler") {
     process.on('message', (data)=>{
         if(data && data=='start'){
             // Logger.info("VALIDATOR STARTED 29")
-                // start_validator_identification();
+            start_validator_identification();
             Logger.info("STARTING SECURITY ANALYSIS AND VALIDATOR TRUST ASSESSMENT");
             ble.start();
 
             // the validator monitor will emit an event when it is done;
             // the trust assessor listens for that event and starts only when it is received
-            // TODO should start only after the validator identification is done
-            // (and the validator identification should only start whenever the crawler is done) ?
             const eventEmitter = new EventEmitter();
             new ValidatorTrustAssessor(eventEmitter);
             new ValidatorMonitor(eventEmitter);
