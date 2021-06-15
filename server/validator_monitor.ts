@@ -117,6 +117,8 @@ export class ValidatorMonitor {
 
         // everything before `twoHrsAgo` will be deleted from memory
         const twoHrsAgo = Date.now() - (2 * 60 * 60 * 1000);
+        // NOTE: the first 1 hour worth of information will not be entirely correct, because some `ledgerClosed` and `validationReceived`
+        // packets from before the tool has started might have been missed
         const canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp < twoMinsAgo && ledger.timestamp > oneHrsAgo).map(ledger => ledger.ledger_hash);
         this.canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp >= twoHrsAgo);
         const total = canonicalLedgers.length;
