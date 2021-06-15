@@ -870,6 +870,7 @@ test("test crawl() if the database is unresponsive", async () => {
     // the 2 instances of insertConnection() should each have been called twice
     // (the initial node should have a bidirectional connection with each of its peers)
     expect(insertConnectionMock).toHaveBeenCalledTimes(4);
+
     // the logger should have been called 9 times (once for each rejected promise)
     expect(Logger.error).toHaveBeenCalledTimes(9);
 

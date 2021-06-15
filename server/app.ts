@@ -7,115 +7,127 @@ import { Node as CrawlerNode } from './crawl';
 import GeoLocate from './geoLocate';
 import { insertNode, getAllNodes, insertConnection, getAllConnections, getAllSecurityAssessments, insertSecurityAssessment, getHistoricalData, getNodeOutgoingPeers } from "./db_connection/db_helper";
 import * as exec from "child_process";
-// Logger
+import config from './config/config.json';
 import Logger from "./logger";
 import setupClientAPIEndpoints from "./client-api";
 import ValidatorIdentifier from './validators';
 import ValidatorTrustAssessor from './validator_trust_assessor';
 import { ValidatorMonitor } from './validator_monitor';
+import NmapInterface from './nmapInterface';
+import Security_Scanner from './security_scanner';
 import { EventEmitter } from 'events';
 
-//Given in minutes:
-const CRAWLER_INVERVAL: number = 5;
 
-
-if(process.argv[2]=="crawler"){
+if (process.argv[2] == "crawler") {
     Logger.info("CRAWLER STARTED")
     repeated_crawl();
-
-}else if(process.argv[2]=="portScanner"){
-    Logger.info("PORT SCANNER STARTED 21")
-    startPortScanner().catch((e) => {
-        console.log(`PortScanner exited with the exception: ${e}.`);
+} else if (process.argv[2] == "portScanner") {
+    var ranBefore = false;
+    process.on('message', (data) => {
+        if(data && data=='start' && !ranBefore){
+            ranBefore=false;
+            Logger.info("PORT SCANNER STARTED 21")
+            startPortScanner().catch((e) => {
+                console.log(`PortScanner exited with the exception: ${e}.`);
+            })
+        }
     });
-}else if(process.argv[2]=="validator"){
-    Logger.info("VALIDATOR STARTED 29")
-    start_validator_identification();
-}else{
-    //Preparations for a for bomb:
-    //var portScanner = exec.fork(__dirname+"/app.js",["portScanner"]);
-    //portScanner.on('close', (code) => {
-    //    console.log(`portscanner process exited with code ${code}`);
-    //});
-    //var validator = exec.fork(__dirname+"/app.js",["validator"]);
-    //validator.on('close', (code) => {
-    //    console.log(`validator process exited with code ${code}`);
-    //});
-    //var crawler = exec.fork(__dirname+"/app.js",["crawler"]);
-    //crawler.on('close', (code) => {
-    //    console.log(`crawler process exited with code ${code}`);
-    //});
+} else if (process.argv[2] == "validator") {
+    var ble = new Security_Scanner(2);
 
-    // TODO the validator monitor should emit an event when it is done, and the trust assessor needs to listen for that event
-    //  and start only when it is emitted
-    const eventEmitter = new EventEmitter();
-    let trustAssessor = new ValidatorTrustAssessor(eventEmitter);
+    process.on('message', (data)=>{
+        if(data && data=='start'){
+            // Logger.info("VALIDATOR STARTED 29")
+                // start_validator_identification();
+            Logger.info("STARTING SECURITY ANALYSIS AND VALIDATOR TRUST ASSESSMENT");
+            ble.start();
 
-    new ValidatorMonitor(eventEmitter);
+            // the validator monitor will emit an event when it is done;
+            // the trust assessor listens for that event and starts only when it is received
+            // TODO should start only after the validator identification is done
+            // (and the validator identification should only start whenever the crawler is done) ?
+            const eventEmitter = new EventEmitter();
+            new ValidatorTrustAssessor(eventEmitter);
+            new ValidatorMonitor(eventEmitter);
+        }
+    });
 
+
+} else if (process.argv[2] == "api") {
     const app = express();
     app.use(cors());
 
     const PORT = 8080;
 
     app.get("/", (req, res) => {
-        res.send("Well done!"); 
+        res.send("Well done!");
     });
 
-    // app.get('/insert-node', (req, res) => {
-    //     var n: CrawlerNode = {ip: '127.0.0.1', port: 51235, version: '1.7.0', pubkey: 'pk', uptime: 10};
-    //     insertNode(n);
-    //     res.send("node inserted");
-    // });
-    
-    // app.get("/insert-sas", (req, res) => {
-    //     var sa: SecurityAssessment = {
-    //         public_key: "pub_key_1",
-    //         metric_version: 0.1,
-    //         score: 1,
-    //     };
-    //     insertSecurityAssessment(sa);
-    //     res.send("Security assessment inserted.");
-    // });
-    
-    // app.get("/insert-connection", (req, res) => {
-    //     var start_node: CrawlerNode = {
-    //         ip: "127.0.0.1",
-    //         port: 51235,
-    //         version: "1.7.0",
-    //         pubkey: "pk",
-    //         uptime: 10,
-    //     };
-    //     var end_node: CrawlerNode = {
-    //         ip: "127.0.0.1",
-    //         port: 51235,
-    //         version: "1.7.0",
-    //         pubkey: "pk",
-    //         uptime: 10,
-    //     };
-    //     insertConnection(start_node, end_node);
-    //     res.send("connection inserted");
-    // });
-    
-    // app.get("/get-all-connections", (req, res) => {
-    //     var nodes = getAllConnections(function (result): void {
-    //         res.send(JSON.stringify(result));
-    //     });
-    // });
-    
-    // app.get("/get-all-sas", (req, res) => {
-    //     var nodes = getAllSecurityAssessments(function (result): void {
-    //         res.send(JSON.stringify(result));
-    //     });
-    // });
-    
     // Add the Client API Endpoints to the server
-    //setupClientAPIEndpoints(app);
-    
+    setupClientAPIEndpoints(app);
+
     app.listen(PORT, () => {
         console.log(`The application is listening on port ${PORT}!`);
     });
+} else {
+    var firstTimeCrawl: boolean = true;
+
+
+    //Preparations for a for bomb:
+    var crawlerup = true;
+    var portUp = true;
+    var valdiatorUp = true;
+    var apiUp = true;
+    
+    //Starts the crawler service
+    var crawler = exec.fork(__dirname + "/app.js", ["crawler"]);
+    crawler.on('close', (code) => {
+        console.log(`crawler process exited with code ${code}`);
+    });
+
+    //Starts the api service
+    var api = exec.fork(__dirname + "/app.js", ["api"]);
+    api.on('close', (code) => {
+        console.log(`API process exited with code ${code}`);
+    });
+
+
+
+    //Starts the validator service
+    var validator = exec.fork(__dirname + "/app.js", ["validator"]);
+    validator.on('close', (code) => {
+        console.log(`validator process exited with code ${code}`);
+    });
+
+    validator.on('message',(data)=>{
+        Logger.info(data);
+        if(data && data == 'finished'){
+            Logger.info("val proc finish")
+            api.send('upd');
+        }
+    })
+
+    //Starts the portscanner service
+    var portScanner = exec.fork(__dirname + "/app.js", ["portScanner"]);
+    portScanner.on('close', (code) => {
+        console.log(`portscanner process exited with code ${code}`);
+    });
+
+    crawler.on('message',(data)=>{
+        console.log(data)
+        if(data && data == 'crwrldn'){
+            if(firstTimeCrawl){
+                firstTimeCrawl=false;
+                portScanner.send('start');
+            }
+
+            validator.send('start');
+        }
+    });
+
 }
+
+
 async function startCrawler() {
     // read a list of ripple server urls from the config file, and split them by one or more spaces or new lines
     let rippleServersArr = (
@@ -143,13 +155,17 @@ function repeated_crawl() {
     });
 
     // start the geoip lookup 30 seconds after the crawler to give time to the crawler to add some IPs to the database
-    setTimeout(() => new GeoLocate().locate(), 30 * 1000);
-    setTimeout(repeated_crawl, CRAWLER_INVERVAL*60000);
+    setTimeout(() =>{
+        (<any> process).send('crwrldn')
+         new GeoLocate().locate()
+        }, 30 * 1000);
+    setTimeout(repeated_crawl, config.crawler_interva * 60000);
 }
 
 function start_validator_identification() {
     Logger.info("Starting validator identification")
-    let valIden: ValidatorIdentifier = new ValidatorIdentifier(100);
+
+    let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
     valIden.run();
 }
 
@@ -163,7 +179,11 @@ function start_validator_identification() {
 
 async function startPortScanner() {
 
-    let portScanner = new PortScanner();
+    let portScanner = new PortScanner(new NmapInterface());
+    portScanner.setDoLongScans(config.DO_LONG_SCAN).setTimeoutLS(config.TIMEOUT_LONG_SCAN)
+        .setTimeoutSS(config.TIMEOUT_SHORT_SCAN).setTopPorts(config.TOP_PORTS).setTLevelShort(config.T_LEVEL_SHORT)
+        .setTLevelLong(config.T_LEVEL_LONG).setMaxShortScans(config.MAX_SHORT_SCANS).setMaxLongScans(config.MAX_LONG_SCANS)
+        .setMinutesBetweenLS(config.MINUTES_BETWEEN_LONG_SCANS).setDaysBetweenSS(config.DAYS_BETWEEN_SHORT_SCANS).setVerboseLevel(config.VERBOSE_LEVEL);
     portScanner.start()
 }
 

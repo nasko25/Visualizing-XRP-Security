@@ -8,6 +8,7 @@ export interface Node {
     longtitude?: number,
     latitude?: number,
     publishers: Array<string>
+    ports?: string;
 }
 
 export interface NodePorts {

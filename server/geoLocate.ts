@@ -84,6 +84,7 @@ class GeoLocate {
     //Recursively call from callback. This is probably forbidden by the Geneva Convention, but no other way to do it.
     locateHelper(curr: number) {
         if (curr >= this.IPList.length) {
+            Logger.info("Finished locating IPs")
             return;
         }
         this.getData(this.IPList[curr]).then(res => {

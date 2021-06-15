@@ -21,9 +21,18 @@ cache:
 #  script:
 #    - docker build server/ -t server
 #    - docker build client/ -t client
-    #- run tests (when we add tests)
 
-test:
+#- run tests (when we add tests)
+
+test_client:
+  stage: test
+  script:
+    - cd client
+    - npm install
+    - npm test
+
+test_server:
+  stage: test
   script:
     - cd server
     - npm install

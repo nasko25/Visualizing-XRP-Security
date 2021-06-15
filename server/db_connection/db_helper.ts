@@ -59,7 +59,7 @@ export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
 // the function expects a tuple of longitude and latitude
 export function insertLocation(loc: number[], ip: string): Promise<void> {
     const insert_location_query =
-        "UPDATE node SET longtitude = ?, latitude = ? where IP = ?;";
+        "UPDATE node SET latitude = ?, longtitude = ? where IP = ?;";
     const vals = loc
         .map((coordinate) => {
             // if the location is not known, save it as null
@@ -118,20 +118,25 @@ export function insertSecurityAssessment(
     return send_insert_request(insert_sa_query);
 }
 
+export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
+
+    var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ON DUPLICATE KEY UPDATE public_key=VALUES(public_key), metric_version=VALUES(metric_version), score=VALUES(score);';
+    return send_insert_request_vals(insert_sa_query, [security_assessments.map(assesment => [assesment.public_key, `${assesment.metric_version}`, `${assesment.score}`])]);
+}
+
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
-    const insert_ports_query =
-        "UPDATE node SET ports = " +
-        node.ports +
-        ", protocols = " +
-        node.protocols +
-        " where public_key = " +
-        node.public_key +
-        ";";
-    return send_insert_request(insert_ports_query);
+    Logger.info("adding "+ node.ports +
+    ', protocols = ' + node.protocols +
+    ' where public_key = ' + node.public_key + ';')
+    if(node.protocols=="") node.protocols="\'\'"
+    if(node.ports=="") node.ports="\'\'"
+    const insert_ports_query = 'UPDATE node SET ports = ?, protocols = ? where public_key = ?;';
+    const vals: string[] = [node.ports, node.protocols, node.public_key];
+    return send_insert_request_vals(insert_ports_query, vals);
 }
 
 export function getAllNodes(): Promise<Node[]> {
-    var get_all_nodes_query = "SELECT * FROM node;";
+    var get_all_nodes_query = 'SELECT * FROM node WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW();';
     return send_select_request<Node>(get_all_nodes_query);
 }
 
@@ -162,14 +167,12 @@ export function getAllSecurityAssessments(): Promise<SecurityAssessment[]> {
 
 // [ "port:protocol", "port:protocol" ]
 export function getNodesNonNullPort(): Promise<NodePorts[]> {
-    var get_nodes_non_null =
-        "SELECT public_key, ip, ports FROM node WHERE ports IS NOT NULL;";
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ports IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 
 export function getAllNodesForPortScan(): Promise<NodePorts[]> {
-    var get_nodes_non_null =
-        "SELECT public_key, ip, ports FROM node WHERE ip IS NOT NULL;";
+    var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ip IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 

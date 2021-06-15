@@ -1,11 +1,13 @@
-import React, { ChangeEvent, ReactPropTypes } from "react";
-import { Box, DataChart, Grid, Grommet, Header, Heading, List, Text, TextInput } from 'grommet'
-import Button from "react-bootstrap/Button";
+import React from "react";
+import { Box, DataChart, Grid, Grommet, Header, Heading, List, Menu } from 'grommet';
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Link } from "react-router-dom";
 import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB } from "./NodePageTypes";
 import axios from 'axios';
+import { humanizeUptime } from '../../helper';
+import NavigationBar from "../NavigationBar";
+import { COLORS, SETUP } from '../../style/constants';
+import HistoricalChart from "../HistoricalChart";
 
 
 /**
@@ -15,160 +17,206 @@ import axios from 'axios';
  * a statistical chart and an info box.
  * 
  */
-
-var SETUP = {
-    header_height: 7.5,
-    hd_bgnd: '#C3C3C3',
-}
-
-var COLORS = {
-    main: "#383838",
-    button: "#212529"
-}
-
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
-
+    
     constructor(props: NodePageProps) {
         super(props);
 
-        // The state
         this.state = {
-            public_key: "n9KtoXy89a6F5ZopaR9SMGx9MT8RprFwehQ7aiL59VdK6oUer8XB",
-            node_info: this.props.node_info ? this.props.node_info : {
-                public_key: "",
-                IP: "",
-                peers: [],
-                trust_score: 0,
-                rippled_version: "",
-                ports: [],
-                history: [],
-                uptime: 0
-            },
-            speed: 3,
-            displayButton: false,
-            displayGreen: false
+            public_key: this.parseURL(),
+            IP: "",
+            peers: [],
+            trust_score: 0,
+            rippled_version: "",
+            ports: [],
+            historical_scores: [],
+            uptime: 0
         }
 
+        /**
+         * Binding the class methods to the 'this' keyword for the class
+         */
         this.getNodeInfo = this.getNodeInfo.bind(this);
-        this.onKeyPressSearch = this.onKeyPressSearch.bind(this);
         this.preparePortList = this.preparePortList.bind(this);
-        this.createDataChart = this.createDataChart.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
-        this.queryAPI = this.queryAPI.bind(this);
+        this.queryAPI_peers = this.queryAPI_peers.bind(this);
         this.queryAPI_node = this.queryAPI_node.bind(this);
+        this.parseURL = this.parseURL.bind(this);
+        this.historyListener = this.historyListener.bind(this);
+        this.handleAPIError = this.handleAPIError.bind(this);
+
+        this.historyListener();
     }
 
+    /**
+     * Fetch all the needed information  from the server,
+     * once the component has mounted.
+     */
     componentDidMount() {
-        this.getNodeInfo(this.state.public_key);
+        this.getNodeInfo();
     }
 
-    queryAPI(public_key: string) {
-        return axios.get("http://localhost:8080/node/peers?public_key=" + public_key).then((res) => {
-            console.log(res.data);
+    /**
+     * Everytime we change the public_key in the state, 
+     * we should make a request for information from the server
+     * The method is automatically invoked by React,
+     * so we don't need to call it manually
+     * @param prevProps The previous props
+     * @param prevState The previous state
+     * @param some any
+     */
+    componentDidUpdate(prevProps: NodePageProps, prevState: NodePageState, some: any) {
+        if (prevState.public_key !== this.state.public_key) {
+            this.getNodeInfo();
+        }
+    }
+
+    /**
+     * A listener for changes in the history
+     * 
+     * Every time we update the history by navigating forwards or backwards,
+     * we update the public_key with the one from the URL request parameter.
+     */
+    historyListener() {
+        this.props.history.listen((location) => {
+            let public_key_from_url = location.search.split("?public_key=")[1];
+            if (this.state.public_key !== public_key_from_url) {
+                this.setState({ public_key: public_key_from_url });
+            }
+        });
+    }
+
+    /**
+     * Get the public_key from the URL request parameter
+     * @returns The public_key
+     */
+    parseURL(): string {
+        return this.props.history.location.search.split("?public_key=")[1];
+    }
+
+    /**
+     * Pass this function to the catch block of the Promise returned from 
+     * axios.get; It should handle the different possible errors accordingly
+     * @param error The error 
+     */
+    handleAPIError(error: any): void {
+        if (error.response) {
+            // error in the response
+            console.log(`Received an error response:`);
+            console.log(error.response);
+        } else if (error.request) {
+            // client never received a response, or request never left
+            console.log(`Server did not respond: `);
+            console.log(error.request);
+        } else {
+            // anything else
+            console.log(error.message);
+        }
+    }
+
+    /**
+     * Parses the port information from the NodeInfo query
+     * @param info The data of the response
+     * @returns The port list, in the format as in this.props
+     */
+    parsePorts(info: NodeInfoDB): Port[]{
+        var ports: Port[] = [];
+        if (info.ports !== null && info.protocols !== null && info.ports !== "''" && info.protocols !== "''") {
+            var infoPorts: string[] = info.ports.split(',');
+            var infoProtocols: string[] = info.protocols.split(',');
+            if (info.ports) {
+                infoPorts.forEach((port, i) => {
+                    ports.push({ port_number: parseInt(port), service: infoProtocols[i], version: "Not Implemented yet" })
+                });
+            }
+        }
+        return ports;
+    }
+
+    /**
+     * Fetch information for the node's peers from the server
+     * @param public_key The public_key of the node
+     * @returns 
+     */
+    queryAPI_peers(public_key: string): Promise<void> {
+        return axios.get("http://" + window.location.hostname + ":8080/node/peers?public_key=" + public_key).then((res) => {
             var peers: Peer[] = [];
             for (var i = 0; i < res.data.length; i++) {
                 peers.push({ public_key: res.data[i].end_node, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) })
             }
-            this.setState(
-                {
-                    node_info: {
-                        IP: this.state.node_info.IP,
-                        history: this.state.node_info.history,
-                        ports: this.state.node_info.ports,
-                        public_key: this.state.node_info.public_key,
-                        trust_score: this.state.node_info.trust_score,
-                        peers: peers,
-                        rippled_version: this.state.node_info.rippled_version,
-                        uptime: this.state.node_info.uptime
-                    }
-                });
-        });
+            this.setState({ peers: peers });
+        }).catch(this.handleAPIError);
     }
 
+    /**
+     * Fetch information for the node's general information from the server
+     * @param public_key The public_key of the node
+     * @returns 
+     */
     queryAPI_node(public_key: string) {
-        return axios.get("http://localhost:8080/node/info?public_key=" + public_key).then((res) => {
-            console.log(res.data);
-            var info: NodeInfoDB = res.data[0];
-            console.log(info);
-
-            var ports: Port[] = [];
-            if (info.ports){
-                for (var i = 0; i < info.ports.length; i++){
-                    ports.push({port_number: info.ports[i], service: info.protocols[i], version: "Not Implemented yet"})
+        return axios.get("http://" + window.location.hostname + ":8080/node/info?public_key=" + public_key)
+            .then((res) => {
+                if (res.data.length === 0) {
+                    return;
                 }
-            }
-            
-            this.setState(
-                {
-                    node_info: {
+                var info: NodeInfoDB = res.data[0];
+
+                var ports: Port[] = this.parsePorts(info);
+                this.setState(
+                    {
                         IP: info.IP,
-                        history: this.state.node_info.history,
-                        ports: ports,
-                        public_key: this.state.node_info.public_key,
-                        trust_score: this.state.node_info.trust_score,
-                        peers: this.state.node_info.peers,
                         rippled_version: info.rippled_version,
-                        uptime: info.uptime
-                    }
-                });
-        });
+                        uptime: info.uptime,
+                        ports: ports,
+                    });
+            }).catch(this.handleAPIError);
     }
 
-    getNodeInfo(public_key: string) {
+    /**
+     * Fetch all needed information from the server.
+     * This method sends 2 requests - one for the basic
+     * node information and one for the peers.
+     */
+    getNodeInfo() {
         var history: HistoricalScore[] = [];
         for (var i = 1; i <= 30; i++) {
             history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
-
-        var info = {
-            public_key: public_key,
-            IP: this.state.node_info.IP,
-            peers: this.state.node_info.peers,
-            trust_score: 0,
-            ports: this.state.node_info.ports,
-            rippled_version: this.state.node_info.rippled_version,
-            history: history,
-            uptime: this.state.node_info.uptime
-        };
-        this.setState({ public_key: public_key, node_info: info });
-        this.queryAPI(this.state.public_key);
+        this.setState({ historical_scores: history });
         this.queryAPI_node(this.state.public_key);
-    }
-
-    createDataChart() {
-        return (
-            <DataChart
-                data={this.state.node_info.history}
-                series={['date', { property: 'score' }]}
-                chart={[
-                    { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
-                    { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
-                ]}
-                guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
-                size={{ width: "fill" }}
-                axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
-                legend
-                detail
-            />
-        );
-    };
-
-    // Event Handler for the Search Bar
-    onKeyPressSearch(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.code === "Enter") alert("Search Triggered! Key entered is: " + e.currentTarget.value);
-        // this.setState({ displayGreen: !this.state.displayGreen });
-        // TODO send request to check for the key
-        // If key exists and information is obtained, render a green button to lead to the page
-        // If not, render a red box with message
+        this.queryAPI_peers(this.state.public_key);
     }
 
     preparePortList() {
-        var ports: string = "";
-        var thisPorts = this.state.node_info.ports;
+        var ports = [];
+        var thisPorts = this.state.ports;
         for (var i = 0; i < thisPorts.length; i++) {
-            ports = ports.concat("Port: " + thisPorts[i].port_number + " Service: " + thisPorts[i].service + "\n");
+            ports.push({ port_number: thisPorts[i].port_number, service: thisPorts[i].service });
         }
-        return ports;
+        if (ports.length === 0) {
+            return "No information available"
+        }
+        return (<List
+            style={{ width: "100%", height: "100%", alignSelf: "center" }}
+
+            primaryKey="port_number"
+            secondaryKey="service"
+
+            data={ports}
+        >
+
+        </List>);
+    }
+
+    preparePortMenu() {
+
+        return <Menu
+            // icon={<More />}
+            // hoverIndicator
+            items={[{ label: 'one' }]}
+            style={{ width: "10%" }}
+        />
+
     }
 
     createNodeInformationList() {
@@ -179,108 +227,70 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             secondaryKey="value"
 
             data={[
-                { name: 'Security score', value: this.state.node_info.trust_score },
-                { name: 'IP', value: this.state.node_info.IP },
-                { name: 'rippled_version', value: this.state.node_info.rippled_version },
-                { name: 'ports', value: this.preparePortList() },
-                { name: 'peer count', value: this.state.node_info.peers.length },
-                { name: 'uptime', value: this.state.node_info.uptime }
+                { name: 'Security score', value: this.state.trust_score },
+                { name: 'IP', value: this.state.IP },
+                { name: 'Rippled version', value: this.state.rippled_version },
+                { name: 'Ports', value: this.preparePortList() },
+                { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
+                { name: 'Peer count', value: this.state.peers.length },
             ]}
         />
     }
 
     createPeerList() {
-        return <List
-            style={{ alignSelf: "center" }}
+        let list = <List
+            style={{ alignSelf: "center", userSelect: 'none' }}
             primaryKey="public_key"
             secondaryKey="score"
-            data={this.state.node_info.peers.sort((a, b) => {
+            data={this.state.peers.sort((a, b) => {
                 return b.score - a.score;
             })}
             border={false}
             alignSelf="center"
-        />
+            onClickItem={(peer: any) => {
+                this.props.history.push("/node?public_key=" + peer.item.public_key);
+            }}/>;
+        return list;
     }
 
+    /**
+     * A callback we pass to the NodePageGraph component
+     * that handles what happens when a node on it is clicked
+     * @param public_key 
+     */
     nodeOnClick(public_key: string) {
-        this.setState({ public_key: public_key });
-        this.getNodeInfo(public_key);
+        this.props.history.push("/node?public_key=" + public_key);
     }
 
     render() {
         return (
             <Grommet
-                style={{ width: "100%", height: "100%" }}
-                theme={{ global: { colors: { hd_bgnd: SETUP.hd_bgnd, t: "#000000" } } }} >
+                style={{ width: "100%", height: "100%" }}>
 
-                <Header background={COLORS.main} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
-                    <Grid
-                        style={{ width: "100%", height: "100%" }}
-                        rows={["1"]}
-                        columns={["1/4", "1/4", "1/2"]}
-                        areas={[
-                            { name: 'heading', start: [0, 0], end: [0, 0] },
-                            { name: 'button_return', start: [1, 0], end: [1, 0] },
-                            { name: 'search', start: [2, 0], end: [2, 0] },
-                        ]}>
-
-                        {/* The heading. */}
-                        <Heading margin="2%" gridArea="heading" alignSelf="center" size="small">Node Page</Heading>
-
-                        {/* The Button for returning to the main page. */}
-                        <Box
-                            height="80%"
-                            gridArea="button_return"
-                            justify="center"
-                            alignSelf="center"
-                            margin="2%">
-                            <Button
-                                variant="dark"
-                                // onClick={() => this.setState({ displayButton: true })}
-                                style={{ width: "80%", height: "80%", alignSelf: "center" }} >
-                                <Link to='/' className='link' style={{textDecoration: 'none', color: 'inherit'}}>
-                                    <Text contentEditable="false" size="large" weight="bold">Back To Homepage</Text>
-                                </Link>
-                            </Button>
-                        </Box>
-
-                        {/* The Search Bar */}
-                        <Box gridArea="search"
-                            alignSelf="center"
-                            direction="row"
-                            justify="center"
-                            background={COLORS.button}
-                            margin={{left: "1%", right: "2%"}}>
-                            <TextInput
-                                onKeyPress={this.onKeyPressSearch}
-                                textAlign="center"
-                                placeholder="Search Public Key"
-                            />
-                            {/* {this.state.displayButton === false ? null : this.state.displayGreen === false ?
-                                <Button style={{ width: "10%", alignSelf: "center", background: "green", borderRadius: "10%", fontWeight: "bold" }} color="black" >Continue</Button>
-                                :
-                                <Button style={{ width: "10%", alignSelf: "center", background: "red", borderRadius: "10%", fontWeight: "bold" }} color="black" >Wrong Key</Button>
-                            } */}
-                        </Box>
-                    </Grid>
+                <Header background={COLORS.nav} style={{ width: "100%", height: `${SETUP.header_height}%` }} >
+                    <NavigationBar title={'Node Page'}></NavigationBar>
                 </Header>
-
+                {/* We split the main part of the application in a 2x2 grid with 3 components,
+                    the one on the left show information about the node and its peers, the top
+                    right one is the peer network graph and the bottm right one is the history
+                    graph. */}
                 <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                     <Grid
+                        fill
                         style={{ width: "100%", height: "100%" }}
-                        rows={["1/2", "1/2"]}
-                        columns={["1/2", "1/2"]}
+                        rows={["60%", "40%"]}
+                        columns={["50%", "50%"]}
                         areas={[
                             { name: 'peers_network', start: [1, 0], end: [1, 0] },
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{top: "2%", left: "1%", right: "2%", bottom: "1%"}} gridArea="peers_network" background={COLORS.main}>
-                            <NodePeerGraph on_node_click={this.nodeOnClick} node_info={this.state.node_info}></NodePeerGraph>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
+                            <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
-                        <Box round="1%" margin={{top: "2%", left: "2%", right: "1%", bottom: "2%"}} gridArea="stats" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
-                                {this.createNodeInformationList()}
+                            {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box
                                 className="scrollbar-hidden"
@@ -292,12 +302,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 {this.createPeerList()}
                             </Box>
                         </Box>
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{top: "1%", left: "1%", right: "2%", bottom: "2%"}} gridArea="info" background={COLORS.main} color="hd_bgnd">
-                            {/* <Box margin="20px" alignSelf="center" width="200px" height="200px">
-                                <img width="100%" style={{ animation: `spin ${this.state.speed}s linear infinite` }} src={"https://i.pinimg.com/originals/e6/9d/92/e69d92c8f36c37c84ecf8104e1fc386d.png"} alt="img" />
-                            </Box> */}
+                        {/* The historical scores chart */}
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {this.createDataChart()}
+                            <HistoricalChart historical_scores={this.state.historical_scores}/>
                         </Box>
                     </Grid>
                 </main>

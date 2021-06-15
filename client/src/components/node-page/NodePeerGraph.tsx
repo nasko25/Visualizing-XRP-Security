@@ -1,47 +1,109 @@
 import React, { Component } from "react";
 import Button from "react-bootstrap/Button";
-import { DataSet, DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network/standalone";
+import {  DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
+import { DataSet } from 'vis-data';
 import "./NodePage.css";
-import { NodeInfo, Peer } from "./NodePageTypes";
+import { Peer } from "./NodePageTypes";
+import Loader from "../Loader";
 
 /**
  * Component that visualizes the peer connections of a Node
  * Each peer is colored according to their trust score
  */
 
-type NodePeerGraphProps = {
-    node_info: NodeInfo,
-    on_node_click: (public_key: string) => void
+export type NodePeerGraphProps = {
+    public_key: string,
+    peers: Peer[],
+    on_node_click: (public_key: string) => void,
 }
 
 export default class NodePeerGraph extends Component<NodePeerGraphProps> {
 
-    networkRef: React.RefObject<HTMLDivElement>;
-
-    state = {
-        node_info: {},
-    }
+    network: Network | null = null;
 
     constructor(props: NodePeerGraphProps) {
         super(props);
-        this.state.node_info = props.node_info;
-        this.networkRef = React.createRef();
         this.createNetwork = this.createNetwork.bind(this);
+        this.hideLoad = this.hideLoad.bind(this);
+        this.getColor = this.getColor.bind(this);
+        this.onNodeClick = this.onNodeClick.bind(this); 
     }
 
-    componentDidMount(){
-        this.createNetwork();
+    componentDidUpdate(prevProps: NodePeerGraphProps, prevState: any) {
+        if(this.props.public_key !== prevProps.public_key || this.props.peers !== prevProps.peers){
+            this.createNetwork();
+        }
     }
 
-    componentDidUpdate(){
-        this.createNetwork();
+    onNodeClick = (properties: any, nodes: DataSetNodes) => {
+        var ids = properties.nodes;
+        var clickedNodes: Object[] = nodes.get(ids);
+
+        if (clickedNodes.length >= 1) {
+            var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
+            var public_key: string = JSON.stringify(n.title).slice(1, -1);
+            this.props.on_node_click(public_key);
+        }
     }
-    
+
+    /**
+     * Show the loading animation
+     */
+    showLoad() {
+        document.getElementById("loader")?.classList.remove('hide-loader');
+    }
+
+    /**
+     * Hide the loading animation
+     */
+    hideLoad() {
+        document.getElementById("loader")?.classList.add('hide-loader');
+    }
+
+    componentWillUnmount() {
+        if (this.network !== null) {
+            this.network.destroy();
+        }
+    }
+
+    /**
+     * Determines the color of the node based on its score
+     * @param score The node score
+     * @returns The color
+     */
+    getColor(score: number): string {
+        if (score > 1){
+            // Bad if it happens
+            return 'blue';
+        }
+        if (score >= 0.9) {
+            // Green
+            return 'rgb(0, 255, 0)';
+        }
+        else if (score >= 0.8) {
+            // Yellow
+            return 'rgb(255, 255, 0)';
+        } else if (score >= 0.7) {
+            // Orange
+            return 'rgb(255, 120, 0)';
+        }
+        else {
+            // Red
+            return 'rgb(256, 0, 0)';
+        }
+    }
+
     /**
      * Creates the vis.js network
      * The only connections are from our Node to its peers
      */
     createNetwork() {
+        if (this.network !== null) {
+            this.network.destroy();
+        }
+
+        this.showLoad();
+
         var nodesArr: Node[] = [];
         var edgesArr: Edge[] = [];
         // Add network node for our Node
@@ -53,22 +115,25 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 border: "white",
                 background: "black",
             },
-            title: this.props.node_info.public_key
+            title: this.props.public_key
         });
-        // Add network node and connection for each peer
-        var node_info: any = this.props.node_info;
 
-        for (var i = 2; i <= node_info.peers.length + 1; i++) {
-            var curr: Peer = node_info.peers[i - 2];
+        // Sort peers ascending on score
+        var peers: Peer[] = this.props.peers;
+        peers.sort((a, b) => {
+            return a.score - b.score;
+        });
+
+        // Add network node and connection for each peer
+        // If there are too many to visualize, render only 150
+        for (var i = 2; i <= Math.min(this.props.peers.length + 1, 150); i++) {
+            var curr: Peer = this.props.peers[i - 2];
             nodesArr.push({
                 id: i,
                 shape: "dot",
                 size: 20,
                 color: {
-                    background:
-                        curr.score < 0.5
-                            ? "rgba(200, 0, 0, 0.7)"
-                            : curr.score >= 0.95 ? "green" : "rgba(255," + 2 * parseFloat((1 - curr.score).toFixed(2)) * 255 + ", 0, 0.7)",
+                    background: this.getColor(curr.score),
                     border: "white",
                 },
                 title: curr.public_key,
@@ -84,48 +149,53 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         var nodes: DataSetNodes = new DataSet(nodesArr);
         var edges: DataSetEdges = new DataSet(edgesArr);
 
-        const container: any = this.networkRef.current;
+        const container: any = document.getElementById('peer-network');
         const data = {
             nodes: nodes,
             edges: edges,
         };
+
         const options = {
             physics: {
                 hierarchicalRepulsion: {
-                    nodeDistance: 140
+                    nodeDistance: 1
                 }
             },
             interaction: {
                 hover: true
             }
         };
-        var func = this.props.on_node_click;
-        
+
         const network = new Network(container, data, options);
-        network.on("click", function (properties) {
-            var ids = properties.nodes;
-            var clickedNodes: Object[] = nodes.get(ids);
-        
-            if (clickedNodes.length >= 1) {
-                var n: Node = JSON.parse(JSON.stringify(clickedNodes[0]));
-                var public_key: string = JSON.stringify(n.title).slice(1, -1);
-                func(public_key);
-            }
+        network.on("click", (properties) => {
+            this.onNodeClick(properties, nodes);
         });
+
+        network.once("stabilized", (params) => {
+            this.hideLoad();
+        });
+
+        this.network = network;
     }
 
     render() {
         return (
-            <>
-                <div
-                    className="peer-network"
-                    style={{ width: "100%", height: "84%" }}
-                    ref={this.networkRef} />
+            <div style={{ width: "100%", height: "100%", position: "relative" }}>
+                <div className="peer-network"
+                    style={{ width: "100%", height: "84%", position: "relative" }}
+                    id='peer-network'
+                    data-testid="peer-network" >
+                </div>
+
+                <Loader top={40}/>
+
                 <Button
-                    style={{ width: "10%", height: "10%", alignSelf: "center", margin: "1%" }}
+                    style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
-                    onClick={this.createNetwork}>Peers</Button>
-            </>
+                    onClick={this.createNetwork}
+                    data-testid="refresh-peers"
+                >Reshuffle Peers</Button>
+            </div>
         );
     }
 }

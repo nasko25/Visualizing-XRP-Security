@@ -1,13 +1,19 @@
-import { Grid, Heading, Box, Text } from "grommet";
 import { Component } from "react";
-import Button from 'react-bootstrap/Button'
+import { Grid, Box, Heading, Text } from 'grommet';
+import Button from 'react-bootstrap/Button';
+import { Link } from "react-router-dom";
 import { History } from 'history';
 
-export type DashboardNavbarProps = {
+export type ValidatorPageNavProps = {
     history: History
 }
 
-export default class DashboardNavbar extends Component<DashboardNavbarProps> {
+export default class ValidatorPageNav extends Component<ValidatorPageNavProps> {
+
+    constructor(props: ValidatorPageNavProps) {
+        super(props);
+    }
+
     render() {
         return (
             <Grid
@@ -20,7 +26,7 @@ export default class DashboardNavbar extends Component<DashboardNavbarProps> {
                         { name: 'button_about', start: [2,0], end: [2,0]}
                     ]}
             >
-                <Heading margin="2%" gridArea="title" alignSelf="center" size="small" color='#f8f8f8'>CISELab</Heading>
+                <Heading margin="2%" gridArea="title" alignSelf="center" size="small" color='#f8f8f8'>Validator Page</Heading>
 
                 <Box
                     height="80%"
@@ -30,11 +36,10 @@ export default class DashboardNavbar extends Component<DashboardNavbarProps> {
                     margin="2%">
                     <Button
                         variant="dark"
-                        style={{ width: "80%", height: "80%", alignSelf: "center" }} 
-                        onClick={() => this.props.history.push('/validators')}
-                        data-testid="validators-button"
+                        style={{ width: "80%", height: "80%", alignSelf: "center" }}
+                        onClick={() => this.props.history.push("/")}
                         >
-                        <Text contentEditable="false" size="large" weight="bold">Validators</Text>
+                        <Text contentEditable="false" size="large" weight="bold">Stock</Text>
                     </Button>
                 </Box>
 
@@ -47,8 +52,7 @@ export default class DashboardNavbar extends Component<DashboardNavbarProps> {
                     <Button
                         variant="dark"
                         style={{ width: "80%", height: "80%", alignSelf: "center" }} 
-                        onClick={() => this.props.history.push('/about')}
-                        data-testid="about-button"
+                        onClick={() => this.props.history.push("/about")}
                         >
                         <Text contentEditable="false" size="large" weight="bold">About</Text>
                     </Button>

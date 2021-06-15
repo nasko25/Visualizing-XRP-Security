@@ -1,9 +1,9 @@
 import React from "react";
 import { LatLng, latLng } from "leaflet";
-import { Circle, CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
-import Button from 'react-bootstrap/Button'
+import { List } from 'grommet';
 
 // TODO Define props.data type
 // Replace JSX.Element
@@ -11,7 +11,6 @@ import Button from 'react-bootstrap/Button'
 function MyComponent(props: { that: TopMap }) {
     useMapEvents({
         zoomend: () => {
-            console.log("Mitko");
             var popup = null;
             props.that.setState({ popup });
         }
@@ -66,12 +65,16 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     onClusterClick = (a: any) => {
         var children = a.layer.getAllChildMarkers();
-        var lis = [];
+        // var lis = [];
+        var keys: Object[] = [];
 
         for (var child in children) {
-            lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+            // lis.push(<li key={"node" + child.toString()}>{children[child]._popup.options.children}</li>);
+            keys.push({ pub_key: children[child]._popup.options.children });
         }
-        var contentForCluster = <ul>{lis}</ul>
+        // var contentForCluster = <ul>{lis}</ul>
+
+        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data: any) => { this.props.handleChange(data.item.pub_key) }} />
 
         // Create the new popup
         var popup = null;
@@ -90,10 +93,9 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     // Create a new map with the provided popup 
     createNewMap = (popup: JSX.Element | null) => {
-        return <MapContainer className='map' center={this.state.latlng} zoom={3}>
+        return <MapContainer className='map' center={this.state.latlng} zoom={3} data-testid='dashboard-map' maxBounds={[[100, -220],[-100, 220]]}>
             {/* Layers */}
             <TileLayer
-                // attribution="NO ATTRIBUTION HAHAHAHAHAHHA"
                 url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
                 minZoom={2}
                 maxZoom={11}
@@ -122,8 +124,8 @@ class TopMap extends React.Component<Props, TopMapState> {
                 continue;
             }
             let marker = (
-                <CircleMarker key={"circle_" + i}
-
+                <CircleMarker 
+                    key={"circle_" + i}
                     center={[a.longtitude, a.latitude]}
                     color={colour}
                     fillColor={colour}
@@ -141,11 +143,8 @@ class TopMap extends React.Component<Props, TopMapState> {
                 </CircleMarker>
 
             );
-
             markers.push(marker);
-
         }
-
         return <MarkerClusterGroup zoomToBoundsOnClick={false} maxClusterRadius={28} onClick={this.onClusterClick}>
             {markers}
         </MarkerClusterGroup>
@@ -158,8 +157,6 @@ class TopMap extends React.Component<Props, TopMapState> {
             </div>
         );
     }
-
-
 }
 
 export default TopMap;
