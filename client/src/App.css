@@ -96,3 +96,18 @@
 .ivjomh {
   stroke: white !important;
 }
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: white;
+}
+
+.leaflet-popup-content-wrapper {
+  max-width: 100%;
+  overflow-x: hidden;
+  background-color: #2a2c33;
+}
+
+.leaflet-popup-content {
+  width: 90% !important;
+  color: white;
+}

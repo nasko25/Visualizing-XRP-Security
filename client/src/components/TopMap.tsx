@@ -74,7 +74,7 @@ class TopMap extends React.Component<Props, TopMapState> {
         }
         // var contentForCluster = <ul>{lis}</ul>
 
-        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data: any) => { this.props.handleChange(data.item.pub_key) }} />
+        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data: any) => { this.props.handleChange(data.item.pub_key) }} style={{color:'white'}}/>
 
         // Create the new popup
         var popup = null;
@@ -88,7 +88,7 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     // Create a popup with position and content
     createNewPopup = (a: { latlng: LatLng }, content: JSX.Element) => {
-        return <Popup position={a.latlng} maxHeight={100}>{content}</Popup>
+        return <Popup position={a.latlng} maxHeight={200} >{content}</Popup>
     }
 
     // Create a new map with the provided popup 
