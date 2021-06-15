@@ -9,9 +9,12 @@ import config from './config/config.json';
 import Logger from './logger';
 import setupClientAPIEndpoints from './client-api';
 import ValidatorIdentifier from './validators';
+import ValidatorTrustAssessor from './validator_trust_assessor';
+import { ValidatorMonitor } from './validator_monitor';
 import NmapInterface from './nmapInterface';
 import Security_Scanner from './security_scanner';
 import { emptyConnectionTable } from './db_connection/db_helper';
+import { EventEmitter } from 'events';
 
 if (process.argv[2] == 'crawler') {
     Logger.info('CRAWLER STARTED');
@@ -27,20 +30,25 @@ if (process.argv[2] == 'crawler') {
             });
         }
     });
-    
-} else if (process.argv[2] == 'validator') {
-    var security_scanner = new Security_Scanner(2);
+} else if (process.argv[2] == "validator") {
+    var ble = new Security_Scanner(2);
 
-    process.on('message', (data) => {
-        if (data && data == 'start') {
+    process.on('message', (data)=>{
+        if(data && data=='start'){
             // Logger.info("VALIDATOR STARTED 29")
-            // start_validator_identification();
-            Logger.info('STARTING SECURITY ANALYSIS');
-            security_scanner.start();
+            start_validator_identification();
+            Logger.info("STARTING SECURITY ANALYSIS AND VALIDATOR TRUST ASSESSMENT");
+            ble.start();
         }
     });
 
-} else if (process.argv[2] == 'api') {
+    // the validator monitor will emit an event when it is done;
+    // the trust assessor listens for that event and starts only when it is received
+    const eventEmitter = new EventEmitter();
+    new ValidatorTrustAssessor(eventEmitter);
+    new ValidatorMonitor(eventEmitter);
+
+} else if (process.argv[2] == "api") {
     const app = express();
     app.use(cors());
 
@@ -150,7 +158,6 @@ function repeated_crawl() {
 function start_validator_identification() {
     Logger.info('Starting validator identification');
     let valIden: ValidatorIdentifier = new ValidatorIdentifier(50);
-    //BRAT VALIDEN SI
     valIden.run();
 }
 
