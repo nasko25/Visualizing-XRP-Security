@@ -29,7 +29,9 @@ export class ValidatorMonitor {
 
     // how often the information gathered from the ValidatorMonitor should be used to
     //  update the database (in minutes)
-    readonly INTERVAL: number = 0.2;
+    //  NOTE: if this variable needs to be adjusted, check the variables in this.run() as well,
+    //  because they will probably also need to be updated
+    readonly INTERVAL: number = 60;
 
     readonly validatedLedgers = new Map<string, Map<string, number>>();        // map format: validator_hash:{ <set of ledgers that it approved>, <date when the data was acquired>
     canonicalLedgers: { ledger_hash: string, timestamp: number }[] = [];
@@ -107,11 +109,16 @@ export class ValidatorMonitor {
     // clear the cached information every `INTERVAL` minutes and fire an event for the ValidatorTrustAssessor to recalculate
     //  the nodes' scores
     run() {
-        const oneMinAgo = Date.now() - (1 * 60 * 1000);
-        const threeMinsAgo = Date.now() - (3 * 60 * 1000);
-        const fiveMinsAgo = Date.now() - (5 * 60 * 1000);
-        const canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp < oneMinAgo && ledger.timestamp > threeMinsAgo).map(ledger => ledger.ledger_hash);
-        this.canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp >= fiveMinsAgo);
+        // the interval between `twoMinsAgo` and `oneHrsAgo` represents the interval we are looking at to calculate missed and total ledgers for each validator
+        // since some `ledgerClosed` and `validationReceived` messages can come a bit later, the tool gives them 2 minutes to arrive
+        // so the information below is calculated with a 2 minute delay
+        const twoMinsAgo = Date.now() - (2 * 60 * 1000);
+        const oneHrsAgo = Date.now() - (62 * 60 * 1000);
+
+        // everything before `twoHrsAgo` will be deleted from memory
+        const twoHrsAgo = Date.now() - (2 * 60 * 60 * 1000);
+        const canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp < twoMinsAgo && ledger.timestamp > oneHrsAgo).map(ledger => ledger.ledger_hash);
+        this.canonicalLedgers = this.canonicalLedgers.filter(ledger => ledger.timestamp >= twoHrsAgo);
         const total = canonicalLedgers.length;
         // TODO only validators public keys are needed
         getValidators().then(validators => {
@@ -125,10 +132,10 @@ export class ValidatorMonitor {
                 if (this.validatedLedgers.has(validator.public_key)) {
                     this.validatedLedgers.get(validator.public_key)
                         ?.forEach((value, key, map) => {
-                            if (value < oneMinAgo && value > threeMinsAgo) {
+                            if (value < twoMinsAgo && value > oneHrsAgo) {
                                 validatedLedgers.push(key);
                             }
-                            if (value <= fiveMinsAgo) {
+                            if (value <= twoHrsAgo) {
                                 map.delete(key);
                                 if (map.size === 0) this.validatedLedgers.delete(validator.public_key);
                             }
