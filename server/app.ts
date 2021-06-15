@@ -41,15 +41,14 @@ if (process.argv[2] == "crawler") {
             start_validator_identification();
             Logger.info("STARTING SECURITY ANALYSIS AND VALIDATOR TRUST ASSESSMENT");
             ble.start();
-
-            // the validator monitor will emit an event when it is done;
-            // the trust assessor listens for that event and starts only when it is received
-            const eventEmitter = new EventEmitter();
-            new ValidatorTrustAssessor(eventEmitter);
-            new ValidatorMonitor(eventEmitter);
         }
     });
 
+    // the validator monitor will emit an event when it is done;
+    // the trust assessor listens for that event and starts only when it is received
+    const eventEmitter = new EventEmitter();
+    new ValidatorTrustAssessor(eventEmitter);
+    new ValidatorMonitor(eventEmitter);
 
 } else if (process.argv[2] == "api") {
     const app = express();
