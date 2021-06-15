@@ -12,13 +12,16 @@ export default class HistoricalChart extends Component<HistoricalChartProps> {
         return (
             <DataChart
                 data={this.props.historical_scores}
-                series={['date', { property: 'score' }]}
+                series={['date', { property: 'score', render: (value, datam, dataIndex) =>{
+                    return <p className="test"> {value}</p>;
+                }  }]}
                 chart={[
                     { property: 'score', type: 'line', opacity: 'medium', thickness: '5%' },
                     { property: 'score', type: 'point', point: 'diamond', thickness: '10%' }
                 ]}
                 guide={{ x: { granularity: 'fine' }, y: { granularity: 'fine' } }}
                 size={{ width: "fill" }}
+                
                 axis={{ x: { granularity: "medium" }, y: { granularity: "fine" } }}
                 legend
                 detail

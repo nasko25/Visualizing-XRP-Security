@@ -68,14 +68,14 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 {
                                     property: 'uptime',
                                     header: <Text><b>Uptime</b></Text>,
-                                    size: '15%',
+                                    size: '25%',
                                     align: 'start',
                                     sortable: true
                                 },
                                 {
                                     property: 'security_score',
                                     header: <Text><b>Security Score</b></Text>,
-                                    size: '10%',
+                                    size: '15%',
                                     align: 'start'
                                 }
                             ]}

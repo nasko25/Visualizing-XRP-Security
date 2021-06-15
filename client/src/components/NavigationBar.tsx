@@ -61,7 +61,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 style={{ width: "100%", height: "100%" }}
             >
                 {/* <Text style={{ fontWeight: "bold", userSelect: 'none'}} size='3xl'>CISELab</Text> */}
-                <a href='/' data-testid="" style={{userSelect: 'none', fontSize:'300%'}}>CISELab</a>
+                <a href='/' data-testid="" style={{userSelect: 'none', fontSize:'200%'}}>CISELab</a>
             </Box>
 
             {/* The heading. */}
@@ -71,7 +71,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 justify="center"
                 style={{ width: "100%", height: "100%" }}
             >
-                <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>{this.props.title}</Text>
+                <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none', MozUserSelect: 'none', WebkitUserSelect: 'none' }}>{this.props.title}</Text>
             </Box>
 
             {/* The Button for returning to the main page. */}
@@ -85,7 +85,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                     this.props.title !== "Dashboard" ?
                         <a className='onPage' href='/' data-testid="stock-ref" style={{userSelect: 'none'}}>Stock Nodes</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Stock Nodes</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none', MozUserSelect: 'none', WebkitUserSelect: 'none'}}>Stock Nodes</Text>
                     
                 }
             </Box>
@@ -101,7 +101,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                     this.props.title !== "Validators" ?
                         <a href='/validators' data-testid="validators-ref" style={{userSelect: 'none'}}>Validator Nodes</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>Validator Nodes</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none', MozUserSelect: 'none', WebkitUserSelect: 'none' }}>Validator Nodes</Text>
                 }
             </Box>
 
@@ -116,13 +116,13 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                     this.props.title !== "About Page" ?
                         <a href='/about' data-testid="about-ref" style={{userSelect: 'none'}}>About</a>
                         :
-                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none' }}>About</Text>
+                        <Text style={{ fontWeight: "bold", fontSize: "x-large", userSelect: 'none', MozUserSelect: 'none', WebkitUserSelect: 'none' }}>About</Text>
                 }
             </Box>
             
             {/* The Search Bar */}
             {
-                this.props.title !== "Dashboard" && this.props.title !== "About Page" ?
+                this.props.title !== "About Page" ?
                 <Box gridArea="search"
                 alignSelf="center"
                 direction="row"
