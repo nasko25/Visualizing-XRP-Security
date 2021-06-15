@@ -94,9 +94,9 @@ if (process.argv[2] == "crawler") {
 
     validator.on('message',(data)=>{
         Logger.info(data);
-        if(data && data == 'finished'){
+        if(data && data.toString().includes('rippled-')){
             Logger.info("val proc finish")
-            api.send('upd');
+            api.send(data);
         }
     })
 

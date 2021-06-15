@@ -49,7 +49,7 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     // A timestamp to track when the cache has to be updated if its information is requested
     var cacheExpiry: Date = new Date();
-
+    var latestVersion: string = "rippled-1.7.0"
     // The cache objects: For requests for all nodes | peers of a node | information about a node
     var nodeCacheAll: Node[] = [];
     var peerCache: Map<string, Connection[]> = new Map();
@@ -67,7 +67,8 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     updateCache();
     process.on('message', (data) => {
-        if (data && data == 'upd') {
+        if (data && data.toString().includes( 'rippled-')) {
+            latestVersion=data.toString();
             updateCache();
         }
     })
@@ -116,7 +117,9 @@ export default function setupClientAPIEndpoints(app: Express) {
 
 
     }
-
+    app.get('/latest-version', (req, res) => {
+        res.send(JSON.stringify(latestVersion));
+    });
     app.get('/node/score-peers', (req, res) => {
         Logger.info("Received request for the security assessment score and peer connections of a node.");
     });

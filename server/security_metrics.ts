@@ -32,7 +32,7 @@ export default class SecurityMetric {
 
     listOfVersions: Map<string, VersionInfo>;
     listOfVersionsBuffer: Map<string, VersionInfo>;
-
+    latestVersion: string = "";
     constructor(hoursTNU?: number, cutoff?: number, roundToDecimals?: number, a_power?: number, b_power?: number, c_power?: number,
         a_quadr?: number, b_quadr?: number, c_quadr?: number, weeks_gp?: number, prts_gn?: number) {
         this.listOfVersionsBuffer = new Map();
@@ -105,7 +105,7 @@ export default class SecurityMetric {
                         setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
                         return;
                     } else {
-
+                        this.latestVersion ="rippled-" + res.data[0].tag_name;
                         console.log("update needed "+res.data[0].tag_name + " had index "+this.listOfVersions.get(res.data[0]))
                         var i = 0;
                         this.listOfVersionsBuffer.clear();

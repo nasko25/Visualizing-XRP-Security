@@ -64,7 +64,7 @@ class Security_Scanner {
             })
             .finally(() => {
                 Logger.info("Scheduling 50");
-                (<any>process).send('finished');
+                (<any>process).send(this.security_calculator.latestVersion);
                 //this.schedule(once);
             });
     }
