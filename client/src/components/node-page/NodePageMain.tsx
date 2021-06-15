@@ -180,7 +180,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     getNodeInfo() {
         var history: HistoricalScore[] = [];
         for (var i = 1; i <= 30; i++) {
-            history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
+            history.push({ date: i + "-08", score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
         }
         this.setState({ historical_scores: history });
         this.queryAPI_node(this.state.public_key);
@@ -245,7 +245,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             data={this.state.peers.sort((a, b) => {
                 return b.score - a.score;
             })}
-            border={false}
+            border={{
+                color: 'white',
+                side: 'bottom'
+            }}
             alignSelf="center"
             onClickItem={(peer: any) => {
                 this.props.history.push("/node?public_key=" + peer.item.public_key);

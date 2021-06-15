@@ -43,13 +43,13 @@ export default class NavigationBar extends Component<NavigationBarProps>{
         return (<Grid
             style={{ width: "100%", height: "100%", color: "white" }}
             rows={["1"]}
-            columns={["12.5%", "12.5%", "12.5%", "12.5%", "50%"]}
+            columns={["12.5%", "12.5%", "12.5%", "50%", "12.5%"]}
             areas={[
-                { name: 'heading', start: [0, 0], end: [0, 0] },
-                { name: 'button_stock', start: [1, 0], end: [1, 0] },
-                { name: 'button_validator', start: [2, 0], end: [2, 0] },
-                { name: 'button_about', start: [3, 0], end: [3, 0] },
-                { name: 'search', start: [4, 0], end: [4, 0] },
+                { name: 'heading', start: [4, 0], end: [4, 0] },
+                { name: 'button_stock', start: [0, 0], end: [0, 0] },
+                { name: 'button_validator', start: [1, 0], end: [1, 0] },
+                { name: 'button_about', start: [2, 0], end: [2, 0] },
+                { name: 'search', start: [3, 0], end: [3, 0] },
             ]}>
 
             {/* The heading. */}
@@ -121,7 +121,7 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                 <TextInput
                     onKeyPress={this.onKeyPressSearch}
                     icon={<Search />}
-                    textAlign="center"
+                    textAlign="start"
                     placeholder="Search Public Key"
                     id={this.searchID}
                     data-testid="search"
