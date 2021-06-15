@@ -142,6 +142,13 @@ export function getNodeOutgoingPeers(public_key: string): Promise<Connection[]> 
     return send_select_request<Connection>(get_node_outgoing_peers);
 }
 
+/**
+ * Queries the database for all the peers of a node and their scores from the past 10 minutes.
+ * This is a quite expensive operation as it requires to join a table containing the peers
+ * to the security_assessment table.
+ * @param public_key The public_key of the node, who's peers we want to retrieve
+ * @returns A Promise, which resolves in a list of PeerToSend objects or rejects into void
+ */
 export function getPeersWithScores(public_key: string): Promise<PeerToSend[]> {
     const get_peers_with_scores = "SELECT " +
                                   "end_node as public_key, metric_version, score, timestamp " +

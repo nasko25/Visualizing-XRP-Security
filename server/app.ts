@@ -11,6 +11,7 @@ import setupClientAPIEndpoints from './client-api';
 import ValidatorIdentifier from './validators';
 import NmapInterface from './nmapInterface';
 import Security_Scanner from './security_scanner';
+import { emptyConnectionTable } from './db_connection/db_helper';
 
 if (process.argv[2] == 'crawler') {
     Logger.info('CRAWLER STARTED');
@@ -129,6 +130,9 @@ async function startCrawler() {
 // Currently the crawler is ran every 5 minutes
 function repeated_crawl() {
     // console.log('\n');
+    emptyConnectionTable().catch((err) => {
+        Logger.error(err);
+    });
     Logger.info('Crawler ran...');
     startCrawler().catch((e) => {
         Logger.error(`Crawler exited with the exception: ${e}.`);

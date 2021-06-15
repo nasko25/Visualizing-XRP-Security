@@ -41,11 +41,9 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 USE db;
 CREATE TABLE IF NOT EXISTS `connection` (
-  `connection_id` INT NOT NULL AUTO_INCREMENT,
   `start_node` VARCHAR(80) NOT NULL,
   `end_node` VARCHAR(80) NOT NULL,
 PRIMARY KEY (`start_node`, `end_node`),
-  UNIQUE INDEX `connection_id_UNIQUE` (`connection_id` ASC) VISIBLE,
   FOREIGN KEY (`start_node`)
     REFERENCES `node` (`public_key`)
     ON DELETE CASCADE
