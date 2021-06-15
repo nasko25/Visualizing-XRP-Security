@@ -80,8 +80,8 @@
 }
 
 ::-webkit-scrollbar {
-  color: #222;
-  width: 0%;
+  /* color: #222;
+  width: 5%; */
 }
 
 ::-webkit-scrollbar-thumb {

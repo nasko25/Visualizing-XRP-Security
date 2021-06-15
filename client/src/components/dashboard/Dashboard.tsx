@@ -100,6 +100,9 @@ export default class Dashboard extends Component<DashboardProps> {
 
             data={[
                 { name: 'Nodes', value: this.state.nodes.length },
+                { name: 'Average security score', value: "0"},
+                { name: 'Average trust score', value: "0"},
+                { name: 'Latest version', value: "1.7.0"}
             ]}
         />
     }
