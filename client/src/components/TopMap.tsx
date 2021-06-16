@@ -18,16 +18,10 @@ function MyComponent(props: { that: TopMap }) {
     return null;
 }
 
-type Point = {
-    IP: string,
+export type Point = {
     latitude: number,
     longtitude: number,
-    ports: [string],
-    protocols: [string],
     public_key: string,
-    rippled_version: string,
-    timestamp: string,
-    uptime: number
 }
 
 type Props = {

@@ -129,6 +129,27 @@ export function getAllNodes(): Promise<Node[]> {
     return send_select_request<Node>(get_all_nodes_query);
 }
 
+type nodeAndScore = {
+    rippled_version: string,
+    public_key: string,
+    uptime: number,
+    longtitude: number,
+    latitude: number,
+    scores: string,
+    timestamps: string
+}
+export function getAllNodesSecurity(): Promise<nodeAndScore[]> {
+    var all_security_scores = 
+        "Select n.rippled_version, n.public_key, n.uptime, n.longtitude, n.latitude, s.scores, s.timestamps " +
+        "FROM (SELECT public_key, GROUP_CONCAT(score) AS scores, GROUP_CONCAT(timestamp) AS timestamps " + 
+        "FROM (SELECT * FROM security_assessment WHERE timestamp >= DATE_SUB(NOW(),INTERVAL 10 minute)) " + 
+        "AS va GROUP BY public_key) as s join (SELECT * FROM node WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 3 hour) " + 
+        "AND NOW()) as n on n.public_key=s.public_key;";
+    return send_select_request<nodeAndScore>(
+        all_security_scores
+    );
+}
+
 // this function will return the IPs of nodes that do not have geolocation yet
 // it will ignore NULL IPs
 export function getAllNodesWithoutLocation(): Promise<{ IP: string }[]> {

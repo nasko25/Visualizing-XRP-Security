@@ -121,7 +121,8 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                             header: <Text><b>Public Key</b></Text>,
                                             size: '100%',
                                             search: true,
-                                            primary: true
+                                            primary: true,
+                                            align: 'center'
                                         }
                                     ]}
                                 

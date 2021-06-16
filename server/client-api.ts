@@ -1,7 +1,7 @@
 
 import { Express, Response } from 'express'
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -110,6 +110,45 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
             res.status(400).send(err.message);
         });
 
+    });
+
+    app.get('/node/get-all-nodes-and-score', (req, res) => {
+        getAllNodesSecurity().then((result) => {
+            let latestScores = result.map((node, idx) => {
+                let timestamps = node.timestamps.split(',');
+                let scores = node.scores.split(',');
+
+                let ts_scores = timestamps.map((ts, i) => {
+                    return {
+                        timestamp: new Date(ts),
+                        score: scores[i]
+                    }
+                });
+
+                let latest = ts_scores.sort((t1, t2) => {
+                    if (t1.timestamp > t2.timestamp) {
+                        return -1;
+                    }
+                    return 1;
+                })[0];
+
+                return {
+                    rippled_version: node.rippled_version,
+                    public_key: node.public_key,
+                    uptime: node.uptime,
+                    longtitude: node.longtitude,
+                    latitude: node.latitude,
+                    score: latest.score,
+                    // timestamp: latest.timestamp,
+                    // history: ts_scores
+                };
+            });
+            res.send(JSON.stringify(latestScores));
+        }).catch((err) => {
+            let error_string: string = `Error in getting all nodes and their security score: ${err.message}`;
+            Logger.error(error_string);
+            res.status(400).send(error_string);
+        });
     });
 
     app.get('/node/peers', (req, res) => {
