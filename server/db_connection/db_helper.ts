@@ -215,7 +215,8 @@ export function getValidatorHistoricalData(
     public_key: string,
     duration: number
 ): Promise<ValidatorAssessment[]> {
-    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
+    const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY);`;
+    console.log(get_validator_history);
     return send_select_request<ValidatorAssessment>(get_validator_history);
 }
 
@@ -369,7 +370,10 @@ type validator_group_assessment = {
     timestamps: string
 }
 export function getAllValidatorAssessments(): Promise<validator_group_assessment[]> {
-    let get_all_validator_assessments_query: string = "SELECT public_key, GROUP_CONCAT(score) as scores, GROUP_CONCAT(timestamp) as timestamps from validator_assessment group by public_key;";
+    let get_all_validator_assessments_query: string =
+        "SELECT public_key, GROUP_CONCAT(score) AS scores, GROUP_CONCAT(timestamp) AS timestamps " +
+        "FROM (SELECT * FROM validator_assessment WHERE timestamp >= DATE_SUB(NOW(),INTERVAL 30 DAY)) AS va " +
+        "GROUP BY public_key;";
     return send_select_request<validator_group_assessment>(get_all_validator_assessments_query);
 }
 

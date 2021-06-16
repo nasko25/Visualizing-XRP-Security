@@ -1,7 +1,7 @@
 
 import { Express, Response } from 'express'
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -143,7 +143,6 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     });
 
-    //TODO: SHOULD WE STORE THE JSON DIRECTLY OF THE PEER LIST?
     app.get('/node/peers', (req, res) => {
         Logger.info('Received request for the peer connections of a node.');
 
@@ -183,6 +182,24 @@ export default function setupClientAPIEndpoints(app: Express) {
                     });
                 }
             }
+        }
+    });
+
+    app.get('/node/info', (req, res) => {
+        Logger.info('Received request for information of a node.');
+
+        const public_key: string = String(req.query.public_key);
+        if (is_key_present(public_key, res)) {
+            getNode(public_key).then((results) => {
+                if (results.length === 0) {
+                    res.status(404).send();
+                } else {
+                    res.send(JSON.stringify(results));
+                }
+            }).catch((err: Error) => {
+                Logger.error(err.message);
+                res.status(400).send(err.message);
+            });
         }
     });
 
@@ -252,7 +269,8 @@ export default function setupClientAPIEndpoints(app: Express) {
                     return {
                         public_key: validator.public_key,
                         score: latest.score,
-                        timestamp: latest.timestamp
+                        timestamp: latest.timestamp,
+                        history: ts_scores
                     };
                 });
                 res.send(JSON.stringify(latestScores));
@@ -264,22 +282,26 @@ export default function setupClientAPIEndpoints(app: Express) {
         }
     });
 
+    app.get('/validator/history', (req, res) => {
+        Logger.info('Received request for a validator\'s score history.');
 
-    app.get('/node/info', (req, res) => {
-        Logger.info('Received request for information of a node.');
-
-        const public_key: string = String(req.query.public_key);
-        if (is_key_present(public_key, res)) {
-            getNode(public_key).then((results) => {
-                if (results.length === 0) {
-                    res.status(404).send();
-                } else {
-                    res.send(JSON.stringify(results));
-                }
-            }).catch((err: Error) => {
-                Logger.error(err.message);
-                res.status(400).send(err.message);
-            });
+        let public_key: string = String(req.query.public_key);
+        let duration: number = Number(req.query.duration);
+        if(!(duration && duration !== undefined)){
+            duration = 30;
         }
-    });
+        console.log(public_key);
+        console.log(duration);
+        if (is_key_present(public_key, res)) {
+            getValidatorHistoricalData(public_key, duration)
+            .then((results) => {
+                console.log(results);
+                res.send(JSON.stringify(results));
+            })
+            .catch((err) => {
+                res.status(400).send(err.message);
+            })
+        }
+    })
+
 }
