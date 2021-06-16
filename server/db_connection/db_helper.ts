@@ -9,7 +9,6 @@ import { ValidatorStatistics } from "../validator_monitor";
 import { ValidatorStatisticsTotal } from "../validator_trust_assessor";
 import Logger from "../logger";
 import { PeerToSend } from "../client-api";
-// import e from "express";
 var mysql = require("mysql");
 
 var connection = mysql.createConnection({
@@ -38,7 +37,6 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
 };
 
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
-    // TODO nodes are never removed from the database
     var insert_nodes_query =
         "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, 'undefined'), rippled_version=new.rippled_version, uptime=new.uptime, publishers=NULLIF(new.publisher, 'undefined');";
     var vals = nodes.map((node) => [
@@ -56,7 +54,7 @@ export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     return send_insert_request_vals(insert_nodes_query, vals);
 }
 
-// insert longitude and latitude for a given ip address
+// Insert longitude and latitude for a given ip address
 // the function expects a tuple of longitude and latitude
 export function insertLocation(loc: number[], ip: string): Promise<void> {
     const insert_location_query =
@@ -110,20 +108,15 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
         security_assessment.metric_version + '\', \'' +
         security_assessment.score + '\');';
 
-    // connection.query(insert_sa_query, create_query_callback_no_return(callback));
     return send_insert_request(insert_sa_query);
 }
 
 export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
-
     var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ON DUPLICATE KEY UPDATE public_key=VALUES(public_key), metric_version=VALUES(metric_version), score=VALUES(score);';
     return send_insert_request_vals(insert_sa_query, [security_assessments.map(assesment => [assesment.public_key, `${assesment.metric_version}`, `${assesment.score}`])]);
 }
 
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
-    Logger.info("adding " + node.ports +
-        ', protocols = ' + node.protocols +
-        ' where public_key = ' + node.public_key + ';')
     if (node.protocols == "") node.protocols = "\'\'"
     if (node.ports == "") node.ports = "\'\'"
     const insert_ports_query = 'UPDATE node SET ports = ?, protocols = ? where public_key = ?;';
@@ -209,11 +202,11 @@ export function getNodeOutgoingPeers(
  */
 export function getPeersWithScores(public_key: string): Promise<PeerToSend[]> {
     const get_peers_with_scores = "SELECT " +
-                                  "end_node as public_key, metric_version, score, timestamp " +
-                                  "FROM " +
-                                  "(SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers " +
-                                  "JOIN security_assessment ON peers.end_node = security_assessment.public_key " + 
-                                  "where timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);"
+        "end_node as public_key, metric_version, score, timestamp " +
+        "FROM " +
+        "(SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers " +
+        "JOIN security_assessment ON peers.end_node = security_assessment.public_key " +
+        "where timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);"
     console.log(get_peers_with_scores);
     return send_select_request<PeerToSend>(get_peers_with_scores);
 }
@@ -301,21 +294,21 @@ export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
                     results[0].forEach((row) => {
                         validatorStatisticsTotal.push(<
                             ValidatorStatisticsTotal
-                        >{
-                            public_key: row.public_key,
-                            missed: row.missed
-                                .toString()
-                                .split(",")
-                                .map((value) => {
-                                    return Number(value);
-                                }),
-                            total: row.total
-                                .toString()
-                                .split(",")
-                                .map((value) => {
-                                    return Number(value);
-                                }),
-                        });
+                            >{
+                                public_key: row.public_key,
+                                missed: row.missed
+                                    .toString()
+                                    .split(",")
+                                    .map((value) => {
+                                        return Number(value);
+                                    }),
+                                total: row.total
+                                    .toString()
+                                    .split(",")
+                                    .map((value) => {
+                                        return Number(value);
+                                    }),
+                            });
                     });
                     //resolve(JSON.parse(JSON.stringify(validatorStatisticsTotal)));
                     resolve(validatorStatisticsTotal);
@@ -370,6 +363,20 @@ export function insertNodeValidatorConnections(cons: Map<string, Set<string>>) {
     return send_insert_request(query);
 }
 
+type validator_group_assessment = {
+    public_key: string,
+    scores: string, 
+    timestamps: string
+}
+export function getAllValidatorAssessments(): Promise<validator_group_assessment[]> {
+    let get_all_validator_assessments_query: string = "SELECT public_key, GROUP_CONCAT(score) as scores, GROUP_CONCAT(timestamp) as timestamps from validator_assessment group by public_key;";
+    return send_select_request<validator_group_assessment>(get_all_validator_assessments_query);
+}
+
+/**
+ * Deletes the connection table. This should happen before each crawl.
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function emptyConnectionTable(): Promise<void> {
     let emtpy_connection_table_query = "TRUNCATE TABLE connection;";
     return send_insert_request(emtpy_connection_table_query);

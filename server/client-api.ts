@@ -1,8 +1,7 @@
 
 import { Express, Response } from 'express'
-import { calculateEMA, calculateSMA } from './calculate_metrics';
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getNodeOutgoingPeers, getPeersWithScores, getValidatorHistoricalData } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -222,7 +221,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/validator/get-all-validators', (req, res) => {
-        Logger.info('Received request for the history of trust analysis of a validator.');
+        Logger.info('Received request for all validators\' basic information and trust score.');
 
         const public_key: string = String(req.query.public_key);
         if (public_key === null) {
@@ -231,8 +230,32 @@ export default function setupClientAPIEndpoints(app: Express) {
         }
         else {
             const duration: number = req.query.duration ? Number(req.query.duration) : 30;
-            getAllValidators(public_key, duration).then((results) => {
-                res.send(JSON.stringify(results));
+            getAllValidatorAssessments().then((results) => {
+                let latestScores = results.map((validator, idx) => {
+                    let timestamps = validator.timestamps.split(',');
+                    let scores = validator.scores.split(',');
+
+                    let ts_scores = timestamps.map((ts, i) => {
+                        return {
+                            timestamp: new Date(ts),
+                            score: scores[i]
+                        }
+                    });
+
+                    let latest = ts_scores.sort((t1, t2) => {
+                        if (t1.timestamp > t2.timestamp){
+                            return -1;
+                        }
+                        return 1;
+                    })[0];
+
+                    return {
+                        public_key: validator.public_key,
+                        score: latest.score,
+                        timestamp: latest.timestamp
+                    };
+                });
+                res.send(JSON.stringify(latestScores));
             }).catch((err) => {
                 let error_string: string = `Error in getting all validators: ${err.message}`;
                 Logger.error(error_string);
