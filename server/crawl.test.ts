@@ -1,4 +1,4 @@
-import Crawler, { normalizePublicKey } from "./crawl";
+import Crawler, { normalizePublicKey, Node } from "./crawl";
 import axios from 'axios';
 
 // save console.error and console.log to restore them after mocking them in some tests
@@ -9,10 +9,11 @@ jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>;
 
 // mock the db helper
-import { insertNode, insertConnection } from './db_connection/db_helper';
+import { insertNode, insertConnection, updateVersionUptimeAndPublisher } from './db_connection/db_helper';
 jest.mock('./db_connection/db_helper');
 const insertNodeMock = insertNode as jest.MockedFunction<typeof insertNode>;
 const insertConnectionMock = insertConnection as jest.MockedFunction<typeof insertConnection>;
+const updateVersionUptimeAndPublisherMock = updateVersionUptimeAndPublisher as jest.MockedFunction<typeof updateVersionUptimeAndPublisher>;
 
 // the logger should be mocked to test the promise rejection of insertNode() and insertConnection()
 import Logger from './logger';
@@ -147,6 +148,7 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -157,12 +159,16 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
         version: "rippled-1.7.0",
         pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
         uptime: 1234567,
-        publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+        publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+        _visited: true
     };
     expect(insertNodeMock).toHaveBeenCalledTimes(1);
     expect(insertNodeMock).toHaveBeenCalledWith(insertedNode);
 
     expect(insertConnectionMock).toHaveBeenCalledTimes(0);
+
+    // there are no visited peers that can be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(0);
 
     expect(console.log).toHaveBeenCalledTimes(2);
     // only 1 node should have been visited, because it does not have any neighbors
@@ -204,6 +210,11 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
                 publisher_lists: [{
                     pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.7.0",
+                pubkey_node: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
+                uptime: 1234567
             }
         }
     };
@@ -223,6 +234,11 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
                 publisher_lists: [{
                     pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.6.0",
+                pubkey_node: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
+                uptime: 123456
             }
         }
     };
@@ -243,6 +259,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     // call the actual code from "crawl.ts"
     await crawler.crawl();
@@ -252,7 +269,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     // insertNode() should have been called twice - once for each unique node
     expect(insertNodeMock).toHaveBeenCalledTimes(2);
 
-    const insertedNodes = [
+    const insertedNodes: Array<Node> = [
         // the initial node
         {
             ip: startingServerIP,
@@ -260,7 +277,8 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         },
         // the initial node's peer
         {
@@ -269,11 +287,28 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         }
     ];
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // the two nodes that are "visited" should have their version, uptime and publisher updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(2);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // since the connection only needs the public keys, some of the information about the ndoes will be missing
+    // so the objects need to be changed a little
+
+    // the initial node's peer
+    // when inserting a connection between it and the initial node,
+    // this node will not have been visited yet
+    insertedNodes[0]._visited =true;
+    insertedNodes[1]._visited = false;
+    insertedNodes[1].publishers = undefined;
+
 
     // there should be a connection between the initial node and its peer inserted in the database
     expect(insertConnectionMock).toHaveBeenCalledTimes(2);
@@ -322,6 +357,10 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
                 publisher_lists: [{
                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.7.0",
+                uptime: 1234567
             }
         }
     };
@@ -334,6 +373,10 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     // (that only 1 node has been visited, but both nodes have been saved)
     console.log = jest.fn();
 
+    insertNodeMock.mockResolvedValue();
+    insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
+
     await new Crawler([startingServerIP]).crawl();
 
     const insertedNodes = [
@@ -344,16 +387,19 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
             version: "rippled-1.7.0",
             pubkey: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         },
         // the initial node's peer
+        // since it has an undefined IP it cannot be visited
+        // (so _visited will be false and it will not have a publisher)
         {
             ip: undefined,
             port: DEFAULT_PEER_PORT,        // the undefined peer port should be substituted with the default peer port
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         }
     ];
 
@@ -361,6 +407,10 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     expect(insertNodeMock).toHaveBeenCalledTimes(2);
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // only the initial node should have been visited, so only it should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(1);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
 
     // a connection between the two nodes should be inserted in the database
     expect(insertConnectionMock).toHaveBeenCalledTimes(2);
@@ -417,13 +467,17 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
                 publisher_lists: [{
                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.7.0",
+                uptime: 1234567
             }
         }
     };
 
     // resolve the first axios request with the mocked startingServerResponse object,
     // and the second axios request gets the starting server's peer
-    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse);
+    axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse).mockRejectedValue(new Error("Server not responding"));
 
     // mock console.log to assert it prints extected results
     // (that only 2 nodes have been visited, and both nodes have been saved)
@@ -432,6 +486,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -443,7 +498,8 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         },
         // the initial node's peer
         {
@@ -452,7 +508,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         }
     ];
 
@@ -460,6 +516,10 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     expect(insertNodeMock).toHaveBeenCalledTimes(2);
     expect(insertNodeMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
+    // only the initial node should have been visited, so only it should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(1);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
 
     // a connection between the two nodes should be inserted in the database
     expect(insertConnectionMock).toHaveBeenCalledTimes(2);
@@ -529,6 +589,10 @@ test("test crawl() for nodes with many peers", async () => {
                 publisher_lists: [{
                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.7.0",
+                uptime: 1234567
             }
         }
     };
@@ -577,12 +641,17 @@ test("test crawl() for nodes with many peers", async () => {
                 publisher_lists: [{
                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.6.0",
+                uptime: 123456
             }
         }
     };
 
 
     // simulate a network with many interconnected nodes
+    // (actually "visit" 2 nodes: the initial node and its first peers; each axios request after that will be rejected)
     axiosMock.get.mockResolvedValueOnce(startingServerResponse).mockResolvedValueOnce(startingServerPeersResponse).mockResolvedValueOnce(startingServerPeersResponse2).mockRejectedValue(new Error("Server not responding"));
 
     // mock console.log to assert it prints extected results
@@ -590,6 +659,7 @@ test("test crawl() for nodes with many peers", async () => {
 
     insertNodeMock.mockResolvedValue();
     insertConnectionMock.mockResolvedValue();
+    updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     await new Crawler([startingServerIP]).crawl();
 
@@ -601,7 +671,8 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.7.0",
             pubkey: startingServerPublicKey,
             uptime: 1234567,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         },
         // the initial node's peer
         {
@@ -610,7 +681,8 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzE",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            publishers: ["ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"],
+            _visited: true
         },
         {
             ip: "1.0.0.0",
@@ -618,7 +690,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdf",
             uptime: 124458,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         },
         {
             ip: undefined,
@@ -626,7 +698,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFdr",
             uptime: 1234989,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         },
         {
             ip: "2.2.2.2",
@@ -634,7 +706,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.1",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzq",
             uptime: 123456,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         },
         {
             ip: "1.2.2.2",
@@ -642,7 +714,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.6.4",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd3",
             uptime: 1234984,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         },
         {
             ip: "2.3.4.7",
@@ -650,7 +722,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.4.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFd6",
             uptime: 123,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         },
         {
             ip: undefined,
@@ -658,7 +730,7 @@ test("test crawl() for nodes with many peers", async () => {
             version: "rippled-1.5.0",
             pubkey: "n9Jcqat79YaQBFmtFTo2uQMGQ8TCf6Hc8MvVfG7ZLb5mWFVmXFzm",
             uptime: 99998,
-            publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
+            _visited: false
         }
     ];
 
@@ -672,8 +744,20 @@ test("test crawl() for nodes with many peers", async () => {
     expect(insertNodeMock).toHaveBeenNthCalledWith(7, insertedNodes[6]);
     expect(insertNodeMock).toHaveBeenNthCalledWith(8, insertedNodes[7]);
 
+    // the two visited nodes should be updated
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenCalledTimes(2);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(1, insertedNodes[0]);
+    expect(updateVersionUptimeAndPublisherMock).toHaveBeenNthCalledWith(2, insertedNodes[1]);
+
     // a connection between the two nodes should be inserted in the database
+    // since a connection will be inserted before the second node is visited, it should not yet have a publisher key
+    // and _visited should be false for each peer node
     expect(insertConnectionMock).toHaveBeenCalledTimes(14);
+
+    // save the initial node's peer publisher because after this node is visited, it will have a publisher
+    const peerNodePublisher = insertedNodes[1].publishers;
+    insertedNodes[1]._visited = false;
+    insertedNodes[1].publishers = undefined;
     expect(insertConnectionMock).toHaveBeenNthCalledWith(1, insertedNodes[0], insertedNodes[1]);
     expect(insertConnectionMock).toHaveBeenNthCalledWith(2, insertedNodes[1], insertedNodes[0]);
 
@@ -683,6 +767,9 @@ test("test crawl() for nodes with many peers", async () => {
     expect(insertConnectionMock).toHaveBeenNthCalledWith(5, insertedNodes[0], insertedNodes[3]);
     expect(insertConnectionMock).toHaveBeenNthCalledWith(6, insertedNodes[3], insertedNodes[0]);
 
+    // retrieve the initial node's peer's publisher from the cache, because after it is visited and an http get request is sent to it, it will have a publisher
+    insertedNodes[1]._visited = true;
+    insertedNodes[1].publishers = peerNodePublisher;
     expect(insertConnectionMock).toHaveBeenNthCalledWith(7, insertedNodes[1], insertedNodes[4]);
     expect(insertConnectionMock).toHaveBeenNthCalledWith(8, insertedNodes[4], insertedNodes[1]);
 
@@ -742,6 +829,10 @@ test("test crawl() if the database is unresponsive", async () => {
                 publisher_lists: [{
                    pubkey_publisher: "ED2677ABFFD1B33AC6FBC3062B71F1E8397C1505E1C42C64D11AD1B28FF73F4734"
                 }]
+            },
+            server: {
+                build_version: "1.7.0",
+                uptime: 1234567
             }
         }
     };
@@ -759,6 +850,8 @@ test("test crawl() if the database is unresponsive", async () => {
 
     insertNodeMock.mockRejectedValue(new Error("Database unresponsive."));
     insertConnectionMock.mockRejectedValue(new Error("Database unresponsive."));
+    updateVersionUptimeAndPublisherMock.mockRejectedValue(new Error("Database unresponsive."));
+
     // wait for the Promises that axios returns
     await crawler.crawl();
 
@@ -771,12 +864,16 @@ test("test crawl() if the database is unresponsive", async () => {
     // the 3 different instances on insertNode() should all have been called once
     expect(insertNodeMock).toHaveBeenCalledTimes(3);
 
+    // the two visited nodes should be updated
+    expect(updateVersionUptimeAndPublisher).toHaveBeenCalledTimes(2);
+
     // the 2 instances of insertConnection() should each have been called twice
     // (the initial node should have a bidirectional connection with each of its peers)
     expect(insertConnectionMock).toHaveBeenCalledTimes(4);
-    // the logger should have been called 7 times (once for each rejected promise)
-    expect(Logger.error).toHaveBeenCalledTimes(7);
-    
+
+    // the logger should have been called 9 times (once for each rejected promise)
+    expect(Logger.error).toHaveBeenCalledTimes(9);
+
     spy.mockRestore();
     console.log = console_log;
 });

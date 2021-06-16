@@ -1,14 +1,18 @@
 {
+
     "___comment_vl": "Controls the amount of output the application gives. From 0 to 5, where 0 is no output, 5 is all the output (useful for debugging)",
     "VERBOSE_LEVEL": 2,
 
 
-    "_comment": "set useIpStack to true if you want to make an http request to ipstack to resolve the geolocation of an IP address with their API",
+    "_comment": "Set useIpStack to true if you want to make an http request to ipstack to resolve the geolocation of an IP address with their API",
     "useIPStack" : false,
 
 
-    "__comment": "access key used for the ipstack geoip lookup (TODO more info in the readme)",
+    "__comment": "Access key used for the ipstack geoip lookup (more info in the readme)",
     "accessKey": "1f7dce5f41b09991c3b932423e359995",
+
+    "_comment_": "Ripple websockets API endpoint used to fetch data for the validator nodes, like 'missed' and 'total' ledgers",
+    "validators_api_endpoint": "wss://xrpl.ws/",
 
     "__comment_Crawler_interval": "Minutes we wait before we start next network crawl. GIVEN IN MINUTES",
     "crawler_interva": 5,
@@ -81,6 +85,5 @@
 
     "_comment_decimals_": "Controls to how many decimals we will round in our calculations",
     "decimals_to_round_to": 2
-
 
 }
