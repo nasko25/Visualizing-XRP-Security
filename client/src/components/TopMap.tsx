@@ -126,7 +126,7 @@ class TopMap extends React.Component<Props, TopMapState> {
             let marker = (
                 <CircleMarker 
                     key={"circle_" + i}
-                    center={[a.longtitude, a.latitude]}
+                    center={[a.latitude, a.longtitude]}
                     color={colour}
                     fillColor={colour}
                     fillOpacity={0.5}

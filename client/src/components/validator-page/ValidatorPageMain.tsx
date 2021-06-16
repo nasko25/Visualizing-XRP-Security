@@ -11,33 +11,27 @@ export type ValidatorPageMainProps = {
     history: History;
 }
 
-export type ValidatiorInfo = {
+export type ValidatorInfo = {
     public_key: string,
-    domain: string,
-    unl: boolean,
-    agreement_score: number,
-    total_validations: number,
-    missed: number
+    score: number,
+    history: HistoricalScore[]
 }
 
 export type ValidatorPageMainStats = {
-    historical_scores: HistoricalScore[],
-    info: ValidatiorInfo
+    data: Array<any>,
+    info: ValidatorInfo
 }
 
 export default class ValidatorPageMain extends Component<ValidatorPageMainProps, ValidatorPageMainStats> {
 
     constructor(props: ValidatorPageMainProps) {
         super(props);
-        this.state = { 
-            historical_scores: [],
+        this.state = {
+            data: [], 
             info: {
-                public_key: "asnbujau418dabd1953na192n4",
-                domain: "something.com",
-                unl: true,
-                agreement_score: 0.9,
-                total_validations: 24000,
-                missed: 2000
+                public_key: "Please select a node",
+                score: 0.0,
+                history: []
             },
         }
     }
@@ -50,15 +44,31 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         var history: HistoricalScore[] = [];
 
         {/* Add requests to API for validator node info*/}
+        this.getData();
     
     }
-
-    // TODO
-    // Update setting state according to response once endpoint it implemented
     
-    updateList(public_key: string) {
-        return axios.get("http://localhost:8080/validator/info?public_key=" + public_key).then( (response) => {
-            this.setState({info: response.data});
+    /**
+     * Sends a HTTP get request to the server to get information about the validator nodes
+     * @returns A promise
+     */
+    getData() {
+        return axios.get("http://" + window.location.hostname + ":8080/validator/get-all-validators").then( (response) => {
+            this.setState({data: response.data});
+            console.log(response.data);
+        });
+    }
+
+    /**
+     * Gets the information for the selected node
+     * @param pub_key The public key of the selected node
+     * @returns The selected validator node
+     */
+    getInfo(pub_key: string) {
+        return this.state.data.filter(node => {
+            if (node.public_key === pub_key) {
+                this.setState({info: node});
+            }
         });
     }
 
@@ -90,11 +100,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
                                 data={[
                                     { name: 'Public Key', value: this.state.info.public_key },
-                                    { name: 'Domain', value: this.state.info.domain },
-                                    { name: 'UNL', value: this.state.info.unl ? "yes" : "no" },
-                                    { name: 'Agreemnet Score', value: this.state.info.agreement_score },
-                                    { name: 'Total Validations', value: this.state.info.total_validations },
-                                    { name: 'Missed', value: this.state.info.missed },
+                                    { name: 'Agreemnet Score', value: this.state.info.score },
                                 ]}
                             />
                         </Box>
@@ -103,7 +109,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                             <Box
                                 // className="scrollbar-hidden"
                                 overflow="auto"
-                                style={{ height: "50%" }}
+                                style={{ height: "80%" }}
                                 margin="2%"
                                 round="1%"
                                 background={COLORS.button}
@@ -119,22 +125,12 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                         }
                                     ]}
                                 
-                                    data={[
-                                        {
-                                            public_key: 'Key'
-                                        },
-                                        {
-                                            public_key: 'Key'
-                                        }, 
-                                        {
-                                            public_key: 'Key'
-                                        }
-                                    ]}
+                                    data={this.state.data}
                                     step={10}
                                     size='large'
                                     onClickRow={({datum}) => {
                                         console.log(datum.public_key);
-                                        // this.updateList(datum.public_key);
+                                        this.getInfo(datum.public_key);
                                     }}
                                     pad= {{
                                         horizontal: "medium",
@@ -151,7 +147,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            <HistoricalChart historical_scores={this.state.historical_scores}/>
+                            {/* <HistoricalChart historical_scores={this.state.info.history}/> */}
                         </Box>
                     </Grid>
                 </div>

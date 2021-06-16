@@ -57,7 +57,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     property: 'public_key',
                                     header: <Text><b>Public Key</b></Text>,
                                     size: '45%',
-                                    search: true,
                                     primary: true
                                 },
                                 {
@@ -103,6 +102,12 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 size: '1px',
                             }}
                             data-testid='dashboard-list'
+                            sort={
+                                {
+                                    direction: 'desc',
+                                    property: 'public_key'
+                                }
+                            }
                         />
                     </Box>
                 </Grommet>

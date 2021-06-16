@@ -1,6 +1,7 @@
 import axios from "axios";
 import EventEmitter from "events";
 import * as formulas from "./formulas"
+import Logger from "./logger";
 
 interface VersionInfo{
     index: number;
@@ -23,12 +24,14 @@ export default class SecurityMetric {
     a_quadr: number = -0.005;
     b_quadr: number = -0.2;
     c_quadr: number = 1;
-
+    
     weeks_grace_period: number = 2;
     ports_grace_number: number = 1;
 
     cutoff: number = -1000;
     decimal_to_round_to: number = 2;
+
+    verboseLevel: number = 1;
 
     listOfVersions: Map<string, VersionInfo>;
     listOfVersionsBuffer: Map<string, VersionInfo>;
@@ -60,7 +63,7 @@ export default class SecurityMetric {
         try {
             this.checkForUpdate(evntEmit);
         } catch (err) {
-            console.log("Could not update the list " + err.message)
+            if(this.verboseLevel > 0) Logger.error("Could not update the list " + err.message)
         }
     }
 
@@ -99,15 +102,16 @@ export default class SecurityMetric {
             if (res.status == 200) {
                 if (res.data && res.data.length > 0) {
 
-                    if (this.listOfVersions && this.listOfVersions.has(res.data[0].tag_name) && this.listOfVersions.get(res.data[0].tag_name)?.index==0) {
+                    if (false) {
 
                         console.log("No update needed");
                         setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
                         return;
                     } else {
                         this.latestVersion ="rippled-" + res.data[0].tag_name;
-                        console.log("update needed "+res.data[0].tag_name + " had index "+this.listOfVersions.get(res.data[0]))
+                        if(this.verboseLevel > 2)  console.log("update needed "+res.data[0].tag_name + " had index "+this.listOfVersions.get(res.data[0]))
                         var i = 0;
+                        
                         this.listOfVersionsBuffer.clear();
                         var prev: VersionInfo | undefined = undefined;
                         res.data.map((tag: any) => {
@@ -127,7 +131,7 @@ export default class SecurityMetric {
                         })
                         //this.updateListOfVersions(2, i, prev);
                         this.listOfVersions = this.listOfVersionsBuffer;
-                        console.log("finished updating")
+                        if(this.verboseLevel > 2) console.log("finished updating the list")
                         evntEmit.emit('done');
                         setTimeout(() => this.checkForUpdate(evntEmit), this.HOURS_UNTIL_NEXT_UPDATE*60*60 * 1000);
 
@@ -135,15 +139,15 @@ export default class SecurityMetric {
                     }
 
                 } else {
-                    console.log("Could not update the list. No data");
+                    if(this.verboseLevel>0) Logger.error("Could not update the list. No data");
                 }
             } else {
-                console.log("Could not update the list. Status of request: " + res.status);
+                if(this.verboseLevel>0) Logger.error("Could not update the list. Status of request: " + res.status);
             }
 
 
         }).catch((err) => {
-            console.log("Could not update the list " + err.message);
+            if(this.verboseLevel>0) Logger.error("Could not update the list " + err.message);
         });
     }
 
@@ -178,7 +182,7 @@ export default class SecurityMetric {
                 } else {
 
                     this.listOfVersions = this.listOfVersionsBuffer;
-                    console.log(this.listOfVersions);
+                    //console.log(this.listOfVersions);
                     
                     //setTimeout(() => this.checkForUpdate(evntEmi), 10 * 1000);
 
@@ -237,6 +241,10 @@ export default class SecurityMetric {
         return this;
     }
 
+    setVerboseLevel(verbosity: number){
+        this.verboseLevel = verbosity;
+        return this;
+    }
 
 }
 

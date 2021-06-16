@@ -121,8 +121,6 @@ export default class NavigationBar extends Component<NavigationBarProps>{
             </Box>
             
             {/* The Search Bar */}
-            {
-                this.props.title !== "About Page" ?
                 <Box gridArea="search"
                 alignSelf="center"
                 direction="row"
@@ -134,21 +132,11 @@ export default class NavigationBar extends Component<NavigationBarProps>{
                     onKeyPress={this.onKeyPressSearch}
                     icon={<Search />}
                     textAlign="start"
-                    placeholder="Search Public Key"
+                    placeholder="Search Stock Node Public Key"
                     id={this.searchID}
                     data-testid="search"
                 />
                 </Box>
-                :
-                <Box gridArea="search"
-                alignSelf="center"
-                direction="row"
-                justify="center"
-                background={COLORS.button}
-                margin={{ left: "4%", right: "5%" }}
-                >
-                </Box>
-            }
         </Grid>)
     }
 }

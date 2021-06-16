@@ -32,7 +32,7 @@ class PortScan {
     TIMEOUT_LONG_SCAN: string = "24h";
     TOP_PORTS = 2000;
     DO_LONG_SCAN = false;
-    VERBOSE_LEVEL = 0;
+    VERBOSE_LEVEL = 1;
     shortScanList: NodePorts[];
     nmapInterface: NmapInterface;
 
@@ -64,7 +64,7 @@ class PortScan {
         datetime.setHours(Math.floor(Math.random()*23));
         datetime.setMinutes(Math.floor(Math.random()*60));
         //datetime.setMinutes(datetime.getMinutes() + 2);
-        console.log("NEXT SCAN FOR " + datetime);
+        if(this.VERBOSE_LEVEL>0) console.log("NEXT SCAN FOR " + datetime);
         return datetime;
     }
 
@@ -73,7 +73,7 @@ class PortScan {
      */
     scheduleAShortScanver2() {
         const job = schedule.scheduleJob(this.getRandomDate(this.DAYS_BETWEEN_SHORT_SCANS), () => {
-            console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
+            if(this.VERBOSE_LEVEL>1) console.log("- - - BEGINNING  SHORT PORT  SCAN - - -");
             if(this.DO_LONG_SCAN){
                 dbCon.getNodesNonNullPort().then((result) => {
                     this.shortScanList = result;
@@ -97,7 +97,7 @@ class PortScan {
      */
     scheduleALongScan() {
         setTimeout(() =>{
-            console.log("- - - BEGINNING  LONG  PORT  SCAN - - -");
+            if(this.VERBOSE_LEVEL>1) console.log("- - - BEGINNING  LONG  PORT  SCAN - - -");
             dbCon.getNullPortNodes().then((result) => {
                 this.longScan(result).then(() => this.scheduleALongScan());
             }).catch((err: Error) => {

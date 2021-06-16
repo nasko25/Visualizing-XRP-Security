@@ -49,11 +49,11 @@ function is_key_present(key: String, res: Response): boolean {
     return false;
 }
 
-export default function setupClientAPIEndpoints(app: Express) {
+export default function setupClientAPIEndpoints(app: Express, verbosity: number) {
 
     // A mutex used when the cache is being updated
     const mutex = new Mutex();
-
+    const VERBOSE_LEVEL = verbosity;
     // A timestamp to track when the cache has to be updated if its information is requested
     var cacheExpiry: Date = new Date();
     var latestVersion: string = "rippled-1.7.0"
@@ -81,7 +81,7 @@ export default function setupClientAPIEndpoints(app: Express) {
             if (true) {
 
                 peerCache.clear();
-                Logger.info("Cache expired, updating");
+                if(VERBOSE_LEVEL>2) Logger.info("Cache expired, updating");
                 // update the expiration timestamp
                 cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2 * MINUTES_BEFORE_CACHE_EXPIRES);
 
@@ -102,7 +102,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     }
 
     app.get('/node/get-all-nodes', (req, res) => {
-        Logger.info("Received request for all nodes' geographic coordinates and basic data.");
+        if(VERBOSE_LEVEL>1) Logger.info("Received request for all nodes' geographic coordinates and basic data.");
 
         getAllNodes().then((results) => {
             res.send(JSON.stringify(results));
@@ -113,7 +113,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/node/peers', (req, res) => {
-        Logger.info('Received request for the peer connections of a node.');
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for the peer connections of a node.');
 
         let public_key: string = String(req.query.public_key);
         if (is_key_present(public_key, res)) {
@@ -154,7 +154,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/node/info', (req, res) => {
-        Logger.info('Received request for information of a node.');
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for information of a node.');
 
         const public_key: string = String(req.query.public_key);
         if (is_key_present(public_key, res)) {
@@ -191,7 +191,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/node/history', (req, res) => {
-        Logger.info('Received request for the history of security analysis of a node.');
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for the history of security analysis of a node.');
 
         let public_key: string = String(req.query.public_key);
 
@@ -224,7 +224,7 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/validator/get-all-validators', (req, res) => {
-        Logger.info('Received request for all validators\' basic information and trust score.');
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for all validators\' basic information and trust score.');
 
         const duration: number = req.query.duration ? Number(req.query.duration) : 30;
         getAllValidatorAssessments().then((results) => {
@@ -262,16 +262,19 @@ export default function setupClientAPIEndpoints(app: Express) {
     });
 
     app.get('/validator/history', (req, res) => {
-        Logger.info('Received request for a validator\'s score history.');
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for a validator\'s score history.');
 
         let public_key: string = String(req.query.public_key);
         let duration: number = Number(req.query.duration);
         if (!(duration && duration !== undefined)) {
             duration = 30;
         }
+        if(VERBOSE_LEVEL>2) console.log(public_key);
+        if(VERBOSE_LEVEL>2) console.log(duration);
         if (is_key_present(public_key, res)) {
             getValidatorHistoricalData(public_key, duration)
                 .then((results) => {
+                    if(VERBOSE_LEVEL>2) console.log(results);
                     res.send(JSON.stringify(results));
                 })
                 .catch((err) => {
