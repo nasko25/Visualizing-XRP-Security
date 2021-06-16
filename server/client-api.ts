@@ -58,7 +58,6 @@ export default function setupClientAPIEndpoints(app: Express) {
     var cacheExpiry: Date = new Date();
     var latestVersion: string = "rippled-1.7.0"
     // The cache objects: For requests for all nodes | peers of a node | information about a node
-    var nodeCacheAll: Node[] = [];
     var peerCache: Map<string, PeerToSend[]> = new Map();
     var nodeCache: Map<string, Node> = new Map();
     var historyCache: Map<string, SecurityAssessment[]> = new Map();
@@ -75,8 +74,8 @@ export default function setupClientAPIEndpoints(app: Express) {
 
     updateCache();
     process.on('message', (data) => {
-        if (data && data.toString().includes( 'rippled-')) {
-            latestVersion=data.toString();
+        if (data && data.toString().includes('rippled-')) {
+            latestVersion = data.toString();
             updateCache();
         }
     })
@@ -92,7 +91,6 @@ export default function setupClientAPIEndpoints(app: Express) {
                 cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2 * MINUTES_BEFORE_CACHE_EXPIRES);
 
                 getAllNodes().then((result) => {
-                    nodeCacheAll = result;
                     var interm = new Map<string, Node>();
 
                     for (var index in result) {
@@ -103,44 +101,19 @@ export default function setupClientAPIEndpoints(app: Express) {
                 }).catch((err: Error) => {
                     Logger.error(err.message);
                 });
-
-                // //DEBUG:
-                // var result = [{IP: "4242", rippled_version: "22", public_key: "aa", uptime: cacheExpiry.getMinutes()}];
-                // nodeCacheAll = result;
-                // var interm = new Map<string, Node>();
-
-                // for(var index in result){
-                //     interm.set(result[index].public_key, result[index]);
-                // }
-                // nodeCache.clear();
-                // nodeCache = interm;
-                // resolve(nodeCacheAll);
             }
             release();
         });
     }
 
-    // A function called when during a request the cache is expired
-    function changeCache(res: any) {
-        //THIS CODE HERE NEEDS TO BE EXAMINED
-        // mutex.acquire().then(async (release)=>{
-        //     if(cacheExpiry<new Date()){
-        //         await updateCache();
-        //     }
-
-        //     if(res!=null) res.send(JSON.stringify(nodeCacheAll));
-        //     release();
-        // });
-        if (res != null) res.send(JSON.stringify(nodeCacheAll));
-    }
-
     app.get('/node/get-all-nodes', (req, res) => {
         Logger.info("Received request for all nodes' geographic coordinates and basic data.");
-        if (cacheExpiry < new Date()) {
-            changeCache(res);
-        } else {
-            res.send(JSON.stringify(nodeCacheAll));
-        }
+
+        getAllNodes().then((results) => {
+            res.send(JSON.stringify(results));
+        }).catch((err) => {
+            res.status(400).send(err.message);
+        });
 
     });
 
@@ -150,7 +123,6 @@ export default function setupClientAPIEndpoints(app: Express) {
         let public_key: string = String(req.query.public_key);
         if (is_key_present(public_key, res)) {
             if (cacheExpiry < new Date()) {
-                changeCache(null);
                 peerCache.clear();
 
                 getPeersWithScores(public_key).then((results) => {
@@ -212,7 +184,6 @@ export default function setupClientAPIEndpoints(app: Express) {
         if (is_key_present(public_key, res)) {
             const duration: number = req.query.duration ? Number(req.query.duration) : 30;
             if (cacheExpiry < new Date()) {
-                changeCache(null);
                 historyCache.clear();
                 getHistoricalData(public_key, duration)
                     .then((results) => {
@@ -241,46 +212,39 @@ export default function setupClientAPIEndpoints(app: Express) {
     app.get('/validator/get-all-validators', (req, res) => {
         Logger.info('Received request for all validators\' basic information and trust score.');
 
-        const public_key: string = String(req.query.public_key);
-        if (public_key === null) {
-            Logger.error(ERROR_KEY_NOT_FOUND);
-            res.status(400).send(ERROR_KEY_NOT_FOUND);
-        }
-        else {
-            const duration: number = req.query.duration ? Number(req.query.duration) : 30;
-            getAllValidatorAssessments().then((results) => {
-                let latestScores = results.map((validator, idx) => {
-                    let timestamps = validator.timestamps.split(',');
-                    let scores = validator.scores.split(',');
+        const duration: number = req.query.duration ? Number(req.query.duration) : 30;
+        getAllValidatorAssessments().then((results) => {
+            let latestScores = results.map((validator, idx) => {
+                let timestamps = validator.timestamps.split(',');
+                let scores = validator.scores.split(',');
 
-                    let ts_scores = timestamps.map((ts, i) => {
-                        return {
-                            timestamp: new Date(ts),
-                            score: scores[i]
-                        }
-                    });
-
-                    let latest = ts_scores.sort((t1, t2) => {
-                        if (t1.timestamp > t2.timestamp){
-                            return -1;
-                        }
-                        return 1;
-                    })[0];
-
+                let ts_scores = timestamps.map((ts, i) => {
                     return {
-                        public_key: validator.public_key,
-                        score: latest.score,
-                        timestamp: latest.timestamp,
-                        history: ts_scores
-                    };
+                        timestamp: new Date(ts),
+                        score: scores[i]
+                    }
                 });
-                res.send(JSON.stringify(latestScores));
-            }).catch((err) => {
-                let error_string: string = `Error in getting all validators: ${err.message}`;
-                Logger.error(error_string);
-                res.status(400).send(error_string);
+
+                let latest = ts_scores.sort((t1, t2) => {
+                    if (t1.timestamp > t2.timestamp) {
+                        return -1;
+                    }
+                    return 1;
+                })[0];
+
+                return {
+                    public_key: validator.public_key,
+                    score: latest.score,
+                    timestamp: latest.timestamp,
+                    history: ts_scores
+                };
             });
-        }
+            res.send(JSON.stringify(latestScores));
+        }).catch((err) => {
+            let error_string: string = `Error in getting all validators: ${err.message}`;
+            Logger.error(error_string);
+            res.status(400).send(error_string);
+        });
     });
 
     app.get('/validator/history', (req, res) => {
@@ -288,20 +252,20 @@ export default function setupClientAPIEndpoints(app: Express) {
 
         let public_key: string = String(req.query.public_key);
         let duration: number = Number(req.query.duration);
-        if(!(duration && duration !== undefined)){
+        if (!(duration && duration !== undefined)) {
             duration = 30;
         }
         console.log(public_key);
         console.log(duration);
         if (is_key_present(public_key, res)) {
             getValidatorHistoricalData(public_key, duration)
-            .then((results) => {
-                console.log(results);
-                res.send(JSON.stringify(results));
-            })
-            .catch((err) => {
-                res.status(400).send(err.message);
-            })
+                .then((results) => {
+                    console.log(results);
+                    res.send(JSON.stringify(results));
+                })
+                .catch((err) => {
+                    res.status(400).send(err.message);
+                })
         }
     })
 
