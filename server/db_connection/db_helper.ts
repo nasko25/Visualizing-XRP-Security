@@ -176,10 +176,10 @@ export function getHistoricalData(
     duration: Number
 ): Promise<SecurityAssessment[]> {
     var get_historical_data =
-        'SELECT * FROM security_assessment WHERE public_key = "' +
+        'SELECT public_key, AVG(score) as average_score, DATE(timestamp) as date FROM security_assessment WHERE public_key = "' +
         public_key +
-        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" MINUTE);`;
-    Logger.info(get_historical_data);
+        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY) ` +
+        `GROUP BY DATE(timestamp);`;
     return send_select_request<SecurityAssessment>(get_historical_data);
 }
 
@@ -207,7 +207,6 @@ export function getPeersWithScores(public_key: string): Promise<PeerToSend[]> {
         "(SELECT end_node FROM connection WHERE start_node = \"" + public_key + "\") AS peers " +
         "JOIN security_assessment ON peers.end_node = security_assessment.public_key " +
         "where timestamp >= DATE_SUB(NOW(),INTERVAL 10 MINUTE);"
-    console.log(get_peers_with_scores);
     return send_select_request<PeerToSend>(get_peers_with_scores);
 }
 
@@ -216,7 +215,6 @@ export function getValidatorHistoricalData(
     duration: number
 ): Promise<ValidatorAssessment[]> {
     const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY);`;
-    console.log(get_validator_history);
     return send_select_request<ValidatorAssessment>(get_validator_history);
 }
 

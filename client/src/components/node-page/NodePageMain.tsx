@@ -1,8 +1,8 @@
 import React from "react";
-import { Box, DataTable, Grid, Grommet, Header, Heading, List, Menu } from 'grommet';
+import { Box, DataTable, Grid, Grommet, Header, Heading, List } from 'grommet';
 import NodePeerGraph from "./NodePeerGraph";
 import "./NodePage.css";
-import { Port, Peer, NodePageState, NodePageProps, HistoricalScore, NodeInfoDB, PeerNodeDB } from "./NodePageTypes";
+import { Port, Peer, NodePageState, NodePageProps, NodeInfoDB, PeerNodeDB } from "./NodePageTypes";
 import axios from 'axios';
 import { humanizeUptime } from '../../helper';
 import NavigationBar from "../NavigationBar";
@@ -160,6 +160,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 if (res.data.length === 0) {
                     return;
                 }
+                console.log(res);
                 var info: NodeInfoDB = res.data[0];
 
                 var ports: Port[] = this.parsePorts(info);
@@ -169,6 +170,12 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
                         ports: ports,
+                        historical_scores: info.history.map((s) => {
+                            return {
+                                score: parseFloat(s.average_score.toFixed(2)), 
+                                date: String(s.date).slice(0, 10),
+                            }
+                        })
                     });
             }).catch(this.handleAPIError);
     }
@@ -179,15 +186,14 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      * node information and one for the peers.
      */
     getNodeInfo() {
-        var history: HistoricalScore[] = [];
-        for (var i = 1; i <= 30; i++) {
-            history.push({ date: i + "-08", score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
-        }
-        this.setState({ historical_scores: history });
         this.queryAPI_node(this.state.public_key);
         this.queryAPI_peers(this.state.public_key);
     }
 
+    /**
+     * Returnts the ports and their services as a List 
+     * @returns 
+     */
     preparePortList() {
         var ports = [];
         var thisPorts = this.state.ports;
@@ -206,20 +212,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
                     data={ports}
                 >
-
                 </List>
             </Box>);
-    }
-
-    preparePortMenu() {
-
-        return <Menu
-            // icon={<More />}
-            // hoverIndicator
-            items={[{ label: 'one' }]}
-            style={{ width: "10%" }}
-        />
-
     }
 
     createNodeInformationList() {
@@ -235,16 +229,15 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         { name: 'Security score', value: this.state.trust_score },
                         { name: 'IP', value: this.state.IP },
                         { name: 'Rippled version', value: this.state.rippled_version },
-                        { name: 'Ports', value: this.preparePortList() },
                         { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
                         { name: 'Peer count', value: this.state.peers.length },
+                        { name: 'Ports', value: this.preparePortList() },
                     ]}
                 />
             </Box >);
     }
 
     createPeerList() {
-
         let dt = 
         <DataTable
             columns={[
@@ -255,7 +248,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 {
                     property: "public_key",
                     header: <b>Public Key</b>,
-                    primary: true
                 },
                 {
                     property: "timestamp",
@@ -271,8 +263,9 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 }).map((peer, idx) => {
                     return {
                         public_key: peer.public_key,
-                        score: peer.score,
-                        idx: idx + 1
+                        score: peer.score.toFixed(1),
+                        idx: idx + 1,
+                        timestamp: String(peer.timestamp).slice(0, 10)
                     }
                 })
             }
@@ -281,21 +274,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             }}>
         </DataTable>
 
-        let list = <List
-            style={{ alignSelf: "center", userSelect: 'none' }}
-            primaryKey="public_key"
-            secondaryKey="score"
-            data={this.state.peers.sort((a, b) => {
-                return b.score - a.score;
-            })}
-            border={{
-                color: 'white',
-                side: 'bottom'
-            }}
-            alignSelf="center"
-            onClickItem={(peer: any) => {
-                this.props.history.push("/node?public_key=" + peer.item.public_key);
-            }} />;
         return dt;
     }
 
@@ -339,7 +317,6 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
                             <Box
-                                // className="scrollbar-hidden"
                                 overflow="auto"
                                 style={{ height: "45%" }}
                                 margin="2%"
@@ -350,7 +327,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                         </Box>
                         {/* The historical scores chart */}
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
-                            <Heading size="100%" margin="2%">Score over Time</Heading>
+                            <Heading size="100%">Score over Time</Heading>
                             <HistoricalChart historical_scores={this.state.historical_scores} />
                         </Box>
                     </Grid>

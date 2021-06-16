@@ -48,10 +48,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
     getNodeInfo() {
         var history: HistoricalScore[] = [];
-        for (var i = 1; i <= 30; i++) {
-            history.push({ date: "2020-08-" + i, score: parseFloat(((Math.random() + 1) / 2).toFixed(3)) });
-        }
-        this.setState({ historical_scores: history });
 
         {/* Add requests to API for validator node info*/}
     
@@ -105,7 +101,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main}>
                             <Heading size="100%" margin="2%">Validator List</Heading>
                             <Box
-                                className="scrollbar-hidden"
+                                // className="scrollbar-hidden"
                                 overflow="auto"
                                 style={{ height: "50%" }}
                                 margin="2%"

@@ -133,7 +133,7 @@ export default class Dashboard extends Component<DashboardProps> {
                                 <Loader top={47}/>}
                         </Box>
                         <Box gridArea="info" background={COLORS.main} margin={{ top: "1%", left: "2%", right: "1%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='auto'>
-                            <Heading size="100%" margin="2%"> General Information </Heading>
+                            <Heading size="100%"> General Information </Heading>
                             {this.createGenInfo()}
                         </Box>
                     </Grid>

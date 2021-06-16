@@ -67,11 +67,6 @@ export default function setupClientAPIEndpoints(app: Express) {
     //     updateCache().then(() => setTimeout(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES * 60 * 1000));
     // }
 
-
-    // Initialization of the cache
-    // cacheUpdater();
-
-
     updateCache();
     process.on('message', (data) => {
         if (data && data.toString().includes('rippled-')) {
@@ -165,12 +160,31 @@ export default function setupClientAPIEndpoints(app: Express) {
         if (is_key_present(public_key, res)) {
             getNode(public_key).then((results) => {
                 if (results.length === 0) {
-                    res.status(404).send();
+                    res.status(404).send("Node not found.");
                 } else {
-                    res.send(JSON.stringify(results));
+                    getHistoricalData(public_key, 30)
+                        .then((history) => {
+                            historyCache.set(public_key, history);
+                            res.send(JSON.stringify([
+                                {
+                                    IP: results[0].IP,
+                                    latitude: results[0].latitude,
+                                    longtitude: results[0].longtitude,
+                                    ports: results[0].ports,
+                                    public_key: results[0].public_key,
+                                    publishers: results[0].publishers,
+                                    rippled_version: results[0].rippled_version,
+                                    uptime: results[0].uptime,
+                                    history: history,
+                                }
+                            ]));
+                        }).catch((err) => {
+                            Logger.error(`Error in getting historical data + ${err.message}`);
+                            res.status(400).send(err.message);
+                        });
                 }
-            }).catch((err: Error) => {
-                Logger.error(err.message);
+            }).catch((err) => {
+                Logger.error(`Error in getting node info + ${err.message}`);
                 res.status(400).send(err.message);
             });
         }
@@ -255,12 +269,9 @@ export default function setupClientAPIEndpoints(app: Express) {
         if (!(duration && duration !== undefined)) {
             duration = 30;
         }
-        console.log(public_key);
-        console.log(duration);
         if (is_key_present(public_key, res)) {
             getValidatorHistoricalData(public_key, duration)
                 .then((results) => {
-                    console.log(results);
                     res.send(JSON.stringify(results));
                 })
                 .catch((err) => {

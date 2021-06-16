@@ -42,7 +42,8 @@ export type NodeInfoDB = {
     protocols: string,
     longtitude: number,
     latitude: number,
-    timestamp: string
+    timestamp: string,
+    history: [{average_score: number, date: Date}]
 }
 
 export type Port = {
