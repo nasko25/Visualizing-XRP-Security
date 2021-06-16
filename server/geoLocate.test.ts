@@ -3,6 +3,11 @@ import config from './config/config.json';
 import { getAllNodesWithoutLocation, insertLocation } from './db_connection/db_helper';
 import geoip, { Lookup } from 'geoip-lite';
 import Logger from './logger';
+import axios, { AxiosResponse } from 'axios';
+
+// prepare axios for mocking
+jest.mock("axios", () => jest.fn());
+const axiosMock = axios as jest.MockedFunction<typeof axios>;
 
 jest.mock('geoip-lite');
 const geoipMock = geoip as jest.Mocked<typeof geoip>;
@@ -127,4 +132,29 @@ test("test getIPsFromDB()", async () => {
 
     geoLocate.getIPsFromDB();
     await getAllNodes;
+});
+
+test("test using the IP Stack HTTP API", async () => {
+    // use the IP Stack HTTP API
+    config.useIPStack = true;
+    config.accessKey = "test key";
+
+    const ip = "1.2.3.4";
+
+    const geoLocate = new GeoLocate([]);
+    // mock the axios response
+    const responseAxios = <AxiosResponse<any>> <unknown> {
+        data: {
+            latitude: 53.9095306,
+            longitude: 27.554204
+        },
+        status: 200
+    };
+
+    axiosMock.mockResolvedValueOnce(responseAxios);
+
+    const response = await geoLocate.getData(ip);
+    expect(axiosMock).toHaveBeenCalledTimes(1);
+    expect(axiosMock).toHaveBeenCalledWith({url: `http://api.ipstack.com/${ip}?access_key=${config.accessKey}`, method: "get", timeout: 8000});
+    expect(response).toEqual([responseAxios.data.latitude, responseAxios.data.longitude]);
 });
