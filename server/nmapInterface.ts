@@ -225,7 +225,7 @@ class NmapInterface{
     checkBulk(IPList: string, isIPv4: boolean, T_LEVEL: number, timeout: string) {
         var arg_ip_version = " -4";
         if (!isIPv4) arg_ip_version = " -6";
-        console.log(" checking bulk  " + IPList);
+        
         return new Promise<Node[] | null>((resolve) => {
             exec.exec(
                 "nmap " +

@@ -38,7 +38,7 @@ const normalizePublicKey = function(publicKey: string) {
 }
 
 class Crawler {
-
+    VERBOSE_LEVEL: number = 1;
     rippleStartingServers: string[]= [];
     //rippleStartingServer = "";
     // a list of all valid IPs that the user has provided in config/ripple_servers.list
@@ -67,7 +67,7 @@ class Crawler {
                 // Set starting server's url to that of the chosen one from the list
                 this.rippleStartingServers.push("https://[" + server + `]:${this.DEFAULT_PEER_PORT}/crawl`);
             } else {
-                console.log("Server \"" + server + "\" has wrong format. ");
+                if(this.VERBOSE_LEVEL>0) console.log("Server \"" + server + "\" has wrong format. ");
             }
         }
         // if the strings are empty, then the provided server config list did not have any valid servers
@@ -77,6 +77,11 @@ class Crawler {
 
     }
 
+    setVerboseLevel(verbosity: number){
+        this.VERBOSE_LEVEL = verbosity;
+        return this;
+    }
+    
     crawl(): Promise<any> {
         // Start from first node, which is chosen from the config/ripple_servers.list
         // Perform a BFS by getting peers from each node

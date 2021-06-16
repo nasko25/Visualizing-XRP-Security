@@ -16,7 +16,7 @@ class Security_Scanner {
     scan_interval: number = 10;
     security_calculator: SecurityMetric = new SecurityMetric();
     update_finished: boolean = false;
-
+    VERBOSE_LEVEL = 1;
     /**
      * Constructor
      * scan_interval - the interval during which to perform the scanning
@@ -33,23 +33,23 @@ class Security_Scanner {
      */
     run(once?: boolean) {
         // Gets all nodes
-        Logger.info("Security Scanner: Fetching nodes from database ...");
+        if(this.VERBOSE_LEVEL > 2) Logger.info("Security Scanner: Fetching nodes from database ...");
         getAllNodes()
             .then((nodes: Node[]) => {
-                Logger.info("Security Scanner: Nodes successfully fetched.");
+                if(this.VERBOSE_LEVEL > 2) Logger.info("Security Scanner: Nodes successfully fetched.");
 
                 // Makes the assessments
-                Logger.info("Security Scanner: Beginning security assessment ...");
+                if(this.VERBOSE_LEVEL > 1) Logger.info("Security Scanner: Beginning security assessment ...");
                 this.computeScoreForAllNodes(nodes).then((assessments) => {
-                    Logger.info("Security Scanner: Finished security assessment ...");
+                    if(this.VERBOSE_LEVEL > 2) Logger.info("Security Scanner: Finished security assessment ...");
 
                     // Insert into database
-                    Logger.info("Security Scanner: Storing the security assessments ...");
+                    if(this.VERBOSE_LEVEL > 2) Logger.info("Security Scanner: Storing the security assessments ...");
                     
                     assessments.forEach((assessment) => {
                         insertSecurityAssessment(assessment)
                         .catch((err) => {
-                            Logger.error(`Security Scanner: Storing failed: ${err.message}`);
+                            if(this.VERBOSE_LEVEL > 1) Logger.error(`Security Scanner: Storing failed: ${err.message}`);
                         });
                     });
                 });
@@ -58,7 +58,7 @@ class Security_Scanner {
                 Logger.error(`Security Scanner: Fetching of nodes failed: ${err.message}!`);
             })
             .finally(() => {
-                Logger.info("Scheduling 50");
+                if(this.VERBOSE_LEVEL > 1) Logger.info("COMPLETED RUN OF SECURITY");
                 (<any>process).send(this.security_calculator.latestVersion);
                 //this.schedule(once);
             });
@@ -71,7 +71,7 @@ class Security_Scanner {
                 this.run(once);
                 release();
             } else {
-                console.log("WE NEED TO START SEC CAL FIRST!")
+                //WE NEED TO START SEC CAL FIRST!
                 const finish = new EventEmitter();
                 finish.on('done', () => {
                     if (!this.update_finished) {
@@ -84,15 +84,6 @@ class Security_Scanner {
                 this.security_calculator.start(finish);
             }
         });
-    }
-
-    schedule(once?: boolean) {
-        if (!once) {
-            Logger.info(
-                `Security Scanner: Scheduling next assessment after ${this.scan_interval} minutes.`
-            );
-            setTimeout(this.run, 60 * 1000 * this.scan_interval);
-        }
     }
 
     computeScoreForAllNodes(nodes: Node[]): Promise<SecurityAssessment[]> {
@@ -114,8 +105,49 @@ class Security_Scanner {
         return {
             public_key: node.public_key,
             metric_version: 1,
-            score: Math.max(0, node.ports ? 0.6 * buff + 0.4 * this.security_calculator.rateBasedOnOpenPorts(node.ports.split(',').length) : 0.8 * buff)
+            score: Math.max(0, node.ports ? 0.6 * buff + 0.4 * this.security_calculator.rateBasedOnOpenPorts(node.ports.split(',').length) : 1 * buff)
         };
+    }
+
+    setHoursTilNextUpdate(hours: number){
+        this.security_calculator.setHoursTilNextUpdate(hours);
+        return this;
+    }
+
+    setABCPower(a?: number, b?: number, c?: number){
+        this.security_calculator.setABCPower(a,b,c)
+        return this;
+    }
+
+    setABSQuadr(a?: number, b?: number, c?: number){
+        this.security_calculator.setABSQuadr(a,b,c);
+        return this;
+    }
+
+    setWeeksGracePeriod(weeks: number){
+        this.security_calculator.setWeeksGracePeriod(weeks)
+        return this;
+    }
+
+    setPortsGraceNumber(ports: number){
+        this.security_calculator.setPortsGraceNumber(ports);
+        return this;
+    }
+
+    setCutoff(cutoff: number){
+        this.security_calculator.setCutoff(cutoff)
+        return this;
+    }
+
+    setRoundToDecimals(decimals: number){
+        this.security_calculator.setRoundToDecimals(decimals);
+        return this;
+    }
+
+    setVerboseLevel(verbosity: number){
+        this.VERBOSE_LEVEL = verbosity;
+        this.security_calculator.setVerboseLevel(verbosity);
+        return this;
     }
 }
 
