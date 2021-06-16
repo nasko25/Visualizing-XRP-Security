@@ -190,3 +190,32 @@ describe("test getData() with IP Stack HTTP API error handling", () => {
         expect(axiosMock).toHaveBeenCalledWith({url: `http://api.ipstack.com/${ip}?access_key=${config.accessKey}`, method: "get", timeout: 8000});
     });
 });
+
+test("test insertLocation() and getAllNodesWithoutLocation() rejects", async () => {
+    const ip = "1.2.3.4";
+    const geoLocate = new GeoLocate([ip]);
+
+    // if getAllNodesWithoutLocation() rejects
+    getAllNodesWithoutLocationMock.mockRejectedValueOnce(new Error("Database unresponsive")).mockResolvedValueOnce([{IP: ip}]);
+    await geoLocate.locate();
+    expect(getAllNodesWithoutLocation).toHaveBeenCalledTimes(1);
+    expect(Logger.error).toHaveBeenCalledTimes(1);
+    expect(Logger.error).toHaveBeenCalledWith("Database unresponsive");
+
+    // if insertLocation() rejects
+    insertLocationMock.mockRejectedValueOnce(new Error("Database unresponsive 2"));
+    const lookupResult = [11, 22];
+    geoipMock.lookup.mockReturnValueOnce(<Lookup> <unknown> {ll: lookupResult});
+
+    // spy on locateHelper() and ensure it is called twice
+    const spy = jest.spyOn(geoLocate, "locateHelper");
+    await geoLocate.locate();
+    expect(Logger.info).toHaveBeenCalledTimes(1);
+    expect(insertLocation).toHaveBeenCalledTimes(1);
+    expect(insertLocation).toHaveBeenCalledWith(lookupResult, ip);
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith(0);
+    expect(spy).toHaveBeenCalledWith(1);
+    expect(Logger.error).toHaveBeenCalledTimes(2)
+    expect(Logger.error).toHaveBeenCalledWith("Database unresponsive 2")
+});
