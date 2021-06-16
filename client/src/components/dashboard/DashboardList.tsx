@@ -88,7 +88,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                             step={10}
                             size='large'
                             onClickRow={({datum}) => {
-                                console.log(datum.public_key);
+                                // console.log(datum.public_key);
                                 this.props.history.push("/node?public_key=" + datum.public_key);
                             }}
                             pad= {{

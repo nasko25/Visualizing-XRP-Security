@@ -128,11 +128,11 @@ export default class Dashboard extends Component<DashboardProps> {
                             {this.state.loaded ? (<TopMap data={this.state.nodes} handleChange={this.selectNode} />) :
                                 <Loader top={45}/>}
                         </Box>
-                        <Box gridArea="table" background={COLORS.main} margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='scroll'>
+                        <Box gridArea="table" background={COLORS.main} margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='auto'>
                             {this.state.loaded ? (<DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />) :
                                 <Loader top={47}/>}
                         </Box>
-                        <Box gridArea="info" background={COLORS.main} margin={{ top: "1%", left: "2%", right: "1%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='scroll'>
+                        <Box gridArea="info" background={COLORS.main} margin={{ top: "1%", left: "2%", right: "1%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='auto'>
                             <Heading size="100%" margin="2%"> General Information </Heading>
                             {this.createGenInfo()}
                         </Box>

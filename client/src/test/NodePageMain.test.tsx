@@ -2,7 +2,7 @@ import NodePageMain from '../components/node-page/NodePageMain';
 import axios from 'axios';
 import { createBrowserHistory, History } from 'history';
 import { Peer, NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 
 //---------------SETUP AND CLEAN UP---------------//
 
@@ -37,8 +37,18 @@ const mockData = {
  * Once we update the API these should also contain a score
  */
 const mockNodePeers: PeerNodeDB[] = [
-    { end_node: "n9MGChK9EgiCBM6s15EwF9d6m4LWZHh1UnJcgr16kQr4xBpx71fS" },
-    { end_node: "n9Jy88tMgEhHocG9hZssgsYRmTz9CjCgjp3DiqzSgYqrp4BxTE11" },
+    { 
+        public_key: "n9MGChK9EgiCBM6s15EwF9d6m4LWZHh1UnJcgr16kQr4xBpx71fS",
+        metric_version: "0.1.0",
+        score: 100,
+        timestamp: new Date()
+    },
+    { 
+        public_key: "n9Jy88tMgEhHocG9hZssgsYRmTz9CjCgjp3DiqzSgYqrp4BxTE11",
+        metric_version: "0.2.0",
+        score: 50,
+        timestamp: new Date()
+    },
 ];
 
 const mockPeersData = {
@@ -196,7 +206,7 @@ test('Create peer list returns correct List element with multiple peers', async 
     const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
     
     let peers: Peer[] = mockNodePeers.map((p) => {
-         return {public_key: p.end_node, score: 1}
+         return {public_key: p.public_key, score: 1, timestamp: p.timestamp}
         }
     );
 

@@ -1,6 +1,5 @@
 import { createBrowserHistory, History } from 'history';
-import { mount, shallow } from 'enzyme';
-import { fireEvent, getAllByRole, getByRole, getByTestId, getByText } from '@testing-library/react';
+import { getAllByRole, getByTestId, getByText } from '@testing-library/react';
 import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";
 import DashboardList from '../components/dashboard/DashboardList';

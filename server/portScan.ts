@@ -109,9 +109,9 @@ class PortScan {
     //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
     normaliseIP(ip: string){
         if(ip.startsWith("::ffff:")){
-            Logger.info("haha")
+            // Logger.info("haha")
             ip=ip.substring(7);
-            console.log(ip)
+            // console.log(ip)
         }
         return ip;
     }
@@ -285,7 +285,7 @@ class PortScan {
                 success1 = true;
             }
 
-            console.log("Second scan")
+            // console.log("Second scan")
 
             var out2 = await this.nmapInterface.topPortsScan(this.normaliseIP(listOfNodes[ip].ip), this.TIMEOUT_SHORT_SCAN, this.T_LEVEL_SHORT, this.TOP_PORTS);
             //Checks if the scan succeed
@@ -318,7 +318,7 @@ class PortScan {
                     ports: outPorts,
                     protocols: outProtocols,
                 };
-                Logger.info("putting in "+outPorts+" and "+outProtocols+" for "+listOfNodes[ip].ip)
+                Logger.info("Storing ports " + outPorts + " with protocols " + outProtocols + " for IP " + listOfNodes[ip].ip)
                 dbCon.insertPorts(putin).catch((err: Error) => {
                     Logger.error(err.message);
                 });
