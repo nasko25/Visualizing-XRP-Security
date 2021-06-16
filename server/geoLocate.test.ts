@@ -134,7 +134,7 @@ test("test getIPsFromDB()", async () => {
     await getAllNodes;
 });
 
-test("test using the IP Stack HTTP API", async () => {
+test("test getData() using the IP Stack HTTP API", async () => {
     // use the IP Stack HTTP API
     config.useIPStack = true;
     config.accessKey = "test key";
@@ -157,4 +157,36 @@ test("test using the IP Stack HTTP API", async () => {
     expect(axiosMock).toHaveBeenCalledTimes(1);
     expect(axiosMock).toHaveBeenCalledWith({url: `http://api.ipstack.com/${ip}?access_key=${config.accessKey}`, method: "get", timeout: 8000});
     expect(response).toEqual([responseAxios.data.latitude, responseAxios.data.longitude]);
+});
+
+describe("test getData() with IP Stack HTTP API error handling", () => {
+    it("if the HTTP status code of the response is not 200", async () => {
+        // use the IP Stack HTTP API
+        config.useIPStack = true;
+        config.accessKey = "test key";
+
+        const ip = "1.2.3.4";
+        const geoLocate = new GeoLocate([""]);
+        // mock a 404 axios response
+        axiosMock.mockResolvedValueOnce(<AxiosResponse<any>> <unknown> {status: 404});
+
+        await expect( async () => { await geoLocate.getData(ip) } ).rejects.toThrow("response was not 200");
+        expect(axiosMock).toHaveBeenCalledTimes(1);
+        expect(axiosMock).toHaveBeenCalledWith({url: `http://api.ipstack.com/${ip}?access_key=${config.accessKey}`, method: "get", timeout: 8000});
+    });
+
+    it("if axios throws an exception", async () => {
+        // use the IP Stack HTTP API
+        config.useIPStack = true;
+        config.accessKey = "test key";
+
+        const ip = "1.2.3.4";
+        const geoLocate = new GeoLocate([""]);
+        // mock a 404 axios response
+        axiosMock.mockRejectedValueOnce(new Error("Axios exception"));
+
+        await expect( async () => {await geoLocate.getData(ip) } ).rejects.toThrow("Axios exception");
+        expect(axiosMock).toHaveBeenCalledTimes(1);
+        expect(axiosMock).toHaveBeenCalledWith({url: `http://api.ipstack.com/${ip}?access_key=${config.accessKey}`, method: "get", timeout: 8000});
+    });
 });
