@@ -164,7 +164,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                     size='large'
                                     onClickRow={({ datum }) => {
                                         console.log(datum.public_key);
-                                        // this.updateInfo(datum.public_key);
+                                        this.updateInfo(datum.public_key);
                                         this.getScore(datum.public_key);
                                     }}
                                     pad={{
