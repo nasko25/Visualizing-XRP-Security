@@ -54,7 +54,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
      * Sends a HTTP get request to the server to get information about
      * a selected validator node's trust score over the past 30 days
      * @param public_key The public key of the selected node
-     * @returns 
+     * @returns A promise
      */
     getScore(public_key: string) {
         return axios.get("http://" + window.location.hostname + ":8080/validator/history-score?public_key=" + public_key).then((response) => {
