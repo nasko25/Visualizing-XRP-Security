@@ -1,4 +1,5 @@
 import { HistoricalScore  } from "../node-page/NodePageTypes"
+import { History } from 'history';
 
 /**
  * Props passed to ValidatorPageMain

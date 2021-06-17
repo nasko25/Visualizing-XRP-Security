@@ -41,6 +41,8 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         return axios.get("http://" + window.location.hostname + ":8080/validator/get-all-validators").then((response) => {
             this.setState({ data: response.data });
             console.log(response.data);
+        }).catch((e) => {
+            console.log(e.response);
         });
     }
     

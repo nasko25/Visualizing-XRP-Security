@@ -61,8 +61,11 @@ class TopMap extends React.Component<Props, TopMapState> {
     }
 
     getColor(score: number): string {
-        let green: number = score*255;
-        let red: number = (1-score)*255;
+        let steps = 1;
+        var bif = Math.ceil((steps+2)*(Math.max(1,score))/100)-1;
+        let green = Math.min(bif*(510/(steps+1)),255);
+        let red = 255- Math.max(0,(bif-1)*(255/(2*((steps)/3)))-255);
+
         return 'rgb('+ `${red}`+ ',' + `${green}` + ',0)';
     }
 
