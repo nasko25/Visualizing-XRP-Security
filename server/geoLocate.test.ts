@@ -26,6 +26,9 @@ const getIPsFromDB = GeoLocate.prototype.getIPsFromDB;
 // this IP list is used by most tests
 const IPList = ["1.2.3.4", "8.8.8.8"];
 
+// save console.error to restore it if it is mocked
+const console_error = console.error;
+
 beforeEach(() => {
     config.useIPStack = false;
     // mock the getIPsFromDB() function because it requires a connection to the database
@@ -218,4 +221,18 @@ test("test insertLocation() and getAllNodesWithoutLocation() rejects", async () 
     expect(spy).toHaveBeenCalledWith(1);
     expect(Logger.error).toHaveBeenCalledTimes(2)
     expect(Logger.error).toHaveBeenCalledWith("Database unresponsive 2")
+});
+
+test("test getData() throwing an error", async () => {
+    const ip = "1.2.3.4";
+    const geoLocate = new GeoLocate([ip]);
+
+    console.error = jest.fn();
+    const exception = new Error("getData() exception");
+    geoLocate.getData = jest.fn().mockRejectedValueOnce(exception);
+    await geoLocate.locate();
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith("Geolocator returned an error: ", exception);
+    console.error = console_error;
 });
