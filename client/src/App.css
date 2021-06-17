@@ -149,3 +149,7 @@
 tbody {
   outline: none !important;
 }
+
+.bbIwKj:focus {
+  box-shadow: none !important;
+}
