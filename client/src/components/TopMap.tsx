@@ -4,6 +4,7 @@ import { CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } from "reac
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
 import { List } from 'grommet';
+import { History } from 'history';
 
 // TODO Define props.data type
 // Replace JSX.Element
@@ -22,11 +23,13 @@ export type Point = {
     latitude: number,
     longtitude: number,
     public_key: string,
+    score: number
 }
 
 type Props = {
     data: Point[],
-    handleChange: (pub_key: string) => void
+    handleChange: (pub_key: string) => void,
+    history: History
 }
 
 type TopMapState = {
@@ -57,6 +60,12 @@ class TopMap extends React.Component<Props, TopMapState> {
         this.props.handleChange(pub_key);
     }
 
+    getColor(score: number): string {
+        let green: number = score*255;
+        let red: number = (1-score)*255;
+        return 'rgb('+ `${red}`+ ',' + `${green}` + ',0)';
+    }
+
     onClusterClick = (a: any) => {
         var children = a.layer.getAllChildMarkers();
         // var lis = [];
@@ -68,7 +77,7 @@ class TopMap extends React.Component<Props, TopMapState> {
         }
         // var contentForCluster = <ul>{lis}</ul>
 
-        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data: any) => { this.props.handleChange(data.item.pub_key) }} style={{color:'white', overflowX: 'hidden', marginRight: '10px'}}/>
+        var contentForCluster = <List primaryKey="pub_key" data={keys} style={{color:'white', overflowX: 'hidden', marginRight: '10px'}}/>
 
         // Create the new popup
         var popup = null;
@@ -108,7 +117,7 @@ class TopMap extends React.Component<Props, TopMapState> {
             let a: Point = this.props.data[i];
             // var title  = a.title;
             var title = a.public_key;
-            var colour = "green";
+            var colour: string = this.getColor(a.score);
 
             // Nodes still don't have trust score
             // Uncomment when trust score is implemented
@@ -117,6 +126,9 @@ class TopMap extends React.Component<Props, TopMapState> {
             if (a.latitude == null || a.longtitude == null) {
                 continue;
             }
+
+            let url: string = "/node?public_key=" + a.public_key;
+
             let marker = (
                 <CircleMarker 
                     key={"circle_" + i}
@@ -132,7 +144,7 @@ class TopMap extends React.Component<Props, TopMapState> {
                     }}
                 >
                     <Popup>
-                        {title}
+                        <a href={url}>{title}</a>
                     </Popup>
                 </CircleMarker>
 

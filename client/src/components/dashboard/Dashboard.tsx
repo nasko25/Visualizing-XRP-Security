@@ -148,11 +148,12 @@ export default class Dashboard extends Component<DashboardProps, DashboardState>
                         style={{ width: '100%', height: '100%' }}
                     >
                         <Box gridArea="map" style={{ position: "relative" }}margin={{ top: "2%", left: "2%", right: "1%", bottom: "1%" }} round='1%' background={COLORS.main} justify='center' align='center'>
-                            {this.state.loaded ? (<TopMap data={this.state.nodes.map((node) => {
+                            {this.state.loaded ? (<TopMap history={this.props.history} data={this.state.nodes.map((node) => {
                                 let point: Point = {
                                     longtitude: node.longtitude,
                                     latitude: node.latitude,
-                                    public_key: node.public_key
+                                    public_key: node.public_key,
+                                    score: node.score
                                 }
                                 return point
                             })} handleChange={this.selectNode} />) :

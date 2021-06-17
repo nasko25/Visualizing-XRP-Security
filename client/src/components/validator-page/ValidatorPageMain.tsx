@@ -117,7 +117,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                 ]}
                             />
                         </Box>
-                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main} overflow='auto'>
                             <Heading size="100%" margin="2%">Validator List</Heading>
                             <Box
                                 overflow="auto"
@@ -158,7 +158,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                 />
                             </Box>
                         </Box>
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%" margin="2%">Score over Time</Heading>
                             <HistoricalChart historical_scores={this.state.info.history} />
                         </Box>

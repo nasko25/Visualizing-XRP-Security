@@ -39,7 +39,7 @@ export default class DashboardList extends Component<DashboardListProps> {
             let temp_node = this.props.arrNodesData.find(node => node.public_key === selected);
             if (temp_node !== undefined) {
                 let temp: Node[] = [temp_node];
-                let nodes_new = temp.concat(nodes.filter(n => {
+                nodes = temp.concat(nodes.filter(n => {
                     if (n.public_key !== temp[0].public_key) {
                         return n;
                     }
