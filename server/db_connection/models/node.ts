@@ -7,7 +7,8 @@ export interface Node {
     uptime: number,
     longtitude?: number,
     latitude?: number,
-    publisher: string
+    publishers: Array<string>
+    ports?: string;
 }
 
 export interface NodePorts {
@@ -24,7 +25,7 @@ export interface NodePortsNull {
 export interface NodeIpKeyPublisher {
     public_key: string,
     IP: string
-    publisher: string
+    publishers: string
 }
 
 export interface NodePortsProtocols {

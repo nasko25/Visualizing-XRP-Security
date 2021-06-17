@@ -4,37 +4,50 @@ import { Grommet, DataTable, Text, Box} from "grommet";
 import { History } from 'history';
 import { humanizeUptime } from '../../helper';
 
+/**
+ * Props passed down by parent component
+ */
 export type DashboardListProps = {
     arrNodesData: Array<any>,
     selected: string,
     history: History
 }
 
+/**
+ * A component that visualizes the list on the Stock Dashboard Page
+ * It contains a DataTable with the fields public_key, rippled_version,
+ * uptime and security_score.
+ */
 export default class DashboardList extends Component<DashboardListProps> {
-    highligth = {};
+    highlight = {};
 
-    test(){
-
-    }
-    render() {
+    /**
+     * If a node on the map has been selected then said node is higlighted in the list
+     * @returns An array containing all nodes and the selected one at the beginning
+     */
+    select() {
         let nodes = this.props.arrNodesData;
         let selected: string = this.props.selected;
 
         var jsonVariable: any = {};
         jsonVariable[selected] = {background: 'white'}
-        this.highligth = jsonVariable;
+        this.highlight = jsonVariable;
 
-        if (selected != "") {
-            let temp = [this.props.arrNodesData.find(node => node.public_key == selected)]
+        // Check if a node on the map has been selected and highlight it in the list
+        if (selected !== "") {
+            let temp = [this.props.arrNodesData.find(node => node.public_key === selected)]
             nodes = temp.concat(nodes.filter(n => {
-                if (n.public_key != temp[0].public_key) {
+                if (n.public_key !== temp[0].public_key) {
                     return n;
                 }
             }));
         }
+        return nodes;
+    }
 
+    render() {
+        let nodes = this.select();
         return (
-
             <div className='table-outer'>
                 <Grommet style={{color: 'white', height: '100%', maxWidth: '100%'}}>
                     <Box style={{height: '100%', width: '100%'}}>
@@ -60,31 +73,20 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     sortable: true
                                 },
                                 {
-                                    property: 'securityScore',
+                                    property: 'security_score',
                                     header: <Text><b>Security Score</b></Text>,
                                     size: '10%',
                                     align: 'start'
                                 }
                             ]}
-                            // data={this.props.arrNodesData.filter(node => {
-                            //     if (this.props.selected == "") {
-                            //         return node;
-                            //     } else {
-                            //         if (node.public_key == this.props.selected) {
-                            //             return node;
-                            //         }
-                            //     }
-                            // })}
-                        
                             data={nodes.map(node => ({
                                 public_key: node.public_key,
                                 rippled_version: node.rippled_version,
                                 uptime: humanizeUptime(node.uptime),
-                                securityScore: node.trustScore
+                                security_score: node.trust_score
                             }))}
                             step={10}
                             size='large'
-                            // onSearch={this.highlightInList}
                             onClickRow={({datum}) => {
                                 console.log(datum.public_key);
                                 this.props.history.push("/node?public_key=" + datum.public_key);
@@ -93,18 +95,14 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 horizontal: "medium",
                                 vertical: "xsmall"
                             }}
-                            style={{scrollbarWidth: 'none', height: '100%'}}
-                            // background={{
-                            //     "body": ["#383838", "rgb(38,38,38)"]
-                            //     }
-                            //   }
-                            // sort={({property: 'uptime', direction: 'desc'})}
-                            rowProps= { this.highligth }
+                            style={{scrollbarWidth: 'none', height: '100%', userSelect: 'none'}}
+                            rowProps= { this.highlight }
                             border={{
                                 color: 'white',
                                 side: 'bottom',
                                 size: '1px',
                             }}
+                            data-testid='dashboard-list'
                         />
                     </Box>
                 </Grommet>

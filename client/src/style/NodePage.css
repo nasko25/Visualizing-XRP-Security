@@ -1,0 +1,11 @@
+a {
+    font-size: larger;
+    font-weight: bold;
+    color: rgb(200, 200, 200);
+    text-decoration: none;
+}
+
+a:hover {
+    color: white;
+    text-decoration: underline;
+}

@@ -54,50 +54,66 @@ export default function setupClientAPIEndpoints(app: Express) {
     var nodeCacheAll: Node[] = [];
     var peerCache: Map<string, Connection[]> = new Map();
     var nodeCache: Map<string, Node> = new Map();
-
+   
     // A function that independently updates the cache periodically once per a longer period
-    async function cacheUpdater() {
-        updateCache().then(() => setTimeout(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES * 60 * 1000));
-    }
+    // async function cacheUpdater() {
+    //     updateCache().then(() => setTimeout(cacheUpdater, MINUTES_BEFORE_CACHE_EXPIRES * 60 * 1000));
+    // }
 
 
     // Initialization of the cache
-    cacheUpdater();
+    // cacheUpdater();
 
+
+    updateCache();
+    process.on('message', (data) => {
+        if (data && data == 'upd') {
+            updateCache();
+        }
+    })
+ 
     async function updateCache() {
-        return new Promise(resolve => {
-            peerCache.clear();
-            Logger.info("Cache expired, updating");
-            // update the expiration timestamp
-            cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2 * MINUTES_BEFORE_CACHE_EXPIRES);
+        if(mutex.isLocked()) return;
+        mutex.acquire().then(async (release) => {
+            if (true) {
 
-            getAllNodes().then((result) => {
-                nodeCacheAll = result;
-                var interm = new Map<string, Node>();
+                peerCache.clear();
+                Logger.info("Cache expired, updating");
+                // update the expiration timestamp
+                cacheExpiry.setMinutes(cacheExpiry.getMinutes() + 2 * MINUTES_BEFORE_CACHE_EXPIRES);
 
-                for (var index in result) {
-                    interm.set(result[index].public_key, result[index]);
-                }
-                nodeCache.clear();
-                nodeCache = interm;
-                resolve(nodeCacheAll);
-            }).catch((err: Error) => {
-                Logger.error(err.message);
-                //res.status(400).send(err.message);
-            });
+                getAllNodes().then((result) => {
+                    nodeCacheAll = result;
+                    var interm = new Map<string, Node>();
 
-            // //DEBUG:
-            // var result = [{IP: "4242", rippled_version: "22", public_key: "aa", uptime: cacheExpiry.getMinutes()}];
-            // nodeCacheAll = result;
-            // var interm = new Map<string, Node>();
+                    for (var index in result) {
+                        interm.set(result[index].public_key, result[index]);
+                    }
+                    nodeCache.clear();
+                    nodeCache = interm;
 
-            // for(var index in result){
-            //     interm.set(result[index].public_key, result[index]);
-            // }
-            // nodeCache.clear();
-            // nodeCache = interm;
-            // resolve(nodeCacheAll);
+                }).catch((err: Error) => {
+                    Logger.error(err.message);
+                    //res.status(400).send(err.message);
+                });
+
+                // //DEBUG:
+                // var result = [{IP: "4242", rippled_version: "22", public_key: "aa", uptime: cacheExpiry.getMinutes()}];
+                // nodeCacheAll = result;
+                // var interm = new Map<string, Node>();
+
+                // for(var index in result){
+                //     interm.set(result[index].public_key, result[index]);
+                // }
+                // nodeCache.clear();
+                // nodeCache = interm;
+                // resolve(nodeCacheAll);
+
+
+            }
+            release();
         });
+
 
     }
 
@@ -215,8 +231,8 @@ export default function setupClientAPIEndpoints(app: Express) {
                     res.send(JSON.stringify(peerCache.get(public_key)))
                 } else {
                     getNodeOutgoingPeers(public_key).then((results) => {
-                    peerCache.set(public_key, results);
-                    res.send(JSON.stringify(results));
+                        peerCache.set(public_key, results);
+                        res.send(JSON.stringify(results));
                     });
                 }
             }
@@ -271,7 +287,7 @@ export default function setupClientAPIEndpoints(app: Express) {
         const public_key: string = String(req.query.public_key);
         if (is_key_present(public_key, res)) {
             getNode(public_key).then((results) => {
-                if(results.length === 0){
+                if (results.length === 0) {
                     res.status(404).send();
                 } else {
                     res.send(JSON.stringify(results));

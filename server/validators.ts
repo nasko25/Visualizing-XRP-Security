@@ -6,6 +6,7 @@ import {
     insertNodeValidatorConnections,
     insertValidators,
 } from "./db_connection/db_helper";
+import { encodeNodePublic } from 'ripple-address-codec';
 import { NodeIpKeyPublisher } from "./db_connection/models/node";
 import https from "https";
 
@@ -18,7 +19,7 @@ import https from "https";
 export interface Validator_List_Result {
     manifest: string;
     blob: string;
-    public_key: string;
+    validation_public_key: string;
     signature: string;
     version: number;
 }
@@ -31,12 +32,13 @@ export interface Validator_List_Result {
 export interface Validator_Data {
     sequence: number;
     expiration: number;
-    validators: Validator[];
+    validators: { validation_public_key: string }[];
 }
 
 export interface Validator {
-    validation_public_key: string;
-    manifest: string;
+    public_key: string,
+    unl?: boolean,
+    missed_ledgers?: number
 }
 
 const agent = new https.Agent({
@@ -44,12 +46,12 @@ const agent = new https.Agent({
 });
 
 export default class ValidatorIdentifier {
-    validators: Map<string, null> = new Map();
-    node_validators: Map<string, string[]> = new Map();
+    validators_set: Set<string> = new Set();
+    node_validators: Map<string, Set<string>> = new Map();
     validatorBatchCount: number = 10;
-    
+
     constructor(validatorBatchCount?: number) {
-        
+
         if(validatorBatchCount) {
             this.validatorBatchCount = validatorBatchCount;
         }
@@ -77,26 +79,27 @@ export default class ValidatorIdentifier {
             return;
         }
 
-        let splice = nodes.splice(0, this.validatorBatchCount);
-
         Logger.info(
             "VI: Checking batch from a total of " + nodes.length + " nodes ..."
         );
 
-        axios
+        let splice = nodes.splice(0, this.validatorBatchCount);
+
+
+        Promise
             .all(
                 // Create an array of Promise objects for all requests
                 splice.map((node) =>
                     this.get_node_validator_list(
                         node.IP,
-                        node.publisher,
+                        node.publishers,
                         node.public_key
                     )
                 )
             )
             .then(
                 // Response is an array of tuples (node_key, val_keys)
-                axios.spread((...res) => {
+                (res) => {
                     // Add the validator keys to the main Validators Map
                     // Add the validator keys to the Node -> Validators Map
                     Logger.info("VI: Adding validator keys to maps ...");
@@ -105,11 +108,20 @@ export default class ValidatorIdentifier {
                         let key: string = tuple[0];
                         let vals: string[] = tuple[1];
 
-                        if (vals.length > 1)
-                            this.node_validators.set(key, vals);
+                        if (vals.length > 1) {
+                            let prev = this.node_validators.get(key);
+                            if (prev === undefined) {
+                                prev = new Set();
+                            }
+                            vals.forEach(val => prev?.add(val));
+
+                            this.node_validators.set(key, prev);
+                        }
+
+                        // console.log("vals length: " + vals.length);
 
                         vals.forEach((valKey) => {
-                            this.validators.set(valKey, null);
+                            this.validators_set.add(valKey);
                         });
                     });
 
@@ -118,7 +130,7 @@ export default class ValidatorIdentifier {
                     );
 
                     // Put in database
-                    insertValidators(this.validators)
+                    insertValidators(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}))
                         .then(() => {
                             Logger.info(
                                 "VI: Validators inserted successfully!"
@@ -136,7 +148,7 @@ export default class ValidatorIdentifier {
                                     );
                                 })
                                 .finally(() => {
-                                    this.validators.clear();
+                                    this.validators_set.clear();
                                     this.node_validators.clear();
                                     this.identify_validators_for_batch(nodes);
                                 });
@@ -146,11 +158,11 @@ export default class ValidatorIdentifier {
                                 "VI: Could not insert validators into database: " +
                                     err.message
                             );
-                            this.validators.clear();
+                            this.validators_set.clear();
                             this.node_validators.clear();
                             this.identify_validators_for_batch(nodes);
                         });
-                })
+                }
             )
             .catch((error: Error) => {
                 Logger.error("VI: Batch checking failed: " + error.message);
@@ -188,6 +200,6 @@ export default class ValidatorIdentifier {
         let decoded: Validator_Data = JSON.parse(decode(valData.blob));
 
         // Extract the list of validator keys
-        return decoded.validators.map((val) => val.validation_public_key);
+        return decoded.validators.map((val) => encodeNodePublic(Buffer.from(val.validation_public_key, "hex")));
     }
 }
