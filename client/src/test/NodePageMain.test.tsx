@@ -218,8 +218,6 @@ test('Create peer list returns correct List element with multiple peers', async 
     expect(setStateSpy).toHaveBeenCalledTimes(1);
     expect(node_page.state.peers).toHaveLength(2);
     expect(list.props.data).toHaveLength(peers.length);
-    // expect(list.props.data).toContain(peers[0]);
-    // expect(list.props.data).toContain(peers[1]);
     
     expect(list.props.data[0].public_key).toEqual(peers[0].public_key);
     expect(list.props.data[0].idx).toEqual(1);

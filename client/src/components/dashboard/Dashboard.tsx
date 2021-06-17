@@ -1,5 +1,4 @@
 import { Component } from "react";
-// import DashboardNavbar from "../DashboardNavbar";
 import DashboardList from "./DashboardList";
 import TopMap from "../TopMap";
 import axios from 'axios';
@@ -35,14 +34,6 @@ export type DashboardState = {
 export default class Dashboard extends Component<DashboardProps, DashboardState> {
 
     timer = undefined;
-    /**
-     * Local state
-     */
-    // state = {
-    //     nodes: [],
-    //     selected: "",
-    //     loaded: false,
-    // }
 
     constructor(props: any) {
         super(props);
@@ -103,6 +94,10 @@ export default class Dashboard extends Component<DashboardProps, DashboardState>
         setTimeout(this.refresh_data, 300000);
     }
 
+    /**
+     * Calculates the average security score of the network
+     * @returns The average security score
+     */
     getAverageSecurity() {
         let avg: number = 0;
         console.log("L : " + this.state.nodes.length)

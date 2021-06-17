@@ -1,39 +1,11 @@
-import { Grommet, Header, Grid, Box, Heading, DataChart, DataTable, List, Text } from "grommet";
+import { Grommet, Header, Grid, Box, Heading, DataTable, List, Text } from "grommet";
 import { Component } from "react";
 import NavigationBar from "../NavigationBar";
-import { History } from 'history';
 import { HistoricalScore } from './../node-page/NodePageTypes';
 import axios from 'axios';
 import { SETUP, COLORS } from "../../style/constants";
 import HistoricalChart from "../HistoricalChart";
-
-export type ValidatorPageMainProps = {
-    history: History;
-}
-
-export type ValidatorInfo = {
-    public_key: string,
-    score: number,
-    history: HistoricalScore[]
-}
-
-export type Validator = {
-    history: ValidatorHistory[],
-    public_key: string,
-    score: string,
-    timestamp: string
-}
-
-export type ValidatorHistory = {
-    timestamp: string,
-    score: number
-}
-
-export type ValidatorPageMainStats = {
-    data: Validator[],
-    info: ValidatorInfo,
-    selected: string
-}
+import { Validator, ValidatorPageMainProps, ValidatorPageMainStats } from "./ValidatorPageTypes";
 
 export default class ValidatorPageMain extends Component<ValidatorPageMainProps, ValidatorPageMainStats> {
 
@@ -53,21 +25,13 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         }
     }
 
+    /**
+     * Fetch all the needed information  from the server,
+     * once the component has mounted.
+     */
     componentDidMount() {
         this.getData();
     }
-
-    // componentDidUpdate(prevProps: ValidatorPageMainProps, prevState: ValidatorPageMainStats, some: any) {
-    //     this.chart(this.state.selected);
-    // }
-
-    // getNodeInfo() {
-    //     var history: HistoricalScore[] = [];
-
-    //     {/* Add requests to API for validator node info*/}
-    //     this.getData();
-
-    // }
 
     /**
      * Sends a HTTP get request to the server to get information about the validator nodes
@@ -79,86 +43,13 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
             console.log(response.data);
         });
     }
-
+    
     /**
      * Gets the information for the selected node
      * @param pub_key The public key of the selected node
-     * @returns The selected validator node
      */
-    getInfo(pub_key: string): Validator[] {
-        // let h: HistoricalScore[] | null = null;
-        // for (let node of this.state.data) {
-        //     if (node.public_key === pub_key) {
-        //         console.log("PUBLIC KEY FOUND");
-        //         console.log(node);
-
-        //         let h: HistoricalScore[] = node.history.map((h) => {
-        //             let n: HistoricalScore = {
-        //                 score: parseFloat(h.score.toFixed(2)),
-        //                 date: String(h.timestamp).slice(0, 10),
-        //             }
-        //             return n;
-        //         });
-
-        //         this.setState({info: {
-        //             public_key: node.public_key,
-        //             score: parseFloat(parseFloat(node.score).toFixed(2)),
-        //             history: h
-        //         }});
-
-        //         break;
-        //     }
-        // }
-
-        // return h;
-
-        return this.state.data.filter(node => {
-            if (node.public_key === pub_key) {
-                console.log("PUBLIC KEY FOUND");
-                console.log(node);
-
-                let h = node.history.map((h) => {
-                    let n: HistoricalScore = {
-                        score: parseFloat(h.score.toFixed(2)),
-                        date: String(h.timestamp).slice(0, 10),
-                    }
-                    return n;
-                });
-
-                this.setState({
-                    info: {
-                        public_key: node.public_key,
-                        score: parseFloat(parseFloat(node.score).toFixed(2)),
-                        history: h
-                    }
-                });
-
-                return node;
-            }
-        });
-        // console.log(this.state.info);
-    }
-
-    chart(pub_key: string): HistoricalScore[] {
-
-        let v: Validator = this.getInfo(pub_key)[0];
-        let h: HistoricalScore[] = v.history.map((h) => {
-            let n: HistoricalScore = {
-                score: parseFloat(h.score.toFixed(2)),
-                date: String(h.timestamp).slice(0, 10),
-            }
-            return n;
-        });
-        // console.log("HERE")
-        // console.log(this.state.info)
-        return h;
-    }
-
     updateInfo(pub_key: string) {
         let node: Validator = this.state.data.filter(node => node.public_key === pub_key)[0]
-
-        console.log("PUBLIC KEY FOUND");
-        console.log(node);
 
         let history = node.history.map((h) => {
             let n: HistoricalScore = {
@@ -167,9 +58,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
             }
             return n;
         });
-
-        console.log("HISTORY")
-        console.log(history)
 
         if (history !== undefined) {
             console.log("History is not undefined");
@@ -195,9 +83,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                 }
             });
         }
-
-        return node;
-
     }
 
     render() {
@@ -235,7 +120,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main}>
                             <Heading size="100%" margin="2%">Validator List</Heading>
                             <Box
-                                // className="scrollbar-hidden"
                                 overflow="auto"
                                 style={{ height: "80%" }}
                                 margin="2%"
@@ -260,7 +144,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                     onClickRow={({ datum }) => {
                                         console.log(datum.public_key);
                                         this.updateInfo(datum.public_key);
-                                        // this.setState({selected: datum.public_key});
                                     }}
                                     pad={{
                                         horizontal: "medium",
@@ -277,7 +160,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {/* <HistoricalChart historical_scores={this.chart(this.state.selected)}/> */}
                             <HistoricalChart historical_scores={this.state.info.history} />
                         </Box>
                     </Grid>
