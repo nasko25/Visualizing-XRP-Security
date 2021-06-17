@@ -22,9 +22,8 @@ services:
       - "3318:3306"
     volumes:
       - ./db/mysql/init/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./db/mysql/storage:/var/lib/mysql
   server:
-    restart: always
+    #restart: always
     container_name: 'server'
     build: server
     ports:
