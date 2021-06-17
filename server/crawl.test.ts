@@ -99,7 +99,7 @@ test("test crawl() with only unresponsive starting servers", async () => {
     const spy = jest.spyOn(crawler, "crawl");
 
     // wait for the Promises that axios returns
-    await crawler.crawl();
+    await crawler.setVerboseLevel(10).crawl();
 
     // crawler.crawl() should have been called 4 times (3 for each of the IP addresses
     // and 1 time with an empty list of IPs before throwing an exception)
@@ -150,7 +150,7 @@ test("test crawl() with 1 responsive starting server that has no peers", async (
     insertConnectionMock.mockResolvedValue();
     updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
-    await new Crawler([startingServerIP]).crawl();
+    await new Crawler([startingServerIP]).setVerboseLevel(10).crawl();
 
     // assert that insertNode() was called with the expected Node object
     const insertedNode = {
@@ -262,7 +262,7 @@ test("test crawl() with 1 starting server that has 1 peer with 1 peer (cyclic co
     updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
     // call the actual code from "crawl.ts"
-    await crawler.crawl();
+    await crawler.setVerboseLevel(10).crawl();
 
     // crawler.crawl() should have been called only once
     expect(spy).toHaveBeenCalledTimes(1);
@@ -377,7 +377,7 @@ test("test crawl() with 1 starting server and 1 peer with undefined IP and port"
     insertConnectionMock.mockResolvedValue();
     updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
-    await new Crawler([startingServerIP]).crawl();
+    await new Crawler([startingServerIP]).setVerboseLevel(10).crawl();
 
     const insertedNodes = [
         // the initial node
@@ -488,7 +488,7 @@ test("test crawl() should not overwrite a known IP address to undefined", async 
     insertConnectionMock.mockResolvedValue();
     updateVersionUptimeAndPublisherMock.mockResolvedValue();
 
-    await new Crawler([startingServerIP]).crawl();
+    await new Crawler([startingServerIP]).setVerboseLevel(10).crawl();
 
     const insertedNodes = [
         // the initial node
@@ -853,7 +853,7 @@ test("test crawl() if the database is unresponsive", async () => {
     updateVersionUptimeAndPublisherMock.mockRejectedValue(new Error("Database unresponsive."));
 
     // wait for the Promises that axios returns
-    await crawler.crawl();
+    await crawler.setVerboseLevel(10).crawl();
 
     // crawler.crawl() should have been called 1 time (because the insertNode() and insertConnection() functions should catch their own exceptions)
     expect(spy).toHaveBeenCalledTimes(1);

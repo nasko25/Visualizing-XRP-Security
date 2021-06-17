@@ -1,5 +1,4 @@
 import { createBrowserHistory, History } from 'history';
-import React from "react";
 import { getByTestId } from '@testing-library/react';
 import { render, unmountComponentAtNode } from "react-dom";
 import { act } from "react-dom/test-utils";

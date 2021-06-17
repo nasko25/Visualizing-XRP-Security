@@ -1,5 +1,4 @@
 import { Component } from "react";
-// import DashboardNavbar from "../DashboardNavbar";
 import DashboardList from "./DashboardList";
 import TopMap from "../TopMap";
 import axios from 'axios';
@@ -8,25 +7,33 @@ import { History } from 'history';
 import { COLORS, SETUP } from '../../style/constants';
 import Loader from "../Loader";
 import NavigationBar from "../NavigationBar";
+import { Point } from '../TopMap';
 
 export type DashboardProps = {
     history: History
 }
 
+export type Node = {
+    rippled_version: string,
+    public_key: string,
+    uptime: number,
+    longtitude: number,
+    latitude: number,
+    score: number
+}
+
+export type DashboardState = {
+    nodes: Node[],
+    selected: string,
+    loaded: boolean
+}
+
 /**
  * A component that displays the Stock Node Dashboard
  */
-export default class Dashboard extends Component<DashboardProps> {
+export default class Dashboard extends Component<DashboardProps, DashboardState> {
 
     timer = undefined;
-    /**
-     * Local state
-     */
-    state = {
-        nodes: [],
-        selected: "",
-        loaded: false,
-    }
 
     constructor(props: any) {
         super(props);
@@ -67,7 +74,7 @@ export default class Dashboard extends Component<DashboardProps> {
      * @returns An array with the nodes given by the http response
      */
     getData() {
-        return axios.get("http://" + window.location.hostname + ":8080/node/get-all-nodes").then(response => {
+        return axios.get("http://" + window.location.hostname + ":8080/node/get-all-nodes-and-score").then(response => {
             console.log(response.data);
             this.setState({ nodes: response.data });
         }).then(response => {
@@ -88,6 +95,22 @@ export default class Dashboard extends Component<DashboardProps> {
     }
 
     /**
+     * Calculates the average security score of the network
+     * @returns The average security score
+     */
+    getAverageSecurity() {
+        let avg: number = 0;
+        console.log("L : " + this.state.nodes.length)
+        for (let i=0; i<this.state.nodes.length; i++) {
+            avg+= parseFloat(`${this.state.nodes[i].score}`);
+        }
+
+        avg = avg/this.state.nodes.length;
+
+        return avg.toFixed(2);
+    }
+
+    /**
      * Creates the list containing general information regarding the network
      * @returns The list
      */
@@ -100,6 +123,9 @@ export default class Dashboard extends Component<DashboardProps> {
 
             data={[
                 { name: 'Nodes', value: this.state.nodes.length },
+                { name: 'Average security score', value: this.getAverageSecurity()},
+                { name: 'Average trust score', value: "0"},
+                { name: 'Latest version', value: "1.7.2"}
             ]}
         />
     }
@@ -122,15 +148,23 @@ export default class Dashboard extends Component<DashboardProps> {
                         style={{ width: '100%', height: '100%' }}
                     >
                         <Box gridArea="map" style={{ position: "relative" }}margin={{ top: "2%", left: "2%", right: "1%", bottom: "1%" }} round='1%' background={COLORS.main} justify='center' align='center'>
-                            {this.state.loaded ? (<TopMap data={this.state.nodes} handleChange={this.selectNode} />) :
+                            {this.state.loaded ? (<TopMap history={this.props.history} data={this.state.nodes.map((node) => {
+                                let point: Point = {
+                                    longtitude: node.longtitude,
+                                    latitude: node.latitude,
+                                    public_key: node.public_key,
+                                    score: node.score
+                                }
+                                return point
+                            })} handleChange={this.selectNode} />) :
                                 <Loader top={45}/>}
                         </Box>
-                        <Box gridArea="table" background={COLORS.main} margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} round='1%' justify='center' align='center'>
+                        <Box gridArea="table" background={COLORS.main} margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='auto'>
                             {this.state.loaded ? (<DashboardList arrNodesData={this.state.nodes} selected={this.state.selected} history={this.props.history} />) :
                                 <Loader top={47}/>}
                         </Box>
-                        <Box gridArea="info" background={COLORS.main} margin={{ top: "1%", left: "2%", right: "1%", bottom: "1%" }} round='1%' justify='center' align='center'>
-                            <Heading size="100%" margin="2%"> General Information </Heading>
+                        <Box gridArea="info" background={COLORS.main} margin={{ top: "1%", left: "2%", right: "1%", bottom: "1%" }} round='1%' justify='center' align='center' overflow='auto'>
+                            <Heading size="100%"> General Information </Heading>
                             {this.createGenInfo()}
                         </Box>
                     </Grid>

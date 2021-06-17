@@ -3,12 +3,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import { Grommet, DataTable, Text, Box} from "grommet";
 import { History } from 'history';
 import { humanizeUptime } from '../../helper';
+import { Node } from './Dashboard';
 
 /**
  * Props passed down by parent component
  */
 export type DashboardListProps = {
-    arrNodesData: Array<any>,
+    arrNodesData: Node[],
     selected: string,
     history: History
 }
@@ -35,12 +36,15 @@ export default class DashboardList extends Component<DashboardListProps> {
 
         // Check if a node on the map has been selected and highlight it in the list
         if (selected !== "") {
-            let temp = [this.props.arrNodesData.find(node => node.public_key === selected)]
-            nodes = temp.concat(nodes.filter(n => {
-                if (n.public_key !== temp[0].public_key) {
-                    return n;
-                }
-            }));
+            let temp_node = this.props.arrNodesData.find(node => node.public_key === selected);
+            if (temp_node !== undefined) {
+                let temp: Node[] = [temp_node];
+                nodes = temp.concat(nodes.filter(n => {
+                    if (n.public_key !== temp[0].public_key) {
+                        return n;
+                    }
+                }));
+            }
         }
         return nodes;
     }
@@ -57,7 +61,6 @@ export default class DashboardList extends Component<DashboardListProps> {
                                     property: 'public_key',
                                     header: <Text><b>Public Key</b></Text>,
                                     size: '45%',
-                                    search: true,
                                     primary: true
                                 },
                                 {
@@ -68,14 +71,14 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 {
                                     property: 'uptime',
                                     header: <Text><b>Uptime</b></Text>,
-                                    size: '15%',
+                                    size: '25%',
                                     align: 'start',
                                     sortable: true
                                 },
                                 {
                                     property: 'security_score',
                                     header: <Text><b>Security Score</b></Text>,
-                                    size: '10%',
+                                    size: '15%',
                                     align: 'start'
                                 }
                             ]}
@@ -83,12 +86,11 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 public_key: node.public_key,
                                 rippled_version: node.rippled_version,
                                 uptime: humanizeUptime(node.uptime),
-                                security_score: node.trust_score
+                                security_score: parseFloat(`${node.score}`).toFixed(2)
                             }))}
                             step={10}
                             size='large'
                             onClickRow={({datum}) => {
-                                console.log(datum.public_key);
                                 this.props.history.push("/node?public_key=" + datum.public_key);
                             }}
                             pad= {{
@@ -103,6 +105,12 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 size: '1px',
                             }}
                             data-testid='dashboard-list'
+                            sort={
+                                {
+                                    direction: 'desc',
+                                    property: 'public_key'
+                                }
+                            }
                         />
                     </Box>
                 </Grommet>

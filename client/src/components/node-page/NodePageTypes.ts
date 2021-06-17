@@ -42,7 +42,8 @@ export type NodeInfoDB = {
     protocols: string,
     longtitude: number,
     latitude: number,
-    timestamp: string
+    timestamp: string,
+    history: [{average_score: number, date: Date}]
 }
 
 export type Port = {
@@ -53,7 +54,8 @@ export type Port = {
 
 export type Peer = {
     public_key: string,
-    score: number
+    score: number,
+    timestamp: Date
 }
 
 export type HistoricalScore = {
@@ -62,5 +64,8 @@ export type HistoricalScore = {
 }
 
 export type PeerNodeDB = {
-    end_node: string
+    public_key: string,
+    metric_version: string,
+    score: number,
+    timestamp: Date
 }
