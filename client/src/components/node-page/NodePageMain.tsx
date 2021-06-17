@@ -263,7 +263,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 }).map((peer, idx) => {
                     return {
                         public_key: peer.public_key,
-                        score: peer.score.toFixed(1),
+                        score: parseFloat(peer.score.toFixed(1)),
                         idx: idx + 1,
                         timestamp: String(peer.timestamp).slice(0, 10)
                     }
