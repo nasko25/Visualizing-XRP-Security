@@ -38,11 +38,11 @@ export class ValidatorMonitor {
 
     constructor(eventEmitter: EventEmitter) {
         this.eventEmitter = eventEmitter;
-        this.subsribeToAPI();
+        this.subscribeToAPI();
         this.schedule();
     }
 
-    async subsribeToAPI() {
+    async subscribeToAPI() {
 
         const api = new RippleAPI({
           server: ripple3_node
@@ -50,6 +50,9 @@ export class ValidatorMonitor {
 
         api.on('error', (errorCode: string, errorMessage: string) => {
             Logger.error(errorCode + ': ' + errorMessage);
+
+            api.removeAllListeners();
+            this.subscribeToAPI();
         });
 
         api.on('connected', () => {
@@ -58,7 +61,11 @@ export class ValidatorMonitor {
 
         api.on('disconnected', (code: number) => {
             if (code !== 1000) {
-                Logger.info(`Disconnected from the Ripple node with error code: ${code}`);
+                Logger.error(`Disconnected from the Ripple node with error code: ${code}`);
+
+                // resubscribe to the api and return
+                api.removeAllListeners();
+                this.subscribeToAPI();
             } else {
                 Logger.info('Disconnected from the Ripple node normally.');
             }
