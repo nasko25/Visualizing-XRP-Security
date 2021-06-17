@@ -9,6 +9,7 @@ jest.mock("axios");
 const axiosMock = axios as jest.Mocked<typeof axios>;
 
 import Logger from './logger';
+import { decodeNodePublic } from 'ripple-address-codec';
 jest.mock("./logger")
 
 jest.mock('./db_connection/db_helper');
@@ -22,7 +23,7 @@ afterEach(() => {
 
 function prepareValidatorResponse(pubKeys: string[]) : Validator_List_Result {
 
-    let validators: Validator[] = pubKeys.map(key => <Validator>{manifest: "manifest", validation_public_key: key });
+    let validators: { validation_public_key: string }[] = pubKeys.map(key => <{ validation_public_key: string }><unknown>{validation_public_key: decodeNodePublic(key).toString("hex")});
     let valData: Validator_Data = {
         validators: validators,
         expiration: 0,
@@ -32,7 +33,7 @@ function prepareValidatorResponse(pubKeys: string[]) : Validator_List_Result {
     let valListData: Validator_List_Result = {
         manifest: "manifest",
         version: 2,
-        public_key: "ddd",
+        validation_public_key: "ddd",
         signature: "signature",
         blob: encode(JSON.stringify(valData))
     };
@@ -62,7 +63,7 @@ test("test validator identifier: constructor with number", () => {
 
 test("test: extractValidatorKeys() returns correctly decoded data non-empty list", () => {
 
-    let pubKeys = ["key1", "key2", "key3"];
+    let pubKeys = ["nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f", "nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f", "nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f"];
     let valListData = prepareValidatorResponse(pubKeys);
 
     let valIden = new ValidatorIdentifier();
@@ -87,7 +88,7 @@ test("test: extractValidatorKeys() returns correctly decoded data empty kist", (
 test("test: get_node_validator_list() successfully returns axios response", async () => {
 
     // the public keys
-    let pubKeys = ["pubkey1", "pubkey2", "pubkey3"];
+    let pubKeys = ["nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f", "nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f", "nHB1vJRfvuEnzGeXffkfWMa6k3FqgTGxJefrsFiRu8WhgWNWoG4f"];
     let valListData = prepareValidatorResponse(pubKeys);
 
     let valIden = new ValidatorIdentifier();
@@ -96,10 +97,9 @@ test("test: get_node_validator_list() successfully returns axios response", asyn
 
     let public_key: string = "test_key";
 
-    valIden.get_node_validator_list("ip", "publisher", public_key).then((res) => {
+    let res = await valIden.get_node_validator_list("ip", "publisher", public_key)
         expect(res[0]).toEqual(public_key)
         expect(res[1]).toEqual(pubKeys)
-    })
 
 })
 
