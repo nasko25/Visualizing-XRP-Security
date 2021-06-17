@@ -40,7 +40,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
     constructor(props: ValidatorPageMainProps) {
         super(props);
         this.state = {
-            data: [], 
+            data: [],
             info: {
                 public_key: "Please select a node",
                 score: 0.0,
@@ -66,16 +66,16 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
     //     {/* Add requests to API for validator node info*/}
     //     this.getData();
-    
+
     // }
-    
+
     /**
      * Sends a HTTP get request to the server to get information about the validator nodes
      * @returns A promise
      */
     getData() {
-        return axios.get("http://" + window.location.hostname + ":8080/validator/get-all-validators").then( (response) => {
-            this.setState({data: response.data});
+        return axios.get("http://" + window.location.hostname + ":8080/validator/get-all-validators").then((response) => {
+            this.setState({ data: response.data });
             console.log(response.data);
         });
     }
@@ -125,11 +125,13 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                     return n;
                 });
 
-                this.setState({info: {
-                    public_key: node.public_key,
-                    score: parseFloat(parseFloat(node.score).toFixed(2)),
-                    history: h
-                }});
+                this.setState({
+                    info: {
+                        public_key: node.public_key,
+                        score: parseFloat(parseFloat(node.score).toFixed(2)),
+                        history: h
+                    }
+                });
 
                 return node;
             }
@@ -141,12 +143,12 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
         let v: Validator = this.getInfo(pub_key)[0];
         let h: HistoricalScore[] = v.history.map((h) => {
-                        let n: HistoricalScore = {
-                            score: parseFloat(h.score.toFixed(2)),
-                            date: String(h.timestamp).slice(0, 10),
-                        }
-                        return n;
-                    });
+            let n: HistoricalScore = {
+                score: parseFloat(h.score.toFixed(2)),
+                date: String(h.timestamp).slice(0, 10),
+            }
+            return n;
+        });
         // console.log("HERE")
         // console.log(this.state.info)
         return h;
@@ -154,53 +156,59 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
     updateInfo(pub_key: string) {
         let node: Validator = this.state.data.filter(node => node.public_key === pub_key)[0]
- 
+
         console.log("PUBLIC KEY FOUND");
         console.log(node);
 
-                let h = node.history.map((h) => {
-                    let n: HistoricalScore = {
-                        score: h.score,
-                        date: String(h.timestamp).slice(0, 10),
+        let history = node.history.map((h) => {
+            let n: HistoricalScore = {
+                score: parseFloat(h.score.toFixed(2)),
+                date: String(h.timestamp).slice(0, 10),
+            }
+            return n;
+        });
+
+        console.log("HISTORY")
+        console.log(history)
+
+        if (history !== undefined) {
+            console.log("History is not undefined");
+            this.setState(
+                {
+                    info:
+                    {
+                        public_key: node.public_key,
+                        score: parseFloat(parseFloat(node.score).toFixed(2)),
+                        history: history
                     }
-                    return n;
                 });
-
-                console.log("HISTORY")
-                console.log(h)
-                
-                if (h !== undefined) {
-                    console.log("History is not undefined");
-                    this.setState({info: {
-                        public_key: node.public_key,
-                        score: parseFloat(parseFloat(node.score).toFixed(2)),
-                        history: this.state.info.history
-                    }});
-                } else {
-                    console.log("History is undefined");
-                    this.setState({info: {
-                        public_key: node.public_key,
-                        score: parseFloat(parseFloat(node.score).toFixed(2)),
-                        history: [{
-                            score: 0,
-                            date: '0-0-0'
-                        }]
-                    }});
+        } else {
+            console.log("History is undefined");
+            this.setState({
+                info: {
+                    public_key: node.public_key,
+                    score: parseFloat(parseFloat(node.score).toFixed(2)),
+                    history: [{
+                        score: 0,
+                        date: '0-0-0'
+                    }]
                 }
+            });
+        }
 
-                return node;
-            
+        return node;
+
     }
 
     render() {
-        return(
-            <Grommet style={{height: '100%', width: '100%'}}>
-                <Header style={{width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav}}>
+        return (
+            <Grommet style={{ height: '100%', width: '100%' }}>
+                <Header style={{ width: '100%', height: `${SETUP.header_height}%`, backgroundColor: COLORS.nav }}>
                     <NavigationBar title="Validators"></NavigationBar>
                 </Header>
 
-                <div className='ValidatorPageMain' style={{width: '100%', height: `${100 - SETUP.header_height}%`}}>
-                    <Grid 
+                <div className='ValidatorPageMain' style={{ width: '100%', height: `${100 - SETUP.header_height}%` }}>
+                    <Grid
                         rows={["1/2", "1/2"]}
                         columns={["1/2", "1/2"]}
                         areas={[
@@ -208,8 +216,8 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                             { name: 'list', start: [0, 0], end: [0, 1] },
                             { name: 'chart', start: [1, 1], end: [1, 1] },
                         ]}
-                        style={{width: '100%', height: '100%'}}
-                        >
+                        style={{ width: '100%', height: '100%' }}
+                    >
                         <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="info" background={COLORS.main}>
                             <Heading size="100%" margin="3%">{this.state.info.public_key}</Heading>
                             <List
@@ -245,20 +253,20 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                             align: 'center'
                                         }
                                     ]}
-                                
+
                                     data={this.state.data}
                                     step={10}
                                     size='large'
-                                    onClickRow={({datum}) => {
+                                    onClickRow={({ datum }) => {
                                         console.log(datum.public_key);
                                         this.updateInfo(datum.public_key);
                                         // this.setState({selected: datum.public_key});
                                     }}
-                                    pad= {{
+                                    pad={{
                                         horizontal: "medium",
                                         vertical: "xsmall"
                                     }}
-                                    style={{scrollbarWidth: 'none', height: '100%', userSelect: 'none'}}
+                                    style={{ scrollbarWidth: 'none', height: '100%', userSelect: 'none' }}
                                     border={{
                                         color: 'white',
                                         side: 'bottom',
@@ -270,7 +278,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd">
                             <Heading size="100%" margin="2%">Score over Time</Heading>
                             {/* <HistoricalChart historical_scores={this.chart(this.state.selected)}/> */}
-                            <HistoricalChart historical_scores={this.state.info.history}/>
+                            <HistoricalChart historical_scores={this.state.info.history} />
                         </Box>
                     </Grid>
                 </div>

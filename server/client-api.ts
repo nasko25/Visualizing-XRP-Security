@@ -274,7 +274,7 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 let ts_scores = timestamps.map((ts, i) => {
                     return {
                         timestamp: new Date(ts),
-                        score: scores[i]
+                        score: parseFloat(scores[i])
                     }
                 });
 
