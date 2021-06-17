@@ -239,6 +239,16 @@ export function getValidatorHistoricalData(
     return send_select_request<ValidatorAssessment>(get_validator_history);
 }
 
+export function getValidatorHistoricalAvgScore(public_key: string, duration: number): Promise<ValidatorAssessment[]> {
+    var get_historical_data =
+        'SELECT public_key, AVG(score) as score, DATE(timestamp) as date FROM validator_assessment WHERE public_key = "' +
+        public_key +
+        `\" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY) ` +
+        `GROUP BY DATE(timestamp);`;
+    return send_select_request<ValidatorAssessment>(get_historical_data);
+}
+
+
 export function getNode(public_key: string): Promise<Node[]> {
     const get_node =
         `SELECT * FROM node WHERE public_key=\'` + public_key + `\';`;

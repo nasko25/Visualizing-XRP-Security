@@ -21,7 +21,11 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                     score: 0,
                 }]
             },
-            selected: ''
+            selected: '',
+            score: [{
+                date: '0-0-0',
+                score: 0,
+            }]
         }
     }
 
@@ -40,6 +44,21 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
     getData() {
         return axios.get("http://" + window.location.hostname + ":8080/validator/get-all-validators").then((response) => {
             this.setState({ data: response.data });
+            console.log(response.data);
+        }).catch((e) => {
+            console.log(e.response);
+        });
+    }
+
+    /**
+     * Sends a HTTP get request to the server to get information about
+     * a selected validator node's trust score over the past 30 days
+     * @param public_key The public key of the selected node
+     * @returns 
+     */
+    getScore(public_key: string) {
+        return axios.get("http://" + window.location.hostname + ":8080/validator/history-score?public_key=" + public_key).then((response) => {
+            this.setState({ score: response.data });
             console.log(response.data);
         }).catch((e) => {
             console.log(e.response);
@@ -145,7 +164,8 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                                     size='large'
                                     onClickRow={({ datum }) => {
                                         console.log(datum.public_key);
-                                        this.updateInfo(datum.public_key);
+                                        // this.updateInfo(datum.public_key);
+                                        this.getScore(datum.public_key);
                                     }}
                                     pad={{
                                         horizontal: "medium",
@@ -162,7 +182,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            <HistoricalChart historical_scores={this.state.info.history} />
+                            <HistoricalChart historical_scores={this.state.score} />
                         </Box>
                     </Grid>
                 </div>

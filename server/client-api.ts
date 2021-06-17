@@ -1,7 +1,7 @@
 
 import { Express, Response } from 'express'
 import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity } from './db_connection/db_helper';
+import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Connection } from './db_connection/models/connection';
@@ -321,5 +321,28 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })
         }
     })
+
+    app.get('/validator/history-score', (req, res) => {
+        if(VERBOSE_LEVEL>1) Logger.info('Received request for a validator\'s score history.');
+
+        let public_key: string = String(req.query.public_key);
+        let duration: number = Number(req.query.duration);
+        if (!(duration && duration !== undefined)) {
+            duration = 30;
+        }
+        if(VERBOSE_LEVEL>2) console.log(public_key);
+        if(VERBOSE_LEVEL>2) console.log(duration);
+        if (is_key_present(public_key, res)) {
+            getValidatorHistoricalAvgScore(public_key, duration)
+                .then((results) => {
+                    if(VERBOSE_LEVEL>2) console.log(results);
+                    res.send(JSON.stringify(results));
+                })
+                .catch((err) => {
+                    res.status(400).send(err.message);
+                })
+        }
+    });
+    
 
 }

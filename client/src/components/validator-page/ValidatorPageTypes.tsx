@@ -41,5 +41,6 @@ export type ValidatorHistory = {
 export type ValidatorPageMainStats = {
     data: Validator[],
     info: ValidatorInfo,
-    selected: string
+    selected: string,
+    score: HistoricalScore[]
 }
