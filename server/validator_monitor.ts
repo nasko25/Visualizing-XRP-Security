@@ -101,9 +101,13 @@ export class ValidatorMonitor {
                 Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
+                api.removeAllListeners();
+                this.subscribeToAPI();
             })
           }).catch((error: Error) => {
             Logger.error(error);
+            api.removeAllListeners();
+            this.subscribeToAPI();
           });
 
     }
