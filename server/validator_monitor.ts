@@ -51,6 +51,7 @@ export class ValidatorMonitor {
         api.on('error', (errorCode: string, errorMessage: string) => {
             Logger.error(errorCode + ': ' + errorMessage);
 
+            api.connection.removeAllListeners();
             api.removeAllListeners();
             this.subscribeToAPI();
         });
@@ -64,6 +65,7 @@ export class ValidatorMonitor {
                 Logger.error(`Disconnected from the Ripple node with error code: ${code}`);
 
                 // resubscribe to the api and remove all listeners
+                api.connection.removeAllListeners();
                 api.removeAllListeners();
                 this.subscribeToAPI();
             } else {
@@ -101,9 +103,16 @@ export class ValidatorMonitor {
                 Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
+
+                // TODO:
+                //api.connection.removeAllListeners();
+                //api.removeAllListeners();
+                //this.subscribeToAPI();
             });
           }).catch((error: Error) => {
             Logger.error(error);
+
+            api.connection.removeAllListeners();
             api.removeAllListeners();
             this.subscribeToAPI();
           });
