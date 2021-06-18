@@ -26,13 +26,14 @@ export class ValidatorMonitor {
     // to notify the ValidatorTrustAssessor that it can recalculate the trust score of the validators
     // (since the information in the database will have been updated)
     readonly eventEmitter: EventEmitter;
-
+    
     // how often the information gathered from the ValidatorMonitor should be used to
     //  update the database (in minutes)
     //  NOTE: if this variable needs to be adjusted, check the variables in this.run() as well,
     //  because they will probably also need to be updated
     readonly INTERVAL: number = 60;
 
+    VERBOSE_LEVEL: number = 1;
     readonly validatedLedgers = new Map<string, Map<string, number>>();        // map format: validator_hash:{ <set of ledgers that it approved>, <date when the data was acquired>
     canonicalLedgers: { ledger_hash: string, timestamp: number }[] = [];
 
@@ -53,14 +54,14 @@ export class ValidatorMonitor {
         });
 
         api.on('connected', () => {
-            Logger.info(`Connected to the ${config.validators_api_endpoint} Ripple node to listen for validated ledgers.`);
+            if(this.VERBOSE_LEVEL > 1) Logger.info(`Connected to the ${config.validators_api_endpoint} Ripple node to listen for validated ledgers.`);
         });
 
         api.on('disconnected', (code: number) => {
             if (code !== 1000) {
-                Logger.info(`Disconnected from the Ripple node with error code: ${code}`);
+                if(this.VERBOSE_LEVEL > 1) Logger.info(`Disconnected from the Ripple node with error code: ${code}`);
             } else {
-                Logger.info('Disconnected from the Ripple node normally.');
+                if(this.VERBOSE_LEVEL > 1) Logger.info('Disconnected from the Ripple node normally.');
             }
         });
 
@@ -91,7 +92,7 @@ export class ValidatorMonitor {
             api.request('subscribe', {
               streams: ['ledger', 'validations']
             }).then(() => {
-                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
+                if(this.VERBOSE_LEVEL > 1) Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
             })
@@ -102,7 +103,7 @@ export class ValidatorMonitor {
     }
 
     schedule() {
-        Logger.info(`Scheduling a validator trust assessment after ${this.INTERVAL} minutes.`);
+        if(this.VERBOSE_LEVEL > 1) Logger.info(`Scheduling a validator trust assessment after ${this.INTERVAL} minutes.`);
         setTimeout(() => { this.run() }, this.INTERVAL * 1000 * 60);
     }
 
@@ -178,5 +179,8 @@ export class ValidatorMonitor {
             this.schedule();
         });
 
+    }
+    setVerboseLevel(verbosity: number){
+        this.VERBOSE_LEVEL = verbosity;
     }
 }

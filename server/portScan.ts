@@ -167,7 +167,7 @@ class PortScan {
                         dbCon.insertPorts(putin).catch((err: Error) => {
                             Logger.error(err.message);
                         });
-                        console.log(putin);
+                        if(this.VERBOSE_LEVEL>3) console.log(putin);
                     }
                 }
             }
@@ -190,7 +190,7 @@ class PortScan {
             }
 
             var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, false, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
-            console.log(out);
+            if(this.VERBOSE_LEVEL>3) console.log(out);
             if (out != null) {
                 for (var node in out) {
                     if (out[node].up) {
@@ -222,9 +222,9 @@ class PortScan {
                     }
                 }
             }
-            console.log("finished.");
+            if(this.VERBOSE_LEVEL > 2) console.log("finished long scan batch");
         }
-        console.log("out of cycle.");
+        if(this.VERBOSE_LEVEL > 3) console.log("out of cycle. 227");
     }
     /**
      * Creates the promises that the second version of the short port scanner uses
@@ -312,7 +312,7 @@ class PortScan {
 
                 while (i < out2.openPorts.length) {
                     if (mapUnique.has(out2.openPorts[i].portid)) {
-                        console.log("Duplicate " + out2.openPorts[i].portid);
+                        if(this.VERBOSE_LEVEL > 3) console.log("Duplicate " + out2.openPorts[i].portid);
                     } else {
                         outPorts += "," + out2.openPorts[i].portid;
                         if(out2.openPorts[i].portid==listOfNodes[ip].portRunningOn){
@@ -328,7 +328,7 @@ class PortScan {
 
             //If either scan has succeeded, put information in databse
             if (success2 || success1) {
-                console.log(listOfNodes[ip].ip + " " + outPorts);
+                if(this.VERBOSE_LEVEL > 3) console.log(listOfNodes[ip].ip + " " + outPorts);
                 var putin: NodePortsProtocols = {
                     ip: listOfNodes[ip].ip,
                     public_key: listOfNodes[ip].public_key,
@@ -344,7 +344,7 @@ class PortScan {
                 // listOfIPs[ip].openPorts = out;
             } else {
                 //Both scans failed. Either node is down or is blocking us.
-                console.log("Host may be down " + listOfNodes[ip].ip);
+                if(this.VERBOSE_LEVEL > 1) console.log("Host may be down " + listOfNodes[ip].ip);
                 resolve(false);
                 return;
             }
@@ -387,7 +387,7 @@ class PortScan {
     
 
     start() {
-        Logger.info("PORT SCANNER STARTED")
+        if(this.VERBOSE_LEVEL>1) Logger.info("PORT SCANNER STARTED")
 
         if(this.DO_LONG_SCAN){
             dbCon.getNodesNonNullPort().then((result) => {
