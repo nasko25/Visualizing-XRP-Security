@@ -269,7 +269,11 @@ class PortScan {
                         out1.openPorts[i].portid
                     );
                     outPorts = out1.openPorts[i].portid;
-                    outProtocols = out1.openPorts[i].protocol;
+                    if(out1.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols = "xrp";
+                    }else{
+                        outProtocols = out1.openPorts[i].protocol;
+                    }
                     i++;
                     flag = 1;
                 }
@@ -279,7 +283,11 @@ class PortScan {
                         out1.openPorts[i].portid
                     );
                     outPorts += "," + out1.openPorts[i].portid;
-                    outProtocols += "," + out1.openPorts[i].protocol;
+                    if(out1.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols += ",xrp" ;
+                    }else{
+                        outProtocols += "," + out1.openPorts[i].protocol;
+                    }
                     i++;
                 }
                 success1 = true;
@@ -293,7 +301,12 @@ class PortScan {
                 var i: number = 0;
                 if (flag == 0) {
                     outPorts = out2.openPorts[i].portid;
-                    outProtocols = out2.openPorts[i].protocol;
+                    if(out2.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols = "xrp";
+                    }else{
+                        outProtocols = out2.openPorts[i].protocol;
+                    }
+                    
                     i++;
                 }
 
@@ -302,7 +315,11 @@ class PortScan {
                         console.log("Duplicate " + out2.openPorts[i].portid);
                     } else {
                         outPorts += "," + out2.openPorts[i].portid;
-                        outProtocols += "," + out2.openPorts[i].protocol;
+                        if(out2.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                            outProtocols += ",xrp" ;
+                        }else{
+                            outProtocols += "," + out2.openPorts[i].protocol;
+                        }
                     }
                     i++;
                 }
@@ -318,7 +335,7 @@ class PortScan {
                     ports: outPorts,
                     protocols: outProtocols,
                 };
-                Logger.info("Storing ports " + outPorts + " with protocols " + outProtocols + " for IP " + listOfNodes[ip].ip)
+                if(this.VERBOSE_LEVEL>2) Logger.info("Storing ports " + outPorts + " with protocols " + outProtocols + " for IP " + listOfNodes[ip].ip)
                 dbCon.insertPorts(putin).catch((err: Error) => {
                     Logger.error(err.message);
                 });
