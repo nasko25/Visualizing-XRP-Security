@@ -82,7 +82,8 @@ export default class ValidatorTrustAssessor {
             var scores = validator.missed.map((missed, index) => {
                 if (validator.total[index] === 0)
                     return 0;
-                return (1 - (missed / validator.total[index]));
+                const score = (1 - (missed / validator.total[index]));
+                return score <= 0 ? 0 : score;
             });
             // because of the way the hourly statistics are computed, there will always be some prepended zeroes
             // that are added when the validator monitor is first started

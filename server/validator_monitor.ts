@@ -33,7 +33,7 @@ export class ValidatorMonitor {
     //  because they will probably also need to be updated
     readonly INTERVAL: number = 60;
 
-    readonly validatedLedgers = new Map<string, Map<string, number>>();        // map format: validator_hash:{ <set of ledgers that it approved>, <date when the data was acquired>
+    readonly validatedLedgers = new Map<string, Map<string, number>>();        // map format: validator_public_key:{ <map of ledgers that it approved : date when the data was acquired> }
     canonicalLedgers: { ledger_hash: string, timestamp: number }[] = [];
 
     constructor(eventEmitter: EventEmitter) {
@@ -63,7 +63,7 @@ export class ValidatorMonitor {
             if (code !== 1000) {
                 Logger.error(`Disconnected from the Ripple node with error code: ${code}`);
 
-                // resubscribe to the api and return
+                // resubscribe to the api and remove all listeners
                 api.removeAllListeners();
                 this.subscribeToAPI();
             } else {
@@ -101,9 +101,7 @@ export class ValidatorMonitor {
                 Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
-                api.removeAllListeners();
-                this.subscribeToAPI();
-            })
+            });
           }).catch((error: Error) => {
             Logger.error(error);
             api.removeAllListeners();
