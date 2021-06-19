@@ -58,13 +58,32 @@ export default class ValidatorIdentifier {
     }
 
     run() {
-
         return getIpAddresses()
             .then((nodes: NodeIpKeyPublisher[]) => {
                 Logger.info("VI: Database queried ...");
 
-                // Start the process with the DB fetched data
-                this.identify_validators_for_batch(nodes);
+                nodes.forEach( async (node) => {
+                    try {
+                        let publishers: string[] = JSON.parse(node.publishers);
+                        publishers.forEach(async (publisher: string) => {
+                            axios.get<any, AxiosResponse<Validator_List_Result>>(
+                                `https://[${node.IP}]:51235/vl/${publisher}`,
+                                { httpsAgent: agent, timeout: 10000 }
+                            ).then((res) => {
+                                let vals: Validator[] = this.extractValidatorKeys(res.data).map((v) => {return {public_key: v}});
+                                vals.forEach((val) => {
+                                    if(!this.validators_set.has(val.public_key)){
+                                        this.validators_set.add(val.public_key);
+                                        insertValidators([val]);
+                                    }
+                                })
+                            })
+                            .catch((err) => Logger.error(`VI ${err}`));
+                        });
+                    } catch (err){
+                        Logger.error(`VI ${err}`);
+                    }
+                })
             })
             .catch((err) =>
                 Logger.error(
@@ -75,7 +94,7 @@ export default class ValidatorIdentifier {
 
     identify_validators_for_batch(nodes: NodeIpKeyPublisher[]) {
         if (nodes.length === 0) {
-            Logger.info("VI: Finished idetifying validators.");
+            Logger.info("VI: Finished identifying validators.");
             return;
         }
 
@@ -84,7 +103,6 @@ export default class ValidatorIdentifier {
         );
 
         let splice = nodes.splice(0, this.validatorBatchCount);
-
 
         Promise
             .all(
@@ -103,7 +121,7 @@ export default class ValidatorIdentifier {
                     // Add the validator keys to the main Validators Map
                     // Add the validator keys to the Node -> Validators Map
                     Logger.info("VI: Adding validator keys to maps ...");
-
+                    // console.log(res);
                     res.forEach((tuple) => {
                         let key: string = tuple[0];
                         let vals: string[] = tuple[1];
@@ -130,6 +148,8 @@ export default class ValidatorIdentifier {
                     );
 
                     // Put in database
+                    Logger.info("VIVIVIVI");
+                    Logger.info(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}));
                     insertValidators(Array.from(this.validators_set).map(validator => <Validator> {public_key: validator}))
                         .then(() => {
                             Logger.info(
@@ -174,7 +194,7 @@ export default class ValidatorIdentifier {
     get_validator_list(ip: string, publisher_key: string) {
         return axios.get<any, AxiosResponse<Validator_List_Result>>(
             `https://[${ip}]:51235/vl/${publisher_key}`,
-            { httpsAgent: agent, timeout: 6000 }
+            { httpsAgent: agent, timeout: 10000 }
         );
     }
 
@@ -187,8 +207,9 @@ export default class ValidatorIdentifier {
     ): Promise<[string, string[]]> {
         return new Promise((resolve) =>
             this.get_validator_list(ip, publisher)
-                .then((res) =>
-                    resolve([public_key, this.extractValidatorKeys(res.data)])
+                .then((res) =>{
+                    resolve([public_key, this.extractValidatorKeys(res.data)]);
+                }
                 )
                 .catch(() => resolve([public_key, []]))
         );
