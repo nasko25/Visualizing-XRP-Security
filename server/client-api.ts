@@ -133,13 +133,13 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })[0];
 
                 return {
-                    rippled_version: node.rippled_version,
                     public_key: node.public_key,
+                    rippled_version: node.rippled_version,
                     uptime: node.uptime,
                     longtitude: node.longtitude,
                     latitude: node.latitude,
                     score: latest.score,
-                    // timestamp: latest.timestamp,
+                    timestamp: latest.timestamp,
                     // history: ts_scores
                 };
             });
@@ -206,14 +206,16 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                             historyCache.set(public_key, history);
                             res.send(JSON.stringify([
                                 {
-                                    IP: results[0].IP,
-                                    latitude: results[0].latitude,
-                                    longtitude: results[0].longtitude,
-                                    ports: results[0].ports,
                                     public_key: results[0].public_key,
-                                    publishers: results[0].publishers,
+                                    ip: results[0].IP,
                                     rippled_version: results[0].rippled_version,
                                     uptime: results[0].uptime,
+                                    portRunningOn: results[0].portRunningOn,
+                                    ports: results[0].ports,
+                                    services: results[0].services,
+                                    publishers: results[0].publishers,
+                                    latitude: results[0].latitude,
+                                    longtitude: results[0].longtitude,
                                     history: history,
                                 }
                             ]));
@@ -343,6 +345,5 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })
         }
     });
-    
 
 }
