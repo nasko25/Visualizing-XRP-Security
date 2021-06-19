@@ -152,21 +152,86 @@
 -   Request Format: No request parameters or body.
 -   Response: 
   ```
+      [
+        {
+          data:
+          [
+            {
+              public_key: string - The public key of the validator,
+              score: The most recent trust score
+              timestamp: Date in ISO format - The time when the most recent trust score was calculated,
+              history: [
+                {
+                  timestamp: Date in ISO format - the date at which the trust score was calculated
+                  score: number - the trust score
+                },
+                {
+                  ...
+                },
+                ...
+              ]
+            },
+            {
+              ...
+            },
+            ...
+          ]
+        }
+      ]
+  ```
+
+### `/validator/history`
+
+-   Purpose: Returns all trust score calculations of a validator for the past 30 days. 
+-   Request Format: 
+    -   Request parameter `public_key` - the public key of the node.
+    -   Request parameter `duration` - the number of days in the past for which to get the information.
+-   Response: 
+  ```
+  [
+    {
+      data: 
+      {
+        history: 
         [
           {
-            data:
-            [
-              {
-                public_key: string - The public key of the validator,
-                score: The most recent trust score
-                timestamp: Date in ISO format - The time when the most recent trust score was calculated,
-                history:
-              },
-              {
-                ...
-              },
-              ...
-            ]
-          }
+            timestamp: Date in ISO format - the date at which the trust score was calculated
+            score: number - the trust score
+          },
+          {
+            ...
+          },
+          ...
         ]
-    ```
+      }
+    }
+  ]  
+  ```
+
+### `/validator/history-score`
+
+-   Purpose: Returns an average daily trust score of a validator for the past 30 days. 
+-   Request Format: 
+    -   Request parameter `public_key` - the public key of the node.
+    -   Request parameter `duration` - the number of days in the past for which to get the information.
+-   Response: 
+  ```
+  [
+    {
+      data: 
+      {
+        history: 
+        [
+          {
+            timestamp: Date in ISO format - the date at which the trust score was calculated
+            score: number - the trust score
+          },
+          {
+            ...
+          },
+          ...
+        ]
+      }
+    }
+  ]  
+  ```

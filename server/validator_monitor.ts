@@ -91,7 +91,7 @@ export class ValidatorMonitor {
             api.request('subscribe', {
               streams: ['ledger', 'validations']
             }).then(() => {
-                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
+                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations streams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
             })

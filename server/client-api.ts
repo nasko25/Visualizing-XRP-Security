@@ -17,7 +17,8 @@ const MINUTES_BEFORE_CACHE_EXPIRES: number = 1;
 /*
     This file exports a function which takes an Express object
 and adds a couple of endpoints to it. These are the endpoints
-meant for use by the Web Client of the application.
+meant for use by the Web Client of the application. You can find
+the API specification in server/docs/client_api.md
 */
 
 export type PeerToSend = {
@@ -25,11 +26,6 @@ export type PeerToSend = {
     score: number,
     timestamp: Date,
     metric_version: string
-}
-
-interface PeerList {
-    peers: Connection[];
-    timestamp: Date;
 }
 
 /**
