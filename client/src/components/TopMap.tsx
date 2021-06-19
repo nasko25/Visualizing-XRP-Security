@@ -4,6 +4,7 @@ import { CircleMarker, MapContainer, Popup, TileLayer, useMapEvents } from "reac
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import "../MarkerCluster.Default.css"
 import { List } from 'grommet';
+import { History } from 'history';
 
 // TODO Define props.data type
 // Replace JSX.Element
@@ -18,21 +19,17 @@ function MyComponent(props: { that: TopMap }) {
     return null;
 }
 
-type Point = {
-    IP: string,
+export type Point = {
     latitude: number,
     longtitude: number,
-    ports: [string],
-    protocols: [string],
     public_key: string,
-    rippled_version: string,
-    timestamp: string,
-    uptime: number
+    score: number
 }
 
 type Props = {
     data: Point[],
-    handleChange: (pub_key: string) => void
+    handleChange: (pub_key: string) => void,
+    history: History
 }
 
 type TopMapState = {
@@ -63,6 +60,15 @@ class TopMap extends React.Component<Props, TopMapState> {
         this.props.handleChange(pub_key);
     }
 
+    getColor(score: number): string {
+        let steps = 1;
+        var bif = Math.ceil((steps+2)*(Math.max(1,score))/100)-1;
+        let green = Math.min(bif*(510/(steps+1)),255);
+        let red = 255- Math.max(0,(bif-1)*(255/(2*((steps)/3)))-255);
+
+        return 'rgb('+ `${red}`+ ',' + `${green}` + ',0)';
+    }
+
     onClusterClick = (a: any) => {
         var children = a.layer.getAllChildMarkers();
         // var lis = [];
@@ -74,7 +80,7 @@ class TopMap extends React.Component<Props, TopMapState> {
         }
         // var contentForCluster = <ul>{lis}</ul>
 
-        var contentForCluster = <List primaryKey="pub_key" data={keys} onClickItem={(data: any) => { this.props.handleChange(data.item.pub_key) }} />
+        var contentForCluster = <List primaryKey="pub_key" data={keys} style={{color:'white', overflowX: 'hidden', marginRight: '10px'}}/>
 
         // Create the new popup
         var popup = null;
@@ -88,7 +94,7 @@ class TopMap extends React.Component<Props, TopMapState> {
 
     // Create a popup with position and content
     createNewPopup = (a: { latlng: LatLng }, content: JSX.Element) => {
-        return <Popup position={a.latlng} maxHeight={100}>{content}</Popup>
+        return <Popup position={a.latlng} maxHeight={200} maxWidth={300}>{content}</Popup>
     }
 
     // Create a new map with the provided popup 
@@ -114,7 +120,7 @@ class TopMap extends React.Component<Props, TopMapState> {
             let a: Point = this.props.data[i];
             // var title  = a.title;
             var title = a.public_key;
-            var colour = "green";
+            var colour: string = this.getColor(a.score);
 
             // Nodes still don't have trust score
             // Uncomment when trust score is implemented
@@ -123,10 +129,13 @@ class TopMap extends React.Component<Props, TopMapState> {
             if (a.latitude == null || a.longtitude == null) {
                 continue;
             }
+
+            let url: string = "/node?public_key=" + a.public_key;
+
             let marker = (
                 <CircleMarker 
                     key={"circle_" + i}
-                    center={[a.longtitude, a.latitude]}
+                    center={[a.latitude, a.longtitude]}
                     color={colour}
                     fillColor={colour}
                     fillOpacity={0.5}
@@ -138,7 +147,7 @@ class TopMap extends React.Component<Props, TopMapState> {
                     }}
                 >
                     <Popup>
-                        {title}
+                        <a href={url}>{title}</a>
                     </Popup>
                 </CircleMarker>
 

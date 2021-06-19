@@ -16,7 +16,7 @@ import https from "https";
  * JSON format of result returned from /vl/{publisher-key}
  *
  * */
-interface Validator_List_Result {
+export interface Validator_List_Result {
     manifest: string;
     blob: string;
     validation_public_key: string;
@@ -29,7 +29,7 @@ interface Validator_List_Result {
  * JSON format of decoded blob field of @interface Validator_List_Result
  *
  * */
-interface Validator_Data {
+export interface Validator_Data {
     sequence: number;
     expiration: number;
     validators: { validation_public_key: string }[];
@@ -58,7 +58,8 @@ export default class ValidatorIdentifier {
     }
 
     run() {
-        getIpAddresses()
+
+        return getIpAddresses()
             .then((nodes: NodeIpKeyPublisher[]) => {
                 Logger.info("VI: Database queried ...");
 
@@ -85,21 +86,16 @@ export default class ValidatorIdentifier {
         let splice = nodes.splice(0, this.validatorBatchCount);
 
 
-        let promises: Array<Promise<[string, string[]]>> = [];
-
-                        // Create an array of Promise objects for all requests
-        splice.forEach(node => {
-            let publishers: string[] = JSON.parse(node.publishers);
-            publishers.map((publisher : string ) => promises.push(this.promiseWrapper(
-            node.IP,
-            publisher,
-            node.public_key
-            )))
-        });
-
         Promise
             .all(
-                promises
+                // Create an array of Promise objects for all requests
+                splice.map((node) =>
+                    this.get_node_validator_list(
+                        node.IP,
+                        node.publishers,
+                        node.public_key
+                    )
+                )
             )
             .then(
                 // Response is an array of tuples (node_key, val_keys)
@@ -184,7 +180,7 @@ export default class ValidatorIdentifier {
 
     // A method that calls get_validator_list and makes sure a Promise is returned that does not reject
     // This is to avoid batch processing to fail because only one of the requests failed.
-    promiseWrapper(
+    get_node_validator_list(
         ip: string,
         publisher: string,
         public_key: string

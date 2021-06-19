@@ -6,6 +6,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 
 -- -----------------------------------------------------
 -- Table `node`
+-- Stores information about each stock node
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `node` (
   `public_key` VARCHAR(80) NOT NULL,
@@ -28,6 +29,7 @@ ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `validator`
+-- Stores information about each validator
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `validator` (
   `public_key` VARCHAR(80) NOT NULL,
@@ -40,22 +42,21 @@ ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `connection`
+-- Stores peer connections between stock nodes
 -- -----------------------------------------------------
 USE db;
 CREATE TABLE IF NOT EXISTS `connection` (
-  `connection_id` INT NOT NULL AUTO_INCREMENT,
   `start_node` VARCHAR(80) NOT NULL,
   `end_node` VARCHAR(80) NOT NULL,
 PRIMARY KEY (`start_node`, `end_node`),
-  UNIQUE INDEX `connection_id_UNIQUE` (`connection_id` ASC) VISIBLE,
   FOREIGN KEY (`start_node`)
     REFERENCES `node` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
   FOREIGN KEY (`end_node`)
     REFERENCES `node` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
@@ -65,19 +66,16 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `node_validator` (
   `node_key` VARCHAR(80) NOT NULL,
   `validator_key` VARCHAR(80) NOT NULL,
-
-  FOREIGN KEY (`node_key`)
-    REFERENCES `node` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  FOREIGN KEY (`validator_key`)
-    REFERENCES `validator` (`public_key`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-
+  PRIMARY KEY (`node_key`, `validator_key`),
+    FOREIGN KEY (`node_key`)
+      REFERENCES `node` (`public_key`)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE,
+    FOREIGN KEY (`validator_key`)
+      REFERENCES `validator` (`public_key`)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
 
 -- -----------------------------------------------------
 -- Table `securty_assessment`
@@ -90,7 +88,6 @@ CREATE TABLE IF NOT EXISTS `security_assessment` (
   `score` FLOAT NOT NULL 
 )
 ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `validator_assessment`
@@ -119,9 +116,9 @@ CREATE TABLE IF NOT EXISTS `validator_statistics` (
     PRIMARY KEY (`id`),
     INDEX (`public_key`),
     FOREIGN KEY (`public_key`)
-     REFERENCES `validator` (`public_key`)
-     ON DELETE NO ACTION
-     ON UPDATE NO ACTION
+      REFERENCES `validator` (`public_key`)
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION
 )
 ENGINE = InnoDB;
 

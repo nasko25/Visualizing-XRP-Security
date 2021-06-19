@@ -3,6 +3,7 @@ import { act } from "react-dom/test-utils";
 import { render, unmountComponentAtNode } from "react-dom";
 import { fireEvent, getAllByRole, getByRole, getByTestId, getByText } from '@testing-library/react';
 import { mount, shallow } from 'enzyme';
+import { createBrowserHistory, History } from 'history';
 
 
 let container: HTMLElement | null = null;
@@ -64,7 +65,11 @@ const mockNodeData: Array<any> = [
 // });
 
 test('Correct behaviour on render', async () => {
-    const map = await shallow<TopMap>(<TopMap data={mockNodeData} handleChange={(public_key: String) => public_key}/>).instance();
+
+    let history: History = createBrowserHistory();
+    history.push('/');
+
+    const map = await shallow<TopMap>(<TopMap history={history} data={mockNodeData} handleChange={(public_key: String) => public_key}/>).instance();
 
     const selectNodeSpy = jest.spyOn(map, "selectNode");
     const onClusterClickSpy = jest.spyOn(map, "onClusterClick");
@@ -80,15 +85,21 @@ test('Correct behaviour on render', async () => {
     expect(createNewMapSpy).toHaveBeenCalledTimes(1);
     expect(createMarkerGroupSpy).toHaveBeenCalledTimes(1);
 
+    console.log(rendered_map.props.children.props.children[1].props.children[0].props.children.props.children);
+
     // Checks whether the keys of the generated map are the correct public keys
-    expect(rendered_map.props.children.props.children[1].props.children[0].props.children.props.children).toEqual("public_key1");
-    expect(rendered_map.props.children.props.children[1].props.children[1].props.children.props.children).toEqual("public_key2");
+    expect(rendered_map.props.children.props.children[1].props.children[0].props.children.props.children.props.children).toEqual("public_key1");
+    expect(rendered_map.props.children.props.children[1].props.children[1].props.children.props.children.props.children).toEqual("public_key2");
 
 
 });
 
 test('Selecting a node result in correct behaviour', async() => {
-    const map = await shallow<TopMap>(<TopMap data={mockNodeData} handleChange={(public_key: String) => public_key}/>).instance();
+
+    let history: History = createBrowserHistory();
+    history.push('/');
+
+    const map = await shallow<TopMap>(<TopMap history={history} data={mockNodeData} handleChange={(public_key: String) => public_key}/>).instance();
 
     const selectNodeSpy = jest.spyOn(map, "selectNode");
     const onClusterClickSpy = jest.spyOn(map, "onClusterClick");

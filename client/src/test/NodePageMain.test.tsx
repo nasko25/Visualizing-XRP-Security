@@ -2,7 +2,7 @@ import NodePageMain from '../components/node-page/NodePageMain';
 import axios from 'axios';
 import { createBrowserHistory, History } from 'history';
 import { Peer, NodeInfoDB, PeerNodeDB } from '../components/node-page/NodePageTypes';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 
 //---------------SETUP AND CLEAN UP---------------//
 
@@ -26,7 +26,8 @@ const mockNodeInfo: NodeInfoDB = {
     protocols: "HTTP",
     rippled_version: '1.6.0',
     timestamp: "never",
-    uptime: 42
+    uptime: 42,
+    history: [{average_score: 0, date: new Date("17/6/2021")}]
 };
 
 const mockData = {
@@ -37,8 +38,18 @@ const mockData = {
  * Once we update the API these should also contain a score
  */
 const mockNodePeers: PeerNodeDB[] = [
-    { end_node: "n9MGChK9EgiCBM6s15EwF9d6m4LWZHh1UnJcgr16kQr4xBpx71fS" },
-    { end_node: "n9Jy88tMgEhHocG9hZssgsYRmTz9CjCgjp3DiqzSgYqrp4BxTE11" },
+    { 
+        public_key: "n9MGChK9EgiCBM6s15EwF9d6m4LWZHh1UnJcgr16kQr4xBpx71fS",
+        metric_version: "0.1.0",
+        score: 100,
+        timestamp: new Date()
+    },
+    { 
+        public_key: "n9Jy88tMgEhHocG9hZssgsYRmTz9CjCgjp3DiqzSgYqrp4BxTE11",
+        metric_version: "0.2.0",
+        score: 50,
+        timestamp: new Date()
+    },
 ];
 
 const mockPeersData = {
@@ -195,8 +206,8 @@ test('Create peer list returns correct List element with multiple peers', async 
     history.push('/node?public_key=' + mockNodeInfo.public_key);
     const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
     
-    let peers: Peer[] = mockNodePeers.map((p) => {
-         return {public_key: p.end_node, score: 1}
+    let peers: Peer[] = mockNodePeers.map((p, index) => {
+         return {idx: index+1, public_key: p.public_key, score: 1, timestamp: p.timestamp}
         }
     );
 
@@ -207,8 +218,16 @@ test('Create peer list returns correct List element with multiple peers', async 
     expect(setStateSpy).toHaveBeenCalledTimes(1);
     expect(node_page.state.peers).toHaveLength(2);
     expect(list.props.data).toHaveLength(peers.length);
-    expect(list.props.data).toContain(peers[0]);
-    expect(list.props.data).toContain(peers[1]);
+    
+    expect(list.props.data[0].public_key).toEqual(peers[0].public_key);
+    expect(list.props.data[0].idx).toEqual(1);
+    expect(list.props.data[0].score).toEqual(peers[0].score);
+    expect(list.props.data[0].timestamp).toEqual(String(peers[0].timestamp).slice(0, 10));
+
+    expect(list.props.data[1].public_key).toEqual(peers[1].public_key);
+    expect(list.props.data[1].idx).toEqual(2);
+    expect(list.props.data[1].score).toEqual(peers[1].score);
+    expect(list.props.data[1].timestamp).toEqual(String(peers[1].timestamp).slice(0, 10));
 });
 
 test('Correct behaviour of getNodeInfo on both request success', async () => {
@@ -232,7 +251,7 @@ test('Correct behaviour of getNodeInfo on both request success', async () => {
 
     await node_page.getNodeInfo();
 
-    expect(setStateSpy).toHaveBeenCalledTimes(3);
+    expect(setStateSpy).toHaveBeenCalledTimes(2);
     expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
     expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
     expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
@@ -266,7 +285,7 @@ test('Correct behaviour of getNodeInfo on both requests failure', async () => {
 
     await node_page.getNodeInfo();
 
-    expect(setStateSpy).toHaveBeenCalledTimes(1);
+    expect(setStateSpy).toHaveBeenCalledTimes(0);
     expect(queryAPI_nodeSpy).toHaveBeenCalledTimes(1);
     expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
     expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);

@@ -61,6 +61,7 @@ test("test rateBasedOnOpenPorts", () => {
 test("test getRating", () => {
     // test if we getRating correctly
     const secMetrcic = new SecurityMetric();
+    secMetrcic.setVerboseLevel(10);
     const mp = new Map()
     mp.set("4",{    index: 5,
         tagName: "4",
@@ -79,6 +80,7 @@ test("test getRating", () => {
 
 test("test check for update fail", async () => {
     const secMetrcic = new SecurityMetric();
+    secMetrcic.setVerboseLevel(10);
     axiosMock.get.mockRejectedValueOnce(new Error("Server not responding"));
 
     console.log = jest.fn();
@@ -89,7 +91,7 @@ test("test check for update fail", async () => {
 
 test("test check for update succeed", async () => {
     const secMetrcic = new SecurityMetric();
-
+    secMetrcic.setVerboseLevel(10);
     const response = {
         data: [{
             tag_name: "1.7",
@@ -113,7 +115,7 @@ test("test check for update succeed", async () => {
 
 test("test check for update succeed 2 versions", async () => {
     const secMetrcic = new SecurityMetric();
-
+    secMetrcic.setVerboseLevel(10);
     const response = {
         data: [{
             tag_name: "1.7",
