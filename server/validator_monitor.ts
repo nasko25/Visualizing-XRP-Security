@@ -5,16 +5,6 @@ import Logger from './logger';
 import config from './config/config.json';
 const RippleAPI = require('ripple-lib').RippleAPI;
 
-const monitor_node = 'wss://ripple5.ewi.tudelft.nl'
-const ripple1_node = 'wss://s1.ripple.com'
-const ripple2_node = 'wss://s2.ripple.com'
-//const ripple3_node = 'wss://xrpl.ws/'
-const ripple3_node = config.validators_api_endpoint;
-//const ripple3_node = 'wss://s.devnet.rippletest.net';
-const ripple1_hash = "nHUPAdpS7GdfeisdtHE5YiSUcUJ8VhtHP2o4yWNQcsXfE89WKHMN"
-const ripple2_hash = "nHUZoRNnFqxiLrXyydtLapFJxZMUxgTuGg9624Pdg4med73xNSP2"
-
-
 export interface ValidatorStatistics {
     public_key: string,
     total: number,
@@ -45,7 +35,7 @@ export class ValidatorMonitor {
     async subscribeToAPI() {
 
         const api = new RippleAPI({
-          server: ripple3_node
+          server: config.validators_api_endpoint
         });
 
         api.on('error', (errorCode: string, errorMessage: string) => {
@@ -75,7 +65,6 @@ export class ValidatorMonitor {
 
         api.connect().then(() => {
             api.connection.on('ledgerClosed', (event: any) => {
-                //console.log("Canonical ledger is", event.ledger_hash)
                 this.canonicalLedgers.push({ ledger_hash: event.ledger_hash, timestamp: Date.now() });
             })
 
@@ -85,33 +74,24 @@ export class ValidatorMonitor {
                 } else {
                     this.validatedLedgers.set(event.master_key, new Map([ [event.ledger_hash, Date.now()] ]))
                 }
-
-                //if (event.master_key === ripple1_hash) {
-                //    //validated_ledgers.push(event.ledger_hash)
-                //    console.log("Ripple1: Validation of ledger", event.ledger_hash, "by node", ripple1_hash)
-                //}
-
-                //if (event.master_key === ripple2_hash) {
-                //    //validated_ledgers.push(event.ledger_hash)
-                //    console.log("Ripple2: Validation of ledger", event.ledger_hash, "by node", ripple2_hash)
-                //}
             })
 
             api.request('subscribe', {
               streams: ['ledger', 'validations']
             }).then(() => {
-                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations strams.`);
+                Logger.info(`Successfully subscribed to the ${config.validators_api_endpoint} Ripple node's ledger and validations streams.`);
             }).catch((error: Error) => {
                 Logger.error(error);
 
-                // TODO:
-                //api.connection.removeAllListeners();
-                //api.removeAllListeners();
-                //this.subscribeToAPI();
+                // resubscribe to the websocket API and remove all listeners
+                api.connection.removeAllListeners();
+                api.removeAllListeners();
+                this.subscribeToAPI();
             });
           }).catch((error: Error) => {
             Logger.error(error);
 
+            // resubscribe to the websocket API and remove all listeners
             api.connection.removeAllListeners();
             api.removeAllListeners();
             this.subscribeToAPI();
