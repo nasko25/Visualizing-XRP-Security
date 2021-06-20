@@ -9,10 +9,16 @@ import Loader from "../Loader";
 import NavigationBar from "../NavigationBar";
 import { Point } from '../TopMap';
 
+/**
+ * Props passed down to Dashboard
+ */
 export type DashboardProps = {
     history: History
 }
 
+/**
+ * Info gotten from DB
+ */
 export type Node = {
     rippled_version: string,
     public_key: string,
@@ -22,6 +28,9 @@ export type Node = {
     score: number
 }
 
+/**
+ * Local state of Dashboard
+ */
 export type DashboardState = {
     nodes: Node[],
     selected: string,
@@ -32,8 +41,6 @@ export type DashboardState = {
  * A component that displays the Stock Node Dashboard
  */
 export default class Dashboard extends Component<DashboardProps, DashboardState> {
-
-    timer = undefined;
 
     constructor(props: any) {
         super(props);
@@ -53,10 +60,6 @@ export default class Dashboard extends Component<DashboardProps, DashboardState>
      */
     componentDidMount() {
         this.refresh_data();
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.timer);
     }
 
     /**
