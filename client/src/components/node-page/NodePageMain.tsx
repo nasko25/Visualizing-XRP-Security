@@ -309,10 +309,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main} overflow='auto'>
                             <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
-                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main} overflow='auto'>
                             <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
                             {this.createNodeInformationList()}
                             <Heading size="100%" margin="2%">Peer Information</Heading>
@@ -326,7 +326,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             </Box>
                         </Box>
                         {/* The historical scores chart */}
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%">Score over Time</Heading>
                             <HistoricalChart historical_scores={this.state.historical_scores} />
                         </Box>

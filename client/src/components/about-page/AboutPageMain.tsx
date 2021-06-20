@@ -12,13 +12,14 @@ export default class AboutPageMain extends React.Component {
             </Header>
             <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                 <Grid
-                    style={{ width: "100%", height: "100%" }}
+                    style={{ width: "100%", height: "100%", overflow:'auto' }}
                     rows={["1/2", "1/2"]}
                     columns={["1/2", "1/2"]}
                     areas={[
                         { name: 'general', start: [0, 0], end: [1, 1] }
                     ]}
                     align='center'
+                    
                 >
                     <Box round="1%" margin={{ top: "2%", left: "2%", right: "2%", bottom: "2%" }} gridArea="general" background={COLORS.main}>
                         <Box align='center' margin={{ top: "2%", left: "10%", right: "10%", bottom: "1%" }} data-testid='p1'>
