@@ -219,7 +219,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
     createNodeInformationList() {
         return (
-            <Box overflow='scroll' style={{height: "45%"}}>
+            <Box overflow='auto' style={{height: "45%"}}>
                 <List
                     style={{ width: "70%", height: "70%", alignSelf: "center" }}
 
@@ -310,17 +310,17 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main} overflow='auto'>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main} overflow='hidden'>
                             <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main} overflow='auto'>
-                            <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
+                            <Heading size="100%" margin="2%">{this.state.public_key}</Heading>
                             {this.createNodeInformationList()}
-                            <Heading size="100%" margin="2%">Peer Information</Heading>
+                            <Heading size="100%" margin="1%">Peer Information</Heading>
                             <Box
                                 overflow="auto"
                                 style={{ height: "45%" }}
-                                margin="2%"
+                                margin="1%"
                                 round="1%"
                                 background={COLORS.button}>
                                 {this.createPeerList()}
