@@ -43,6 +43,7 @@ export class ValidatorMonitor {
 
             api.connection.removeAllListeners();
             api.removeAllListeners();
+            api.disconnect();
             this.subscribeToAPI();
         });
 
@@ -57,6 +58,7 @@ export class ValidatorMonitor {
                 // resubscribe to the api and remove all listeners
                 api.connection.removeAllListeners();
                 api.removeAllListeners();
+                api.disconnect();
                 this.subscribeToAPI();
             } else {
                 Logger.info('Disconnected from the Ripple node normally.');
@@ -86,6 +88,7 @@ export class ValidatorMonitor {
                 // resubscribe to the websocket API and remove all listeners
                 api.connection.removeAllListeners();
                 api.removeAllListeners();
+                api.disconnect();
                 this.subscribeToAPI();
             });
           }).catch((error: Error) => {
@@ -94,6 +97,7 @@ export class ValidatorMonitor {
             // resubscribe to the websocket API and remove all listeners
             api.connection.removeAllListeners();
             api.removeAllListeners();
+            api.disconnect();
             this.subscribeToAPI();
           });
 
