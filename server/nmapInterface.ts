@@ -3,6 +3,10 @@ import * as xml2js from "xml2js";
 
 var parser = new xml2js.Parser();
 
+
+//This class serves as an Interface with NMAP
+//Provides also an interpreter of the result to JSON (Since nmap returns in XML)
+
 interface ProtocolPortid {
     protocol: string;
     portid: string;
@@ -46,6 +50,7 @@ class NmapInterface{
         }
         var out = stdout;
         parser.parseString(out, function (err: any, result: any) {
+            //Make sure this ip has something worth checking and that it is not missing fields (i.e. undefined)
             if (
                 !result.nmaprun.host ||
                 !result.nmaprun.host[0].status ||
@@ -172,6 +177,8 @@ class NmapInterface{
             return;
         }
         var out = stdout;
+        
+        //interpet output (done async)
         parser.parseString(out, function (err: any, result: any) {
             var returnVal: Node[] = [];
         

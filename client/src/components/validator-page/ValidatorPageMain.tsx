@@ -149,7 +149,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
 
                                 data={[
                                     { name: 'Public Key', value: this.state.info.public_key },
-                                    { name: 'Agreemnet Score', value: this.state.info.score },
+                                    { name: 'Agreement Score', value: this.state.info.score },
                                 ]}
                             />
                         </Box>

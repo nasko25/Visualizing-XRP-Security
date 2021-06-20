@@ -111,7 +111,7 @@ class Crawler {
                 // get the ssl certificate for the server
                 // console.log(response.request.connection.getPeerCertificate());
                 //throw "";
-                
+
 
                 // Initialize initial node
                 let node: Node = {

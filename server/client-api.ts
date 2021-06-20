@@ -1,10 +1,9 @@
 
 import { Express, Response } from 'express'
-import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore, getLastSecurityAssessmentsForNode } from './db_connection/db_helper';
+import { ERROR_KEY_NOT_FOUND } from './config/messages';
+import { getLastSecurityAssessmentsForNode, getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
-import { Connection } from './db_connection/models/connection';
 import { Mutex } from 'async-mutex';
 import { SecurityAssessment } from './db_connection/models/security_assessment';
 export var LAST_CRAWL: number = Date.now();
@@ -14,22 +13,18 @@ export var LAST_TRUST_SCAN: number = Date.now();
 //Controls when does the cache expire:
 const MINUTES_BEFORE_CACHE_EXPIRES: number = 1;
 
-/*
-    This file exports a function which takes an Express object
-and adds a couple of endpoints to it. These are the endpoints
-meant for use by the Web Client of the application.
-*/
+/** 
+ * This file exports a function which takes an Express object
+ * and adds a couple of endpoints to it. These are the endpoints
+ * meant for use by the Web Client of the application. You can find
+ * the API specification in server/docs/client_api.md
+ */
 
 export type PeerToSend = {
     public_key: string,
     score: number,
     timestamp: Date,
     metric_version: string
-}
-
-interface PeerList {
-    peers: Connection[];
-    timestamp: Date;
 }
 
 /**
@@ -133,13 +128,13 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })[0];
 
                 return {
-                    rippled_version: node.rippled_version,
                     public_key: node.public_key,
+                    rippled_version: node.rippled_version,
                     uptime: node.uptime,
                     longtitude: node.longtitude,
                     latitude: node.latitude,
                     score: latest.score,
-                    // timestamp: latest.timestamp,
+                    timestamp: latest.timestamp,
                     // history: ts_scores
                 };
             });
@@ -350,6 +345,5 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })
         }
     });
-    
 
 }

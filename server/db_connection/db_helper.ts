@@ -19,6 +19,11 @@ var connection = mysql.createConnection({
     database: "db",
 });
 
+/**
+ * Inesrts a stock node into the database
+ * @param node - The node to insert
+ * @returns - A Promise which resolves into void or rejects into error
+ */
 export const insertNode = (node: CrawlerNode): Promise<void> => {
     var insert_node_query: string =
         "INSERT INTO node (IP, portRunningOn,rippled_version, public_key, uptime) VALUES (NULLIF('" +
@@ -36,6 +41,11 @@ export const insertNode = (node: CrawlerNode): Promise<void> => {
     return send_insert_request(insert_node_query);
 };
 
+/**
+ * Inserts multiple nodes into the databse
+ * @param nodes An array of nodes to be inserted
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
     var insert_nodes_query =
         "INSERT INTO node (IP, portRunningOn, rippled_version, public_key, uptime, publisher) VALUES ? AS new ON DUPLICATE KEY UPDATE IP=NULLIF(new.IP, 'undefined'), rippled_version=new.rippled_version, uptime=new.uptime, publishers=NULLIF(new.publisher, 'undefined');";
@@ -50,12 +60,15 @@ export function insertNodes(nodes: CrawlerNode[]): Promise<void> {
             : JSON.stringify(node.publishers),
     ]);
 
-    // connection.query(query, [vals], create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_nodes_query, vals);
 }
 
-// Insert longitude and latitude for a given ip address
-// the function expects a tuple of longitude and latitude
+/**
+ * Insert longitude and latitude for a given ip address
+ * @param loc A numeric array with 2 values - the longitude and latitude
+ * @param ip The IP address of the node
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertLocation(loc: number[], ip: string): Promise<void> {
     const insert_location_query =
         "UPDATE node SET latitude = ?, longtitude = ? where IP = ?;";
@@ -68,11 +81,15 @@ export function insertLocation(loc: number[], ip: string): Promise<void> {
         })
         .concat(ip);
 
-    // connection.query(query, vals, create_query_callback_no_return(callback));
     return send_insert_request_vals(insert_location_query, vals);
 }
 
-export const updateVersionUptimeAndPublisher = (node: CrawlerNode) => {
+/**
+ * Updates the information int the database about Version, Uptime and Publishers for a stock node
+ * @param node - The node
+ * @returns A Promise which resolves into void or rejects into error
+ */
+export const updateVersionUptimeAndPublisher = (node: CrawlerNode): Promise<void> => {
     const update_node_query =
         "UPDATE node SET rippled_version = ?, uptime = ?, publishers = ? WHERE public_key = ?";
     const vals = [
@@ -87,10 +104,13 @@ export const updateVersionUptimeAndPublisher = (node: CrawlerNode) => {
     return send_insert_request_vals(update_node_query, vals);
 };
 
-export const insertConnection = (
-    start_node: CrawlerNode,
-    end_node: CrawlerNode
-): Promise<void> => {
+/**
+ * Insert a connection between 2 stock nodes into the database
+ * @param start_node The start_node of the connection
+ * @param end_node The end_node of the connection
+ * @returns A Promise which resolves into void or rejects into error
+ */
+export const insertConnection = (start_node: CrawlerNode, end_node: CrawlerNode): Promise<void> => {
     var insert_connection_query: string =
         "INSERT INTO connection (start_node, end_node) VALUES ('" +
         start_node.pubkey +
@@ -102,6 +122,11 @@ export const insertConnection = (
 
 }
 
+/**
+ * Inserts a security metric calculation into the database
+ * @param security_assessment - The calculation to be inserted
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertSecurityAssessment(security_assessment: SecurityAssessment): Promise<void> {
     var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES (\'' +
         security_assessment.public_key + '\', \'' +
@@ -111,11 +136,21 @@ export function insertSecurityAssessment(security_assessment: SecurityAssessment
     return send_insert_request(insert_sa_query);
 }
 
+/**
+ * Inserts multiple security metric calculations into the database
+ * @param security_assessments An array of SecurityAssessment
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertSecurityAssessments(security_assessments: SecurityAssessment[]): Promise<void> {
     var insert_sa_query: string = 'INSERT INTO security_assessment (public_key, metric_version, score) VALUES ? ON DUPLICATE KEY UPDATE public_key=VALUES(public_key), metric_version=VALUES(metric_version), score=VALUES(score);';
     return send_insert_request_vals(insert_sa_query, [security_assessments.map(assesment => [assesment.public_key, `${assesment.metric_version}`, `${assesment.score}`])]);
 }
 
+/**
+ * Inserts information about a node's open ports and services running on them in the database
+ * @param node The node, with its public_key, ports and protocols
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertPorts(node: NodePortsProtocols): Promise<void> {
     if (node.protocols == "") node.protocols = "\'\'"
     if (node.ports == "") node.ports = "\'\'"
@@ -124,6 +159,10 @@ export function insertPorts(node: NodePortsProtocols): Promise<void> {
     return send_insert_request_vals(insert_ports_query, vals);
 }
 
+/**
+ * Selects all nodes from the database that have been detected by the Network Crawler in the last 10 minutes
+ * @returns A Promise which resolves into an array of Node objects or rejects into error
+ */
 export function getAllNodes(): Promise<Node[]> {
     var get_all_nodes_query = 'SELECT * FROM node WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW();';
     return send_select_request<Node>(get_all_nodes_query);
@@ -138,6 +177,13 @@ type nodeAndScore = {
     scores: string,
     timestamps: string
 }
+/**
+ * Selects all stock nodes from the database which have been detected by the Network Crawler in the past 10 minutes, 
+ * with all of their their security assessments from the past 3 hours. The security_assessments are represented
+ * by two fields - scores and timestamps. Scores is a string, consisting of the scores, separated by commas, while
+ * timestamps is a string, consisting of the respective timestamps to the scores, separated by commas. 
+ * @returns A Promise which resolves into an array of nodeAndScore objects or rejects into error
+ */
 export function getAllNodesSecurity(): Promise<nodeAndScore[]> {
     var all_security_scores = 
         "Select n.rippled_version, n.public_key, n.uptime, n.longtitude, n.latitude, s.scores, s.timestamps " +
@@ -150,23 +196,32 @@ export function getAllNodesSecurity(): Promise<nodeAndScore[]> {
     );
 }
 
-// this function will return the IPs of nodes that do not have geolocation yet
-// it will ignore NULL IPs
+/**
+ * Select the IPs of stock nodes that do not have geolocation yet.
+ * Stock nodes with NULL IPs are ignored. 
+ * @returns A Promise which resolves into an array of string objects, representing the IPs or rejects into error
+ */
 export function getAllNodesWithoutLocation(): Promise<{ IP: string }[]> {
     var get_all_nodes_without_location_query =
         "SELECT IP FROM node WHERE IP IS NOT NULL AND (longtitude IS NULL OR latitude IS NULL);";
-    // connection.query(get_all_nodes_without_location_query, create_query_callback(callback));
     return send_select_request<{ IP: string }>(
         get_all_nodes_without_location_query
     );
 }
 
+/**
+ * Selects all peer connections between stock nodes from the database
+ * @returns A Promise which resolves into an array of Connection objects or rejects into error
+ */
 export function getAllConnections(): Promise<Connection[]> {
     var get_all_connections_query = "SELECT * FROM connection;";
-    // connection.query(get_all_nodes_query, create_query_callback(callback));
     return send_select_request<Connection>(get_all_connections_query);
 }
 
+/**
+ * Selects all security metric calculations from the database
+ * @returns A Promise which resolves into an array of SecurityAssessment objects or rejects into error
+ */
 export function getAllSecurityAssessments(): Promise<SecurityAssessment[]> {
     var get_all_security_assessments_query =
         "SELECT * FROM security_assessment;";
@@ -175,27 +230,42 @@ export function getAllSecurityAssessments(): Promise<SecurityAssessment[]> {
     );
 }
 
-// [ "port:protocol", "port:protocol" ]
+/**
+ * Selects the stock nodes, which have non null ports in the database.
+ * For each stock node, a public_key, portRunningOn, IP and open ports are returned.
+ * @returns * @returns A Promise which resolves into an array of NodePorts objects or rejects into error
+ */
 export function getNodesNonNullPort(): Promise<NodePorts[]> {
     var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ports IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 
+/**
+ * Select all stock nodes from the database which have non null IP
+ * @returns A Promise which resolves into an array of NodePorts objects or rejects into error
+ */
 export function getAllNodesForPortScan(): Promise<NodePorts[]> {
     var get_nodes_non_null = 'SELECT public_key, portRunningOn, ip, ports FROM node WHERE ip IS NOT NULL;';
     return send_select_request<NodePorts>(get_nodes_non_null);
 }
 
+/**
+ * Selects all stock nodes from the database, which have NULL ports.
+ * @returns A Promise which resolves into an array of NodePortsNull objects or rejects into error
+ */
 export function getNullPortNodes(): Promise<NodePortsNull[]> {
     var get_nodes_non_null =
         "SELECT public_key, ip FROM node WHERE ports IS NULL;";
     return send_select_request<NodePortsNull>(get_nodes_non_null);
 }
 
-export function getHistoricalData(
-    public_key: String,
-    duration: Number
-): Promise<SecurityAssessment[]> {
+/**
+ * Select the the average security score for a stock node for each day for the past 'duration' days
+ * @param public_key - The public key of the stock nodes
+ * @param duration - How many days back
+ * @returns A Promise which resolves into an array of SecurityAssessment objects or rejects into error
+ */
+export function getHistoricalData(public_key: String, duration: Number): Promise<SecurityAssessment[]> {
     var get_historical_data =
         'SELECT public_key, AVG(score) as average_score, DATE(timestamp) as date FROM security_assessment WHERE public_key = "' +
         public_key +
@@ -241,14 +311,23 @@ export function getPeersWithScores(public_key: string): Promise<PeerToSend[]> {
     return send_select_request<PeerToSend>(get_peers_with_scores);
 }
 
-export function getValidatorHistoricalData(
-    public_key: string,
-    duration: number
-): Promise<ValidatorAssessment[]> {
+/**
+ * Select all validator trust score calculations from the past 'duration' days
+ * @param public_key The public_key of the validator
+ * @param duration How many days in the past 
+ * @returns A Promise which resolves into an array of ValidatorAssessment or rejects into error
+ */
+export function getValidatorHistoricalData(public_key: string, duration: number): Promise<ValidatorAssessment[]> {
     const get_validator_history = `SELECT * FROM validator_assessment WHERE public_key="${public_key}" and timestamp >= DATE_SUB(NOW(),INTERVAL "${duration}" DAY);`;
     return send_select_request<ValidatorAssessment>(get_validator_history);
 }
 
+/**
+ * Select all validator trust score calculations from the past 'duration' days, average for each day
+ * @param public_key The public_key of the validator
+ * @param duration How many days in the past 
+ * @returns A Promise which resolves into an array of ValidatorAssessment with size `duration` or rejects into error
+ */
 export function getValidatorHistoricalAvgScore(public_key: string, duration: number): Promise<ValidatorAssessment[]> {
     var get_historical_data =
         'SELECT public_key, AVG(score) as score, DATE(timestamp) as date FROM validator_assessment WHERE public_key = "' +
@@ -258,7 +337,11 @@ export function getValidatorHistoricalAvgScore(public_key: string, duration: num
     return send_select_request<ValidatorAssessment>(get_historical_data);
 }
 
-
+/**
+ * Select information for a stock node, based on its public_key
+ * @param public_key - The stock node public_key
+ * @returns A Promise, which resolves in a list of Node objects or rejects into void
+ */
 export function getNode(public_key: string): Promise<Node[]> {
     const get_node =
         `SELECT * FROM node WHERE public_key=\'` + public_key + `\';`;
@@ -271,6 +354,11 @@ export function getIpAddresses() {
     return send_select_request<NodeIpKeyPublisher>(get_ip_addresses);
 }
 
+/**
+ * Inserts a list of validators into the database
+ * @param validators - An arry of Validator objects
+ * @returns A Promise which resolves into void or rejects into error
+ */
 export function insertValidators(validators: Validator[]) {
     const query =
         "INSERT INTO validator (public_key, unl, missed_ledgers) VALUES ? AS new ON DUPLICATE KEY UPDATE unl=new.unl, missed_ledgers=new.missed_ledgers;";
@@ -283,14 +371,21 @@ export function insertValidators(validators: Validator[]) {
     return send_insert_request_vals(query, [vals]);
 }
 
+/**
+ * Select all validators from the database
+ * @returns A Promise which resolves into an array of Validator or rejects into error
+ */
 export function getValidators(): Promise<Validator[]> {
     const query = "SELECT * FROM validator";
     return send_select_request<Validator>(query);
 }
 
-export function insertValidatorsAssessments(
-    assessments: ValidatorAssessment[]
-) {
+/**
+ * Insert trust scores of validators into the database
+ * @param assessments An array of ValidatorAssessments
+ * @returns A Promise which resolves into void or rejects into error
+ */
+export function insertValidatorsAssessments(assessments: ValidatorAssessment[]): Promise<void> {
     const query =
         "INSERT INTO validator_assessment (public_key, trust_metric_version, score) VALUES ? AS new ON DUPLICATE KEY UPDATE trust_metric_version=new.trust_metric_version, score=new.score;";
     const vals = assessments.map((assessment) => [
@@ -302,8 +397,11 @@ export function insertValidatorsAssessments(
     return send_insert_request_vals(query, [vals]);
 }
 
-// this function will return the hourly validators statistics grouped by the node's public key
-// so it returns an array of { public_key: string, hourly_stats: [{ missed: number, total: number }] }
+/**
+ * Select the hourly validators statistics grouped by the node's public key.
+ * It returns an array of { public_key: string, hourly_stats: [{ missed: number, total: number }] }
+ * @returns A Promise which resolves into an array of ValidatorStatisticsTotal or rejects into error
+ */
 export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
     // the getStatistics() sql procedure will get the hourly statistics of each validator, grouped by the validator's key
     // if there is more that 7 days worth of data, getStatistics() will sum the `total` and `missed` variables and group them to provide
@@ -358,9 +456,12 @@ export function getValidatorsStatistics(): Promise<ValidatorStatisticsTotal[]> {
     });
 }
 
-export function insertValidatorsStatistics(
-    validatorsStatistics: ValidatorStatistics[]
-) {
+/**
+ * Inserts trust scores of validators into the database
+ * @param validatorsStatistics - an array of ValidatorStatistics objects
+ * @returns A Promise which resolves into void ot rejects into error
+ */
+export function insertValidatorsStatistics(validatorsStatistics: ValidatorStatistics[]): Promise<void> {
     const query =
         "INSERT INTO validator_statistics (public_key, total, missed) VALUES ?;";
     const vals = validatorsStatistics.map((validatorStats) => [
@@ -371,8 +472,13 @@ export function insertValidatorsStatistics(
 
     return send_insert_request_vals(query, [vals]);
 }
-
-export function insertNodeValidatorConnections(cons: Map<string, Set<string>>) {
+/**
+ * Inserts the connections between a stock node and it's UNL validators
+ * @param cons A Map with keys corresponding to stock node public keys and values - the validators
+ * on their UNL
+ * @returns A Promise which resolves in void or rejects in error
+ */
+export function insertNodeValidatorConnections(cons: Map<string, Set<string>>): Promise<void> {
     let query = "INSERT IGNORE INTO node_validator VALUES ";
     let nEntries = 0;
     let count = 0;
@@ -403,11 +509,20 @@ export function insertNodeValidatorConnections(cons: Map<string, Set<string>>) {
     return send_insert_request(query);
 }
 
+/**
+ * A type used as a return type for the getALlValidatorAssessments method
+ */
 type validator_group_assessment = {
     public_key: string,
     scores: string, 
     timestamps: string
 }
+
+/**
+ * Selects all validator assessments from the database, grouped by public_key, 
+ * with timestamps and scores as concatenated strings, separated by commas
+ * @returns A Promise which resolves in validator_group_assessment[] or rejects in error
+ */
 export function getAllValidatorAssessments(): Promise<validator_group_assessment[]> {
     let get_all_validator_assessments_query: string =
         "SELECT public_key, GROUP_CONCAT(score) AS scores, GROUP_CONCAT(timestamp) AS timestamps " +
@@ -425,6 +540,12 @@ export function emptyConnectionTable(): Promise<void> {
     return send_insert_request(emtpy_connection_table_query);
 }
 
+/**
+ * Sends a SELECT request to the database, expecting to return an array
+ * of data of type T[]
+ * @param request - The query in string format
+ * @returns - A Promise which resolves in T[] or rejects in error
+ */
 function send_select_request<T>(request: string): Promise<T[]> {
     return new Promise(function (resolve, reject) {
         connection.query(
@@ -440,6 +561,11 @@ function send_select_request<T>(request: string): Promise<T[]> {
     })
 }
 
+/**
+ * Sends an INSERT or UPDATE request to the database, expecting no return from the database
+ * @param request - The query in string format
+ * @returns - A Promise which resolves in void or rejects in error
+ */
 function send_insert_request(request: string): Promise<void> {
     return new Promise(function (resolve, reject) {
         connection.query(
@@ -455,6 +581,12 @@ function send_insert_request(request: string): Promise<void> {
     })
 }
 
+/**
+ * Sends a INSERT or UPDATE request to the database, expecting no return from the database
+ * @param request - The query in string format
+ * @param vals - The values to be filled in the request
+ * @returns - A Promise which resolves in void or rejects in error
+ */
 function send_insert_request_vals(request: string, vals: any): Promise<void> {
     return new Promise(function (resolve, reject) {
         connection.query(
