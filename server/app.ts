@@ -49,7 +49,7 @@ if (process.argv[2] == 'crawler') {
     // the trust assessor listens for that event and starts only when it is received
     const eventEmitter = new EventEmitter();
     new ValidatorTrustAssessor(eventEmitter);
-    new ValidatorMonitor(eventEmitter);
+    new ValidatorMonitor(eventEmitter).setVerboseLevel(VERBOSE_LEVEL);
 
 } else if (process.argv[2] == "api") {
     const app = express();

@@ -41,6 +41,7 @@ class PortScan {
         this.nmapInterface = nmmpintrf;
         this.shortScanList = [];
 
+        //Set up all options
         if(doLongScans) this.DO_LONG_SCAN = doLongScans;
         if(topPorts) this.TOP_PORTS = topPorts;
         if(tLevelShort) this.T_LEVEL_SHORT = tLevelShort;
@@ -107,6 +108,7 @@ class PortScan {
     }
     
     //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
+    //This function will make them IPv4
     normaliseIP(ip: string){
         if(ip.startsWith("::ffff:")){
             // Logger.info("haha")
@@ -121,14 +123,18 @@ class PortScan {
      * @param listOfNodes the list of nodes with null ports in db
      */
     async longScan(listOfNodes: NodePortsNull[]) {
+        //I recommend ignoring this part of the code. It is provided in case the user wants a long scan, however it is extremely ineffective.
+        //NB
         var n = 0;
         var indexArrayForIPv6 = [];
         while (n < listOfNodes.length) {
             var i = 0;
             var listOfIpS = "";
             var mp = new Map();
+            //Take a small amount of the IPv4 addresses
             while (n < listOfNodes.length && i < this.MAX_LONG_SCANS) {
                 if (this.normaliseIP(listOfNodes[n].ip).includes(":")) {
+                    //Separate the IPv6 from the IPv4
                     indexArrayForIPv6.push(n);
                 } else {
                     listOfIpS += this.normaliseIP(listOfNodes[n].ip) + " ";
@@ -139,8 +145,10 @@ class PortScan {
                 n++;
             }
 
+            //Put them in NMAP
             var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, true, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
             if (out != null) {
+                //Construct result for DB
                 for (var node in out) {
                     if (out[node].up) {
                         var stringForDBports = "";
@@ -167,13 +175,13 @@ class PortScan {
                         dbCon.insertPorts(putin).catch((err: Error) => {
                             Logger.error(err.message);
                         });
-                        console.log(putin);
+                        if(this.VERBOSE_LEVEL>3) console.log(putin);
                     }
                 }
             }
         }
 
-        // Need to split IPv6 from IPv4 as otherwise NMAP won't work. This section deals with the IPv6 section
+        // Need to split IPv6 from IPv4 as otherwise NMAP won't work. This section deals with the IPv6 ips
         var n = 0;
         while (n < indexArrayForIPv6.length) {
             var mp = new Map();
@@ -181,6 +189,7 @@ class PortScan {
             var listOfIpS = "";
             while (n < indexArrayForIPv6.length && i < this.MAX_LONG_SCANS) {
                 listOfIpS += listOfNodes[indexArrayForIPv6[n]].ip + " ";
+                //Need to know which IP corresponds to what pub key.
                 mp.set(
                     listOfNodes[indexArrayForIPv6[n]].ip,
                     listOfNodes[indexArrayForIPv6[n]].public_key
@@ -190,7 +199,7 @@ class PortScan {
             }
 
             var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, false, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
-            console.log(out);
+            if(this.VERBOSE_LEVEL>3) console.log(out);
             if (out != null) {
                 for (var node in out) {
                     if (out[node].up) {
@@ -222,9 +231,9 @@ class PortScan {
                     }
                 }
             }
-            console.log("finished.");
+            if(this.VERBOSE_LEVEL > 2) console.log("finished long scan batch");
         }
-        console.log("out of cycle.");
+        if(this.VERBOSE_LEVEL > 3) console.log("out of cycle. 227");
     }
     /**
      * Creates the promises that the second version of the short port scanner uses
@@ -269,7 +278,11 @@ class PortScan {
                         out1.openPorts[i].portid
                     );
                     outPorts = out1.openPorts[i].portid;
-                    outProtocols = out1.openPorts[i].protocol;
+                    if(out1.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols = "xrp";
+                    }else{
+                        outProtocols = out1.openPorts[i].protocol;
+                    }
                     i++;
                     flag = 1;
                 }
@@ -279,7 +292,11 @@ class PortScan {
                         out1.openPorts[i].portid
                     );
                     outPorts += "," + out1.openPorts[i].portid;
-                    outProtocols += "," + out1.openPorts[i].protocol;
+                    if(out1.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols += ",xrp" ;
+                    }else{
+                        outProtocols += "," + out1.openPorts[i].protocol;
+                    }
                     i++;
                 }
                 success1 = true;
@@ -293,16 +310,25 @@ class PortScan {
                 var i: number = 0;
                 if (flag == 0) {
                     outPorts = out2.openPorts[i].portid;
-                    outProtocols = out2.openPorts[i].protocol;
+                    if(out2.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                        outProtocols = "xrp";
+                    }else{
+                        outProtocols = out2.openPorts[i].protocol;
+                    }
+                    
                     i++;
                 }
 
                 while (i < out2.openPorts.length) {
                     if (mapUnique.has(out2.openPorts[i].portid)) {
-                        console.log("Duplicate " + out2.openPorts[i].portid);
+                        if(this.VERBOSE_LEVEL > 3) console.log("Duplicate " + out2.openPorts[i].portid);
                     } else {
                         outPorts += "," + out2.openPorts[i].portid;
-                        outProtocols += "," + out2.openPorts[i].protocol;
+                        if(out2.openPorts[i].portid==listOfNodes[ip].portRunningOn){
+                            outProtocols += ",xrp" ;
+                        }else{
+                            outProtocols += "," + out2.openPorts[i].protocol;
+                        }
                     }
                     i++;
                 }
@@ -311,14 +337,14 @@ class PortScan {
 
             //If either scan has succeeded, put information in databse
             if (success2 || success1) {
-                console.log(listOfNodes[ip].ip + " " + outPorts);
+                if(this.VERBOSE_LEVEL > 3) console.log(listOfNodes[ip].ip + " " + outPorts);
                 var putin: NodePortsProtocols = {
                     ip: listOfNodes[ip].ip,
                     public_key: listOfNodes[ip].public_key,
                     ports: outPorts,
                     protocols: outProtocols,
                 };
-                Logger.info("Storing ports " + outPorts + " with protocols " + outProtocols + " for IP " + listOfNodes[ip].ip)
+                if(this.VERBOSE_LEVEL>2) Logger.info("Storing ports " + outPorts + " with protocols " + outProtocols + " for IP " + listOfNodes[ip].ip)
                 dbCon.insertPorts(putin).catch((err: Error) => {
                     Logger.error(err.message);
                 });
@@ -327,7 +353,7 @@ class PortScan {
                 // listOfIPs[ip].openPorts = out;
             } else {
                 //Both scans failed. Either node is down or is blocking us.
-                console.log("Host may be down " + listOfNodes[ip].ip);
+                if(this.VERBOSE_LEVEL > 1) console.log("Host may be down " + listOfNodes[ip].ip);
                 resolve(false);
                 return;
             }
@@ -370,7 +396,7 @@ class PortScan {
     
 
     start() {
-        Logger.info("PORT SCANNER STARTED")
+        if(this.VERBOSE_LEVEL>1) Logger.info("PORT SCANNER STARTED")
 
         if(this.DO_LONG_SCAN){
             dbCon.getNodesNonNullPort().then((result) => {
