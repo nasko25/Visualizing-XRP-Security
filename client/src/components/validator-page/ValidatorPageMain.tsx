@@ -30,22 +30,6 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
     }
 
     /**
-     * Hardcoded data for presentation purposes
-     * Delete once enough data has been collected
-     */
-    createData(): HistoricalScore[] {
-        let hardcoded: HistoricalScore[] = [];
-        for(let i=1; i<31; i++) {
-            hardcoded.push({
-                date: '0' + i + '/06',
-                score: parseFloat(Math.random().toFixed(2))
-            });
-        }
-
-        return hardcoded;
-    }
-
-    /**
      * Fetch all the needed information  from the server,
      * once the component has mounted.
      */
@@ -122,6 +106,21 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         }
     }
 
+    /**
+     * Calculates the average trust score of the validator nodes
+     * @returns Average trust score
+     */
+    averageTrustScore(): string {
+        let avg: number = 0;
+        for (let node of this.state.data) {
+            avg += parseFloat(`${node.score}`);
+        }
+
+        avg = avg/this.state.data.length;
+
+        return avg.toFixed(2);
+    }
+
     render() {
         return (
             <Grommet style={{ height: '100%', width: '100%' }}>
@@ -156,6 +155,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main} overflow='auto'>
                             <Heading size="100%" margin="2%">Validator List</Heading>
+                            <Text>Average Trust Score: {this.averageTrustScore()}</Text>
                             <Box
                                 overflow="auto"
                                 style={{ height: "80%" }}
@@ -198,10 +198,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            {/* Uncomment for chart to work with real data */}
-                            {/* <HistoricalChart historical_scores={this.state.score} /> */}
-
-                            <HistoricalChart historical_scores={this.createData()}/>
+                            <HistoricalChart historical_scores={this.state.score} />
                         </Box>
                     </Grid>
                 </div>

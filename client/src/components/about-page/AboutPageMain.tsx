@@ -12,13 +12,14 @@ export default class AboutPageMain extends React.Component {
             </Header>
             <main style={{ width: "100%", height: `${100 - SETUP.header_height}%` }}>
                 <Grid
-                    style={{ width: "100%", height: "100%" }}
+                    style={{ width: "100%", height: "100%", overflow:'auto' }}
                     rows={["1/2", "1/2"]}
                     columns={["1/2", "1/2"]}
                     areas={[
                         { name: 'general', start: [0, 0], end: [1, 1] }
                     ]}
                     align='center'
+                    
                 >
                     <Box round="1%" margin={{ top: "2%", left: "2%", right: "2%", bottom: "2%" }} gridArea="general" background={COLORS.main}>
                         <Box align='center' margin={{ top: "2%", left: "10%", right: "10%", bottom: "1%" }} data-testid='p1'>
@@ -48,7 +49,10 @@ export default class AboutPageMain extends React.Component {
                             <h1 style={{ fontSize: "150%", fontWeight: "bold" }}>A note on security</h1>
                             <p>
                                 We have developed a security metric, which measures how secure a particular Node is.
-                                This metric takes into account...(fill in later)
+                                This metric takes into account each node's version and their open pots. 
+                                The older the version the lower the score and likewise - more ports results in lower score. 
+                                The final calculation is a weighted average of the two, normalised between 0 and 100. 
+                                Our findings of open ports and node's version are present on each node's page.
                                 One must look beyond the number.
                             </p>
                         </Box>
