@@ -1,10 +1,9 @@
 
 import { Express, Response } from 'express'
-import { ERROR_DATABASE_QUERY, ERROR_KEY_NOT_FOUND } from './config/messages';
+import { ERROR_KEY_NOT_FOUND } from './config/messages';
 import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
-import { Connection } from './db_connection/models/connection';
 import { Mutex } from 'async-mutex';
 import { SecurityAssessment } from './db_connection/models/security_assessment';
 export var LAST_CRAWL: number = Date.now();
@@ -14,22 +13,18 @@ export var LAST_TRUST_SCAN: number = Date.now();
 //Controls when does the cache expire:
 const MINUTES_BEFORE_CACHE_EXPIRES: number = 1;
 
-/*
-    This file exports a function which takes an Express object
-and adds a couple of endpoints to it. These are the endpoints
-meant for use by the Web Client of the application.
-*/
+/** 
+ * This file exports a function which takes an Express object
+ * and adds a couple of endpoints to it. These are the endpoints
+ * meant for use by the Web Client of the application. You can find
+ * the API specification in server/docs/client_api.md
+ */
 
 export type PeerToSend = {
     public_key: string,
     score: number,
     timestamp: Date,
     metric_version: string
-}
-
-interface PeerList {
-    peers: Connection[];
-    timestamp: Date;
 }
 
 /**
@@ -133,13 +128,13 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })[0];
 
                 return {
-                    rippled_version: node.rippled_version,
                     public_key: node.public_key,
+                    rippled_version: node.rippled_version,
                     uptime: node.uptime,
                     longtitude: node.longtitude,
                     latitude: node.latitude,
                     score: latest.score,
-                    // timestamp: latest.timestamp,
+                    timestamp: latest.timestamp,
                     // history: ts_scores
                 };
             });
@@ -206,14 +201,16 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                             historyCache.set(public_key, history);
                             res.send(JSON.stringify([
                                 {
-                                    IP: results[0].IP,
-                                    latitude: results[0].latitude,
-                                    longtitude: results[0].longtitude,
-                                    ports: results[0].ports,
                                     public_key: results[0].public_key,
-                                    publishers: results[0].publishers,
+                                    ip: results[0].IP,
                                     rippled_version: results[0].rippled_version,
                                     uptime: results[0].uptime,
+                                    portRunningOn: results[0].portRunningOn,
+                                    ports: results[0].ports,
+                                    services: results[0].services,
+                                    publishers: results[0].publishers,
+                                    latitude: results[0].latitude,
+                                    longtitude: results[0].longtitude,
                                     history: history,
                                 }
                             ]));
@@ -343,6 +340,5 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                 })
         }
     });
-    
 
 }
