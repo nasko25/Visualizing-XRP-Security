@@ -106,6 +106,21 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
         }
     }
 
+    /**
+     * Calculates the average trust score of the validator nodes
+     * @returns Average trust score
+     */
+    averageTrustScore(): string {
+        let avg: number = 0;
+        for (let node of this.state.data) {
+            avg += parseFloat(`${node.score}`);
+        }
+
+        avg = avg/this.state.data.length;
+
+        return avg.toFixed(2);
+    }
+
     render() {
         return (
             <Grommet style={{ height: '100%', width: '100%' }}>
@@ -140,6 +155,7 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="list" background={COLORS.main} overflow='auto'>
                             <Heading size="100%" margin="2%">Validator List</Heading>
+                            <Text>Average Trust Score: {this.averageTrustScore()}</Text>
                             <Box
                                 overflow="auto"
                                 style={{ height: "80%" }}
