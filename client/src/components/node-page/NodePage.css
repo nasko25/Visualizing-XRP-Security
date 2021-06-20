@@ -23,3 +23,34 @@
 .hide-loader {
   display: none
 }
+
+.tooltip {
+  color: white;
+  width: "30px"; height: "30px";
+  margin-top:"0.5%";
+  margin-left:"0.5%";
+  /* position: relative;  */
+  /* display: inline-block;  */
+  /* border-bottom: 1px dotted black; /* If you want dots under the hoverable text  */
+}
+
+/* Tooltip text */
+.tooltipText {
+  visibility: hidden;
+  width: "50%";
+  background-color: #212529;
+  opacity: 80%;
+  color: #fff;
+  text-align: center;
+  padding: 2% 2%;
+  border-radius: 6px;
+ 
+  position: absolute;
+  left: 5%;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+#tooltip:hover .tooltipText {
+  visibility: visible;
+}
