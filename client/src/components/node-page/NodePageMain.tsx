@@ -12,10 +12,8 @@ import HistoricalChart from "../HistoricalChart";
 
 /**
  * Component that visualizes information about a specific Node
- * It has a Header, including navigation button for returning to the main
- * page and a search bar, and a main body, consisting of a peer graph,
+ * It has a Header with a search bar, and a main body, consisting of a peer graph,
  * a statistical chart and an info box.
- * 
  */
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
@@ -26,7 +24,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             public_key: this.parseURL(),
             IP: "",
             peers: [],
-            trust_score: 0,
+            security_score: 0,
             rippled_version: "",
             ports: [],
             historical_scores: [],
@@ -44,7 +42,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.parseURL = this.parseURL.bind(this);
         this.historyListener = this.historyListener.bind(this);
         this.handleAPIError = this.handleAPIError.bind(this);
-        this.createPeerList = this.createPeerList.bind(this);
+        this.createPeerTable = this.createPeerTable.bind(this);
         this.historyListener();
     }
 
@@ -166,7 +164,8 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 var ports: Port[] = this.parsePorts(info);
                 this.setState(
                     {
-                        IP: info.IP,
+                        security_score: info.score,
+                        IP: info.ip,
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
                         ports: ports,
@@ -191,8 +190,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     /**
-     * Returnts the ports and their services as a List 
-     * @returns 
+     * @returns The ports and their services as a List in a Box
      */
     preparePortList() {
         var ports = [];
@@ -204,21 +202,23 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             return "No information available"
         }
         return (
-            <Box style={{ width: "100%", height: "10%" }}>
+            <Box overflow='auto' style={{ width: "100%", height: "10%" }}>
                 <List
                     style={{ width: "100%", height: "100%", alignSelf: "center" }}
                     primaryKey="port_number"
                     secondaryKey="service"
-
                     data={ports}
                 >
                 </List>
             </Box>);
     }
 
+    /**
+     * @returns A List of all the properties to be displayed in the Node Information section
+     */
     createNodeInformationList() {
         return (
-            <Box overflow='scroll' style={{height: "45%"}}>
+            <Box overflow='auto' style={{height: "45%"}}>
                 <List
                     style={{ width: "70%", height: "70%", alignSelf: "center" }}
 
@@ -226,7 +226,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                     secondaryKey="value"
 
                     data={[
-                        { name: 'Security score', value: this.state.trust_score },
+                        { name: 'Security score', value: this.state.security_score },
                         { name: 'IP', value: this.state.IP },
                         { name: 'Rippled version', value: this.state.rippled_version },
                         { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
@@ -237,7 +237,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             </Box >);
     }
 
-    createPeerList() {
+    /**
+     * @returns A DataTable, containing the information about the node's peers and their scores
+     */
+    createPeerTable() {
         let dt = 
         <DataTable
             columns={[
@@ -309,24 +312,24 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main} overflow='hidden'>
                             <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
-                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
-                            <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main} overflow='auto'>
+                            <Heading size="100%" margin="2%">{this.state.public_key}</Heading>
                             {this.createNodeInformationList()}
-                            <Heading size="100%" margin="2%">Peer Information</Heading>
+                            <Heading size="100%" margin="1%">Peer Information</Heading>
                             <Box
                                 overflow="auto"
                                 style={{ height: "45%" }}
-                                margin="2%"
+                                margin="1%"
                                 round="1%"
                                 background={COLORS.button}>
-                                {this.createPeerList()}
+                                {this.createPeerTable()}
                             </Box>
                         </Box>
                         {/* The historical scores chart */}
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%">Score over Time</Heading>
                             <HistoricalChart historical_scores={this.state.historical_scores} />
                         </Box>
