@@ -134,7 +134,7 @@ async function startCrawler() {
 
     // remove the empty last line
     rippleServersArr.splice(-1, 1);
-    // console.log(rippleServersArr);
+
     let crawler = new Crawler(rippleServersArr);
     crawler.crawl();
     // for the moment simply display what has been collected in console
