@@ -1,7 +1,7 @@
 
 import { Express, Response } from 'express'
 import { ERROR_KEY_NOT_FOUND } from './config/messages';
-import { getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore } from './db_connection/db_helper';
+import { getLastSecurityAssessmentsForNode, getAllNodes, getHistoricalData, getNode, getPeersWithScores, getAllValidatorAssessments, getValidatorHistoricalData, getAllNodesSecurity, getValidatorHistoricalAvgScore } from './db_connection/db_helper';
 import Logger from './logger';
 import { Node } from "./db_connection/models/node";
 import { Mutex } from 'async-mutex';
@@ -199,21 +199,26 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                     getHistoricalData(public_key, 30)
                         .then((history) => {
                             historyCache.set(public_key, history);
-                            res.send(JSON.stringify([
-                                {
-                                    public_key: results[0].public_key,
-                                    ip: results[0].IP,
-                                    rippled_version: results[0].rippled_version,
-                                    uptime: results[0].uptime,
-                                    portRunningOn: results[0].portRunningOn,
-                                    ports: results[0].ports,
-                                    services: results[0].services,
-                                    publishers: results[0].publishers,
-                                    latitude: results[0].latitude,
-                                    longtitude: results[0].longtitude,
-                                    history: history,
-                                }
-                            ]));
+                            getLastSecurityAssessmentsForNode(public_key).then(([assessment]) => {
+                                res.send(JSON.stringify([
+                                    {
+                                        IP: results[0].IP,
+                                        latitude: results[0].latitude,
+                                        longtitude: results[0].longtitude,
+                                        ports: results[0].ports,
+                                        public_key: results[0].public_key,
+                                        publishers: results[0].publishers,
+                                        rippled_version: results[0].rippled_version,
+                                        uptime: results[0].uptime,
+                                        history: history,
+                                        score: assessment.score,
+                                        timestamp: assessment.timestamp
+                                    }
+                                ]));
+                            }).catch((err) => {
+                                Logger.error(`Error in most recent security score + ${err.message}`);
+                            res.status(400).send(err.message);
+                            })
                         }).catch((err) => {
                             Logger.error(`Error in getting historical data + ${err.message}`);
                             res.status(400).send(err.message);

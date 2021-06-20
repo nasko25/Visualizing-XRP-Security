@@ -27,6 +27,7 @@ const mockNodeInfo: NodeInfoDB = {
     rippled_version: '1.6.0',
     timestamp: "never",
     uptime: 42,
+    score: 85,
     history: [{average_score: 0, date: new Date("17/6/2021")}]
 };
 

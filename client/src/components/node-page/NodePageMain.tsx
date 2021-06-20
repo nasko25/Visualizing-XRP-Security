@@ -24,7 +24,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             public_key: this.parseURL(),
             IP: "",
             peers: [],
-            trust_score: 0,
+            security_score: 0,
             rippled_version: "",
             ports: [],
             historical_scores: [],
@@ -164,6 +164,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 var ports: Port[] = this.parsePorts(info);
                 this.setState(
                     {
+                        security_score: info.score,
                         IP: info.ip,
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
@@ -217,7 +218,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
      */
     createNodeInformationList() {
         return (
-            <Box overflow='scroll' style={{height: "45%"}}>
+            <Box overflow='auto' style={{height: "45%"}}>
                 <List
                     style={{ width: "70%", height: "70%", alignSelf: "center" }}
 
@@ -225,7 +226,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                     secondaryKey="value"
 
                     data={[
-                        { name: 'Security score', value: this.state.trust_score },
+                        { name: 'Security score', value: this.state.security_score },
                         { name: 'IP', value: this.state.IP },
                         { name: 'Rippled version', value: this.state.rippled_version },
                         { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
@@ -311,24 +312,24 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                             { name: 'stats', start: [0, 0], end: [0, 1] },
                             { name: 'info', start: [1, 1], end: [1, 1] },
                         ]}>
-                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main}>
+                        <Box round="1%" margin={{ top: "2%", left: "1%", right: "2%", bottom: "1%" }} gridArea="peers_network" background={COLORS.main} overflow='hidden'>
                             <NodePeerGraph on_node_click={this.nodeOnClick} public_key={this.state.public_key} peers={this.state.peers}></NodePeerGraph>
                         </Box>
-                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main}>
-                            <Heading size="100%" margin="3%">{this.state.public_key}</Heading>
+                        <Box round="1%" margin={{ top: "2%", left: "2%", right: "1%", bottom: "2%" }} gridArea="stats" background={COLORS.main} overflow='auto'>
+                            <Heading size="100%" margin="2%">{this.state.public_key}</Heading>
                             {this.createNodeInformationList()}
-                            <Heading size="100%" margin="2%">Peer Information</Heading>
+                            <Heading size="100%" margin="1%">Peer Information</Heading>
                             <Box
                                 overflow="auto"
                                 style={{ height: "45%" }}
-                                margin="2%"
+                                margin="1%"
                                 round="1%"
                                 background={COLORS.button}>
                                 {this.createPeerTable()}
                             </Box>
                         </Box>
                         {/* The historical scores chart */}
-                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd">
+                        <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="info" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%">Score over Time</Heading>
                             <HistoricalChart historical_scores={this.state.historical_scores} />
                         </Box>

@@ -9,7 +9,7 @@ export type NodePageProps = {
 export type NodePageState = {
     public_key: string,
     peers: Peer[],
-    trust_score: number,
+    security_score: number,
     IP: string,
     rippled_version: string,
     ports: Port[],
@@ -43,6 +43,7 @@ export type NodeInfoDB = {
     longtitude: number,
     latitude: number,
     timestamp: string,
+    score: number,
     history: [{average_score: number, date: Date}]
 }
 

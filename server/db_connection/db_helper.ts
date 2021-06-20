@@ -275,11 +275,18 @@ export function getHistoricalData(public_key: String, duration: Number): Promise
 }
 
 /**
- * Select the public_keys of a stock node's outgoing peers
- * @param public_key The public_key of the stock node
- * @returns A Promise which resolves into an array of Connection objects or rejects into error
+ * Get most recent security assessment for a stock node
+ * @param public_key The public_key of the node
+ * @returns A Promise which resolves in an array of a single SecurityAssessment or rejects into error
  */
-export function getNodeOutgoingPeers(public_key: string): Promise<Connection[]> {
+export function getLastSecurityAssessmentsForNode(public_key: string){
+    let query = 'SELECT * from security_assessment WHERE public_key = \'' + public_key + '\' ORDER BY timestamp DESC limit 1;';
+    return send_select_request<SecurityAssessment>(query);
+}
+
+export function getNodeOutgoingPeers(
+    public_key: string
+): Promise<Connection[]> {
     const get_node_outgoing_peers =
         'SELECT end_node FROM connection WHERE start_node="' +
         public_key +

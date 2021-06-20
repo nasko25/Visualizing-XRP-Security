@@ -1,8 +1,10 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import Button from "react-bootstrap/Button";
 import { DataSetEdges, DataSetNodes, Edge, Network, Node } from "vis-network";
 import { DataSet } from 'vis-data';
 import "./NodePage.css";
+import { Box, Text } from 'grommet';
+import { CircleInformation } from "grommet-icons";
 import { Peer } from "./NodePageTypes";
 import Loader from "../Loader";
 
@@ -87,11 +89,11 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
             // Orange
             return 'rgb(255, 120, 0)';
         } else if (score >= 50) {
-            // Orange
+            // Red
             return 'rgb(255, 0, 0)';
         }
         else {
-            // Red
+            // Dark Red
             return 'rgb(150, 0, 0)';
         }
     }
@@ -181,11 +183,54 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
         this.network = network;
     }
 
+    /**
+     * Creates an info button
+     */
+    info() {
+        if(this.props.peers.length > 150) {
+            return (<Box
+                id='tooltip'
+                style={{width: "30px", height: "30px", marginTop:"0.5%", marginLeft:"0.5%"}}
+            >
+                <CircleInformation color='red' size="30px"></CircleInformation>
+                <span className='tooltipText'>There are too many peers! Showing 150 with lowest scores.<br></br><br></br>
+                    The nodes are colored based on the score:<br></br>
+                    - Green : 90 - 100<br></br>
+                    - Yellow : 80 - 90<br></br>
+                    - Orange : 70 - 80<br></br>
+                    - Red : 50 - 70<br></br>
+                    - Dark red : 0 - 50<br></br>
+                    - Black : Current node
+                </span>
+            </Box>);
+        }else {
+            return (<Box
+                id='tooltip'
+                style={{width: "30px", height: "30px", marginTop:"0.5%", marginLeft:"0.5%"}}
+            >
+                <CircleInformation size="30px"></CircleInformation>  
+                <span className='tooltipText'>
+                    The nodes are colored based on the score as following:<br></br>
+                    - Green : 90 - 100<br></br>
+                    - Yellow : 80 - 90<br></br>
+                    - Orange : 70 - 80<br></br>
+                    - Red : 50 - 70<br></br>
+                    - Dark red : 0 - 50<br></br>
+                    - Black : Current node
+                </span>
+            </Box>);
+        } 
+        
+    }
+
     render() {
         return (
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
+
+                {this.info()}
+
                 <div className="peer-network"
-                    style={{ width: "100%", height: "84%", position: "relative" }}
+                    style={{ width: "100%", height: "80%", position: "relative" }}
                     id='peer-network'
                     data-testid="peer-network" >
                 </div>
@@ -193,7 +238,7 @@ export default class NodePeerGraph extends Component<NodePeerGraphProps> {
                 <Loader top={40} />
 
                 <Button
-                    style={{ width: "20%", height: "10%", alignSelf: "center", margin: "1%" }}
+                    style={{ width: "20%", height: "8%", alignSelf: "center", margin: "1%" }}
                     variant="dark"
                     onClick={this.createNetwork}
                     data-testid="refresh-peers"
