@@ -83,19 +83,19 @@ export default class ValidatorIdentifier {
             "VI: Checking batch from a total of " + nodes.length + " nodes ..."
         );
 
-        let splice = nodes.splice(0, this.validatorBatchCount);
+        let promises: Promise<[string, string[]]>[] = []; 
 
+        let batch = nodes.splice(0, this.validatorBatchCount);
+
+        batch.forEach(node => {
+            let parsed: string[] = JSON.parse(node.publishers)
+            parsed.forEach(
+                pub => promises.push(this.get_node_validator_list(node.IP, pub, node.public_key))
+            )});
 
         Promise
             .all(
-                // Create an array of Promise objects for all requests
-                splice.map((node) =>
-                    this.get_node_validator_list(
-                        node.IP,
-                        node.publishers,
-                        node.public_key
-                    )
-                )
+                promises
             )
             .then(
                 // Response is an array of tuples (node_key, val_keys)
