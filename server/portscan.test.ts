@@ -79,7 +79,7 @@ test("Do a shortScan", async () => {
         retTest = valret;
         
     }).catch((reason)=>console.log(reason));
-    expect(insertPortsMock.mock.calls[0][0]).toStrictEqual({ip: '127.9.42.1',ports:"42,44", protocols: "dcp,dcp", public_key:"bs"})
+    expect(insertPortsMock.mock.calls[0][0]).toStrictEqual({ip: '127.9.42.1',ports:"42,44", protocols: "dcp,xrp", public_key:"bs"})
     expect(retTest).toBe(true);
     expect(insertPortsMock).toBeCalledTimes(1);
     expect(nmpintrf.topPortsScan).toBeCalledTimes(1);
