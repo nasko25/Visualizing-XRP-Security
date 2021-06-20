@@ -204,6 +204,16 @@ export function getHistoricalData(
     return send_select_request<SecurityAssessment>(get_historical_data);
 }
 
+/**
+ * Get most recent security assessment for a stock node
+ * @param public_key The public_key of the node
+ * @returns A Promise which resolves in an array of a single SecurityAssessment or rejects into error
+ */
+export function getLastSecurityAssessmentsForNode(public_key: string){
+    let query = 'SELECT * from security_assessment WHERE public_key = \'' + public_key + '\' ORDER BY timestamp DESC limit 1;';
+    return send_select_request<SecurityAssessment>(query);
+}
+
 export function getNodeOutgoingPeers(
     public_key: string
 ): Promise<Connection[]> {

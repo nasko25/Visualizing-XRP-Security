@@ -26,7 +26,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             public_key: this.parseURL(),
             IP: "",
             peers: [],
-            trust_score: 0,
+            security_score: 0,
             rippled_version: "",
             ports: [],
             historical_scores: [],
@@ -166,6 +166,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 var ports: Port[] = this.parsePorts(info);
                 this.setState(
                     {
+                        security_score: info.score,
                         IP: info.IP,
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
@@ -226,7 +227,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                     secondaryKey="value"
 
                     data={[
-                        { name: 'Security score', value: this.state.trust_score },
+                        { name: 'Security score', value: this.state.security_score },
                         { name: 'IP', value: this.state.IP },
                         { name: 'Rippled version', value: this.state.rippled_version },
                         { name: 'Uptime', value: humanizeUptime(this.state.uptime) },
