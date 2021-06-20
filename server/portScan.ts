@@ -41,6 +41,7 @@ class PortScan {
         this.nmapInterface = nmmpintrf;
         this.shortScanList = [];
 
+        //Set up all options
         if(doLongScans) this.DO_LONG_SCAN = doLongScans;
         if(topPorts) this.TOP_PORTS = topPorts;
         if(tLevelShort) this.T_LEVEL_SHORT = tLevelShort;
@@ -107,6 +108,7 @@ class PortScan {
     }
     
     //IPv6 mapped IPv4 addresses don't work in the Docker for some reason:
+    //This function will make them IPv4
     normaliseIP(ip: string){
         if(ip.startsWith("::ffff:")){
             // Logger.info("haha")
@@ -121,14 +123,18 @@ class PortScan {
      * @param listOfNodes the list of nodes with null ports in db
      */
     async longScan(listOfNodes: NodePortsNull[]) {
+        //I recommend ignoring this part of the code. It is provided in case the user wants a long scan, however it is extremely ineffective.
+        //NB
         var n = 0;
         var indexArrayForIPv6 = [];
         while (n < listOfNodes.length) {
             var i = 0;
             var listOfIpS = "";
             var mp = new Map();
+            //Take a small amount of the IPv4 addresses
             while (n < listOfNodes.length && i < this.MAX_LONG_SCANS) {
                 if (this.normaliseIP(listOfNodes[n].ip).includes(":")) {
+                    //Separate the IPv6 from the IPv4
                     indexArrayForIPv6.push(n);
                 } else {
                     listOfIpS += this.normaliseIP(listOfNodes[n].ip) + " ";
@@ -139,8 +145,10 @@ class PortScan {
                 n++;
             }
 
+            //Put them in NMAP
             var out: Node[] | null = await this.nmapInterface.checkBulk(listOfIpS, true, this.T_LEVEL_LONG, this.TIMEOUT_LONG_SCAN);
             if (out != null) {
+                //Construct result for DB
                 for (var node in out) {
                     if (out[node].up) {
                         var stringForDBports = "";
@@ -173,7 +181,7 @@ class PortScan {
             }
         }
 
-        // Need to split IPv6 from IPv4 as otherwise NMAP won't work. This section deals with the IPv6 section
+        // Need to split IPv6 from IPv4 as otherwise NMAP won't work. This section deals with the IPv6 ips
         var n = 0;
         while (n < indexArrayForIPv6.length) {
             var mp = new Map();
@@ -181,6 +189,7 @@ class PortScan {
             var listOfIpS = "";
             while (n < indexArrayForIPv6.length && i < this.MAX_LONG_SCANS) {
                 listOfIpS += listOfNodes[indexArrayForIPv6[n]].ip + " ";
+                //Need to know which IP corresponds to what pub key.
                 mp.set(
                     listOfNodes[indexArrayForIPv6[n]].ip,
                     listOfNodes[indexArrayForIPv6[n]].public_key
