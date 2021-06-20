@@ -19,7 +19,7 @@ afterEach(() => {
 
 const mockNodeInfo: NodeInfoDB = {
     public_key: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
-    IP: "bruh",
+    ip: "bruh",
     latitude: 42,
     longtitude: 42,
     ports: "42",
@@ -81,7 +81,7 @@ test('Correct behaviour on API node info call success', async () => {
     expect(setStateSpy).toHaveBeenCalled();
 
     // See if everything in the state is correctly updated
-    expect(node_page.state.IP).toEqual(mockNodeInfo.IP);
+    expect(node_page.state.IP).toEqual(mockNodeInfo.ip);
     expect(node_page.state.rippled_version).toEqual(mockNodeInfo.rippled_version);
     expect(node_page.state.ports).toEqual([{port_number: 42, service: "HTTP", version: "Not Implemented yet"}]);
     expect(node_page.state.uptime).toEqual(mockNodeInfo.uptime);
@@ -192,7 +192,7 @@ test('Create peer list returns correct List element with 0 peers', async () => {
     history.push('/node?public_key=' + mockNodeInfo.public_key);
     const node_page = await shallow<NodePageMain>(<NodePageMain history={history} />).instance();
 
-    const list = node_page.createPeerList();
+    const list = node_page.createPeerTable();
     await node_page.setState({ peers: []});
 
     expect(list.props.data).toHaveLength(0);
@@ -213,7 +213,7 @@ test('Create peer list returns correct List element with multiple peers', async 
 
     const setStateSpy = jest.spyOn(node_page, "setState");
     await node_page.setState({ peers: peers } );
-    const list = node_page.createPeerList();
+    const list = node_page.createPeerTable();
     
     expect(setStateSpy).toHaveBeenCalledTimes(1);
     expect(node_page.state.peers).toHaveLength(2);
@@ -256,7 +256,7 @@ test('Correct behaviour of getNodeInfo on both request success', async () => {
     expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
     expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
 
-    expect(node_page.state.IP).toEqual(mockNodeInfo.IP);
+    expect(node_page.state.IP).toEqual(mockNodeInfo.ip);
     expect(node_page.state.rippled_version).toEqual(mockNodeInfo.rippled_version);
     expect(node_page.state.ports).toEqual([{port_number: 42, service: "HTTP", version: "Not Implemented yet"}]);
     expect(node_page.state.uptime).toEqual(mockNodeInfo.uptime);

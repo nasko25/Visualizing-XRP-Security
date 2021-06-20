@@ -12,10 +12,8 @@ import HistoricalChart from "../HistoricalChart";
 
 /**
  * Component that visualizes information about a specific Node
- * It has a Header, including navigation button for returning to the main
- * page and a search bar, and a main body, consisting of a peer graph,
+ * It has a Header with a search bar, and a main body, consisting of a peer graph,
  * a statistical chart and an info box.
- * 
  */
 class NodePageMain extends React.Component<NodePageProps, NodePageState> {
 
@@ -44,7 +42,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
         this.parseURL = this.parseURL.bind(this);
         this.historyListener = this.historyListener.bind(this);
         this.handleAPIError = this.handleAPIError.bind(this);
-        this.createPeerList = this.createPeerList.bind(this);
+        this.createPeerTable = this.createPeerTable.bind(this);
         this.historyListener();
     }
 
@@ -166,7 +164,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 var ports: Port[] = this.parsePorts(info);
                 this.setState(
                     {
-                        IP: info.IP,
+                        IP: info.ip,
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
                         ports: ports,
@@ -191,8 +189,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
     }
 
     /**
-     * Returnts the ports and their services as a List 
-     * @returns 
+     * @returns The ports and their services as a List in a Box
      */
     preparePortList() {
         var ports = [];
@@ -204,18 +201,20 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             return "No information available"
         }
         return (
-            <Box style={{ width: "100%", height: "10%" }}>
+            <Box overflow='auto' style={{ width: "100%", height: "10%" }}>
                 <List
                     style={{ width: "100%", height: "100%", alignSelf: "center" }}
                     primaryKey="port_number"
                     secondaryKey="service"
-
                     data={ports}
                 >
                 </List>
             </Box>);
     }
 
+    /**
+     * @returns A List of all the properties to be displayed in the Node Information section
+     */
     createNodeInformationList() {
         return (
             <Box overflow='scroll' style={{height: "45%"}}>
@@ -237,7 +236,10 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
             </Box >);
     }
 
-    createPeerList() {
+    /**
+     * @returns A DataTable, containing the information about the node's peers and their scores
+     */
+    createPeerTable() {
         let dt = 
         <DataTable
             columns={[
@@ -322,7 +324,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                                 margin="2%"
                                 round="1%"
                                 background={COLORS.button}>
-                                {this.createPeerList()}
+                                {this.createPeerTable()}
                             </Box>
                         </Box>
                         {/* The historical scores chart */}
