@@ -206,6 +206,7 @@ export default function setupClientAPIEndpoints(app: Express, verbosity: number)
                                         latitude: results[0].latitude,
                                         longtitude: results[0].longtitude,
                                         ports: results[0].ports,
+                                        protocols: results[0].protocols,
                                         public_key: results[0].public_key,
                                         publishers: results[0].publishers,
                                         rippled_version: results[0].rippled_version,

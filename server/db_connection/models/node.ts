@@ -9,7 +9,7 @@ export interface Node {
     latitude?: number,
     publishers: Array<string>
     ports?: string,
-    services?: string,
+    protocols?: string,
     portRunningOn?: string,
 }
 

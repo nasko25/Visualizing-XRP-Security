@@ -165,7 +165,7 @@ class NodePageMain extends React.Component<NodePageProps, NodePageState> {
                 this.setState(
                     {
                         security_score: info.score,
-                        IP: info.ip,
+                        IP: info.IP,
                         rippled_version: info.rippled_version,
                         uptime: info.uptime,
                         ports: ports,

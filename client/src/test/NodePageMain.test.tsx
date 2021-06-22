@@ -19,7 +19,7 @@ afterEach(() => {
 
 const mockNodeInfo: NodeInfoDB = {
     public_key: "n9KFUrM9FmjpnjfRbZkkYTnqHHvp2b4u1Gqts5EscbSQS2Fpgz16",
-    ip: "bruh",
+    IP: "bruh",
     latitude: 42,
     longtitude: 42,
     ports: "42",
@@ -82,7 +82,7 @@ test('Correct behaviour on API node info call success', async () => {
     expect(setStateSpy).toHaveBeenCalled();
 
     // See if everything in the state is correctly updated
-    expect(node_page.state.IP).toEqual(mockNodeInfo.ip);
+    expect(node_page.state.IP).toEqual(mockNodeInfo.IP);
     expect(node_page.state.rippled_version).toEqual(mockNodeInfo.rippled_version);
     expect(node_page.state.ports).toEqual([{port_number: 42, service: "HTTP", version: "Not Implemented yet"}]);
     expect(node_page.state.uptime).toEqual(mockNodeInfo.uptime);
@@ -257,7 +257,7 @@ test('Correct behaviour of getNodeInfo on both request success', async () => {
     expect(queryAPI_peersSpy).toHaveBeenCalledTimes(1);
     expect(getNodeInfoSpy).toHaveBeenCalledTimes(1);
 
-    expect(node_page.state.IP).toEqual(mockNodeInfo.ip);
+    expect(node_page.state.IP).toEqual(mockNodeInfo.IP);
     expect(node_page.state.rippled_version).toEqual(mockNodeInfo.rippled_version);
     expect(node_page.state.ports).toEqual([{port_number: 42, service: "HTTP", version: "Not Implemented yet"}]);
     expect(node_page.state.uptime).toEqual(mockNodeInfo.uptime);

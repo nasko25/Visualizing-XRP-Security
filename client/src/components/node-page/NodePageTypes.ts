@@ -35,7 +35,7 @@ export type NodeInfo = {
  */
 export type NodeInfoDB = {
     public_key: string,
-    ip: string,
+    IP: string,
     rippled_version: string,
     uptime: number,
     ports: string,
