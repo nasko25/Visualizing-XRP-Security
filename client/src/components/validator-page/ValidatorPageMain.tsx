@@ -30,6 +30,22 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
     }
 
     /**
+     * Hardcoded data for presentation purposes
+     * Delete once enough data has been collected
+     */
+    createData(): HistoricalScore[] {
+        let hardcoded: HistoricalScore[] = [];
+        for(let i=1; i<31; i++) {
+            hardcoded.push({
+                date: '0' + i + '/06',
+                score: parseFloat(Math.random().toFixed(2))
+            });
+        }
+
+        return hardcoded;
+    }
+
+    /**
      * Fetch all the needed information  from the server,
      * once the component has mounted.
      */
@@ -198,7 +214,10 @@ export default class ValidatorPageMain extends Component<ValidatorPageMainProps,
                         </Box>
                         <Box round="1%" pad={{ left: "5%", right: "5%" }} justify="center" margin={{ top: "1%", left: "1%", right: "2%", bottom: "2%" }} gridArea="chart" background={COLORS.main} color="hd_bgnd" overflow='auto'>
                             <Heading size="100%" margin="2%">Score over Time</Heading>
-                            <HistoricalChart historical_scores={this.state.score} />
+                            {/* Uncomment for chart to work with real data */}
+                            {/* <HistoricalChart historical_scores={this.state.score} /> */}
+
+                            <HistoricalChart historical_scores={this.createData()}/>
                         </Box>
                     </Grid>
                 </div>
