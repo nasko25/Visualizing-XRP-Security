@@ -86,7 +86,7 @@ export default class DashboardList extends Component<DashboardListProps> {
                                 public_key: node.public_key,
                                 rippled_version: node.rippled_version,
                                 uptime: humanizeUptime(node.uptime),
-                                security_score: parseFloat(`${node.score}`).toFixed(2)
+                                security_score: parseFloat(parseFloat(`${node.score}`).toFixed(2))
                             }))}
                             step={10}
                             size='large'
